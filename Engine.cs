@@ -894,7 +894,7 @@ namespace WF.Player.Core
             // If not, than ask, if we should go on, even it could get problems.
 
             int numOfObjects = input.ReadInt32();
-            int numAllZObjects = ((LuaTable)cartridge.WIGTable["AllZObjects"]).Count();
+			int numAllZObjects = ((LuaTable)cartridge.WIGTable["AllZObjects"]).Keys.Count;
                 
             for (int i = 1; i < numOfObjects; i++)
             {

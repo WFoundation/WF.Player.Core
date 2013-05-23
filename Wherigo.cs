@@ -390,7 +390,7 @@ namespace WF.Player.Core
             double lon = (double)zonePoint["longitude"];
 
             LuaTable points = (LuaTable)zone["Points"];
-            int count = points.Count();
+            int count = points.Keys.Count;
 
             double[] lats = new double[count];
             double[] lons = new double[count];
