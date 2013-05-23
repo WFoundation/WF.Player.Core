@@ -75,7 +75,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="NLua">
-      <HintPath>..\NLua\Run\Debug\NLua.dll</HintPath>
+      <HintPath>NLua\Run\Debug\NLua.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

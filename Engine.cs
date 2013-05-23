@@ -1074,7 +1074,7 @@ namespace WF.Player.Core
             output.Write(BitConverter.GetBytes(lengthOfHeader));
 			output.BaseStream.Position = pos;
 
-            int numAllZObjects = ((LuaTable)cartridge.WIGTable["AllZObjects"]).Count();
+			int numAllZObjects = ((LuaTable)cartridge.WIGTable["AllZObjects"]).Keys.Count;
             output.Write(numAllZObjects);
 
             for (int i = 1; i < numAllZObjects; i++)

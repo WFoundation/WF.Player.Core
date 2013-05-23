@@ -107,15 +107,12 @@ namespace WF.Player.Core
             loaded["WIGInternal"] = wiginternal;
 			package["preload.WIGInternal"] = wiginternal;
 
-            // Now load Wherigo.lua
-			// TODO: Replace by luac
-			using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Core.Resources.Wherigo.lua"))
-				using (StreamReader reader = new StreamReader(stream))
-				{
-					// TODO: Should be replaced with a compiled version of Wherigo.lua, if the DoString function work with binary chunks.
-					string luaFile = reader.ReadToEnd();
-					luaState.DoString (luaFile,"Wherigo.lua");
-				}
+            // Now load Wherigo.luac
+			using (BinaryReader bw = new BinaryReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("Core.Resources.Wherigo.luac")))
+			{
+				byte[] binChunk = bw.ReadBytes ((int)bw.BaseStream.Length);
+				luaState.DoString (binChunk,"Wherigo.lua");
+			}
 		}
 
         #endregion
