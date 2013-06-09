@@ -71,9 +71,19 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <value>The owner.</value>
 		public Thing Owner {
-			get {
-				return (Thing)GetTable ((LuaTable)wigTable["Owner"]);
-			}
+			get 
+            {
+                if (wigTable["Owner"] is LuaTable)
+                {
+                    var zp = GetTable((LuaTable)wigTable["Owner"]);
+                    if (zp == null)
+                        return null;
+                    else
+                        return (Thing)zp;
+                }
+                else
+                    return null;
+            }
 		}
 
 		public List<Thing> TargetObjects {

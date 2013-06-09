@@ -389,7 +389,7 @@ namespace WF.Player.Core
 			}
 			catch (Exception e)
 			{
-				// TODO: Rethrow exception
+                throw e;
 			} 
 
 		}
@@ -490,7 +490,7 @@ namespace WF.Player.Core
 			}
 			catch (Exception e)
 			{
-                // TODO: Rethrow exception
+                throw e;
 			} 
 		}
 

@@ -53,16 +53,16 @@ namespace WF.Player.Core
 		/// <value>The icon.</value>
 		public Media Icon {
 			get {
-				// Is icon false
-				if (wigTable ["Icon"] is Boolean)
-					return null;
-
-				LuaTable media = (LuaTable)wigTable ["Icon"];
-
-				if (media == null)
-					return null;
-
-				return engine.GetMedia (Convert.ToInt32 ((double)media["ObjIndex"]));
+                if (wigTable["Icon"] is LuaTable)
+                {
+                    var media = GetTable((LuaTable)wigTable["Icon"]);
+                    if (media == null)
+                        return null;
+                    else
+                        return engine.GetMedia(media.GetInt("ObjIndex"));
+                }
+                else
+                    return null;
 			}
 		}
 
@@ -72,16 +72,16 @@ namespace WF.Player.Core
 		/// <value>The image.</value>
 		public Media Image {
 			get {
-				// Is icon false
-				if (wigTable ["Media"] is Boolean)
-					return null;
-
-				LuaTable media = (LuaTable)wigTable ["Media"];
-
-				if (media == null)
-					return null;
-
-				return engine.GetMedia (Convert.ToInt32 ((double)media["ObjIndex"]));
+                if (wigTable["Media"] is LuaTable)
+                {
+                    var media = GetTable((LuaTable)wigTable["Media"]);
+                    if (media == null)
+                        return null;
+                    else
+                        return engine.GetMedia(media.GetInt("ObjIndex"));
+                }
+                else
+                    return null;
 			}
 		}
 

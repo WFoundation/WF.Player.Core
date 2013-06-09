@@ -52,7 +52,16 @@ namespace WF.Player.Core
 		/// <value>The object location as ZonePoint.</value>
 		public ZonePoint ObjectLocation {
 			get {
-				return (ZonePoint)GetTable ((LuaTable)wigTable["ObjectLocation"]);
+                if (wigTable["ObjectLocation"] is LuaTable)
+                {
+                    var zp = GetTable((LuaTable)wigTable["ObjectLocation"]);
+                    if (zp == null)
+                        return null;
+                    else
+                        return (ZonePoint)zp;
+                }
+                else
+                    return null;
 			}
 		}
 

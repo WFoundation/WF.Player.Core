@@ -62,12 +62,13 @@ namespace WF.Player.Core
 		/// <value>The image.</value>
 		public Media Image {
 			get {
-				LuaTable media = (LuaTable)wigTable ["Media"];
+                var media = wigTable["Media"];
 
-				if (media == null)
+				if (media is LuaTable)
+				    return engine.GetMedia (Convert.ToInt32 ((double)((LuaTable)media)["ObjIndex"]));
+                else
 					return null;
 
-				return engine.GetMedia (Convert.ToInt32 ((double)media["ObjIndex"]));
 			}
 		}
 

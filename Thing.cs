@@ -58,7 +58,16 @@ namespace WF.Player.Core
 		/// <value>The container.</value>
 		public Thing Container {
 			get {
-				return (Thing)GetTable ((LuaTable)wigTable["Container"]);
+                if (wigTable["Container"] is LuaTable)
+                {
+                    var c = GetTable((LuaTable)wigTable["Container"]);
+                    if (c == null)
+                        return null;
+                    else
+                        return (Thing)c;
+                }
+                else
+                    return null;
 			}
 		}
 

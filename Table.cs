@@ -54,7 +54,7 @@ namespace WF.Player.Core
 		{
 			object value = wigTable [key];
 
-			return value == null ? false : (bool)value;
+			return (value is bool && value != null) ? (bool)value : false;
 		}
 
 		/// <summary>
@@ -66,8 +66,8 @@ namespace WF.Player.Core
 		{
 			object value = wigTable [key];
 
-			return value == null ? false : (bool)value;
-		}
+            return (value is bool && value != null) ? (bool)value : false;
+        }
 
 		/// <summary>
 		/// Gets the double from LuaTable for entry key as string.
@@ -78,7 +78,7 @@ namespace WF.Player.Core
 		{
 			object num = wigTable [key];
 
-			return num == null ? 0 : (double)num;
+			return (num is double && num != null) ? (double)num : 0;
 		}
 
 		/// <summary>
@@ -90,8 +90,8 @@ namespace WF.Player.Core
 		{
 			object num = wigTable [key];
 
-			return num == null ? 0 : (double)num;
-		}
+            return (num is double && num != null) ? (double)num : 0;
+        }
 
 		/// <summary>
 		/// Gets the integer from LuaTable for entry key as string.
@@ -102,7 +102,7 @@ namespace WF.Player.Core
 		{
 			object num = wigTable [key];
 
-			return num == null ? 0 : Convert.ToInt32 ((double)num);
+			return (num is double && num != null) ? Convert.ToInt32 ((double)num) : 0;
 		}
 
 		/// <summary>
@@ -114,8 +114,8 @@ namespace WF.Player.Core
 		{
 			object num = wigTable [key];
 
-			return num == null ? 0 : Convert.ToInt32 ((double)num);
-		}
+            return (num is double && num != null) ? Convert.ToInt32((double)num) : 0;
+        }
 
 		/// <summary>
 		/// Gets the string from LuaTable for entry key as string.
@@ -143,7 +143,10 @@ namespace WF.Player.Core
 
 		public Table GetTable(LuaTable t)
 		{
-			return engine.GetTable (t);
+            if (t != null)
+			    return engine.GetTable (t);
+            else
+                return null;
 		}
 
 		#endregion
