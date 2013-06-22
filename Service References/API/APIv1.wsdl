@@ -1,0 +1,1942 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="APIv1" targetNamespace="" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <xs:schema elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:import namespace="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" />
+      <xs:element name="Test">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q1="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q1:TestRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="TestResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="TestResult" nillable="true" type="q2:TestResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetUserInfo">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q3="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q3:GetUserInfoRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetUserInfoResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q4="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="GetUserInfoResult" nillable="true" type="q4:GetUserInfoResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetCartridgeInfo">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q5="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q5:GetCartridgeInfoRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetCartridgeInfoResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q6="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="GetCartridgeInfoResult" nillable="true" type="q6:GetCartridgeInfoResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SearchCartridges">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q7="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q7:SearchCartridgesRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SearchCartridgesResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q8="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="SearchCartridgesResult" nillable="true" type="q8:SearchCartridgesResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="DownloadCartridge">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q9="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q9:DownloadCartridgeRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="DownloadCartridgeResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q10="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="DownloadCartridgeResult" nillable="true" type="q10:DownloadCartridgeResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="UserCompletedCartridge">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q11="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q11:UserCompletedCartridgeRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="UserCompletedCartridgeResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q12="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="UserCompletedCartridgeResult" nillable="true" type="q12:UserCompletedCartridgeResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetCartridgeLogs">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q13="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q13:GetCartridgeLogsRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetCartridgeLogsResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q14="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="GetCartridgeLogsResult" nillable="true" type="q14:GetCartridgeLogsResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="AddCartridgeLog">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q15="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q15:AddCartridgeLogRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="AddCartridgeLogResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q16="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="AddCartridgeLogResult" nillable="true" type="q16:AddCartridgeLogResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetCartridgeVersions">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q17="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q17:GetCartridgeVersionsRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetCartridgeVersionsResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q18="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="GetCartridgeVersionsResult" nillable="true" type="q18:GetCartridgeVersionsResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetCartridgeGWZ">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q19="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q19:GetCartridgeGWZRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetCartridgeGWZResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q20="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="GetCartridgeGWZResult" nillable="true" type="q20:GetCartridgeGWZResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="UpdateCartridgeGWZ">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q21="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q21:UpdateCartridgeGWZRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="UpdateCartridgeGWZResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q22="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="UpdateCartridgeGWZResult" nillable="true" type="q22:UpdateCartridgeGWZResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="UploadNewCartridge">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q23="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q23:UploadNewCartridgeRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="UploadNewCartridgeResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q24="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="UploadNewCartridgeResult" nillable="true" type="q24:UploadNewCartridgeResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="UpdateLog">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q25="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q25:UpdateLogRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="UpdateLogResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q26="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="UpdateLogResult" nillable="true" type="q26:UpdateLogResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="ArchiveLog">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q27="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q27:ArchiveLogRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="ArchiveLogResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q28="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="ArchiveLogResult" nillable="true" type="q28:ArchiveLogResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="UpdateCartridgeContributors">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q29="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q29:UpdateCartridgeContributorsRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="UpdateCartridgeContributorsResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q30="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="UpdateCartridgeContributorsResult" nillable="true" type="q30:UpdateCartridgeContributorsResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="ArchiveCartridge">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q31="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q31:ArchiveCartridgeRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="ArchiveCartridgeResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q32="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="ArchiveCartridgeResult" nillable="true" type="q32:ArchiveCartridgeResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="AttachLogMedia">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q33="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q33:AttachLogMediaRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="AttachLogMediaResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q34="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="AttachLogMediaResult" nillable="true" type="q34:AttachLogMediaResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="DeleteLogMedia">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q35="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q35:DeleteLogMediaRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="DeleteLogMediaResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q36="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="DeleteLogMediaResult" nillable="true" type="q36:DeleteLogMediaResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="UpdateLogMedia">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q37="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q37:UpdateLogMediaRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="UpdateLogMediaResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q38="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="UpdateLogMediaResult" nillable="true" type="q38:UpdateLogMediaResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetCountryList">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q39="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q39:GetCountryListRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetCountryListResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q40="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="GetCountryListResult" nillable="true" type="q40:GetCountryListResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="UpdateListingVisibility">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q41="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q41:UpdateListingVisibilityRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="UpdateListingVisibilityResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q42="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="UpdateListingVisibilityResult" nillable="true" type="q42:UpdateListingVisibilityResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="UpdateCartridgeMedia">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q43="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q43:UpdateCartridgeMediaRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="UpdateCartridgeMediaResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q44="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="UpdateCartridgeMediaResult" nillable="true" type="q44:UpdateCartridgeMediaResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="UpdateListing">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q45="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q45:UpdateListingRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="UpdateListingResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q46="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="UpdateListingResult" nillable="true" type="q46:UpdateListingResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="UploadCartridgePlaythroughs">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q47="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q47:UploadCartridgePlaythroughsRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="UploadCartridgePlaythroughsResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q48="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="UploadCartridgePlaythroughsResult" nillable="true" type="q48:UploadCartridgePlaythroughsResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetCartridgeVariables">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q49="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q49:GetCartridgeVariablesRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetCartridgeVariablesResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q50="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="GetCartridgeVariablesResult" nillable="true" type="q50:GetCartridgeVariablesResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SetCartridgeVariables">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q51="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="req" nillable="true" type="q51:SetCartridgeVariablesRequest" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SetCartridgeVariablesResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element xmlns:q52="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" minOccurs="0" name="SetCartridgeVariablesResult" nillable="true" type="q52:SetCartridgeVariablesResponse" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:schema>
+    <xs:schema xmlns:tns="http://schemas.microsoft.com/2003/10/Serialization/" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://schemas.microsoft.com/2003/10/Serialization/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:element name="anyType" nillable="true" type="xs:anyType" />
+      <xs:element name="anyURI" nillable="true" type="xs:anyURI" />
+      <xs:element name="base64Binary" nillable="true" type="xs:base64Binary" />
+      <xs:element name="boolean" nillable="true" type="xs:boolean" />
+      <xs:element name="byte" nillable="true" type="xs:byte" />
+      <xs:element name="dateTime" nillable="true" type="xs:dateTime" />
+      <xs:element name="decimal" nillable="true" type="xs:decimal" />
+      <xs:element name="double" nillable="true" type="xs:double" />
+      <xs:element name="float" nillable="true" type="xs:float" />
+      <xs:element name="int" nillable="true" type="xs:int" />
+      <xs:element name="long" nillable="true" type="xs:long" />
+      <xs:element name="QName" nillable="true" type="xs:QName" />
+      <xs:element name="short" nillable="true" type="xs:short" />
+      <xs:element name="string" nillable="true" type="xs:string" />
+      <xs:element name="unsignedByte" nillable="true" type="xs:unsignedByte" />
+      <xs:element name="unsignedInt" nillable="true" type="xs:unsignedInt" />
+      <xs:element name="unsignedLong" nillable="true" type="xs:unsignedLong" />
+      <xs:element name="unsignedShort" nillable="true" type="xs:unsignedShort" />
+      <xs:element name="char" nillable="true" type="tns:char" />
+      <xs:simpleType name="char">
+        <xs:restriction base="xs:int" />
+      </xs:simpleType>
+      <xs:element name="duration" nillable="true" type="tns:duration" />
+      <xs:simpleType name="duration">
+        <xs:restriction base="xs:duration">
+          <xs:pattern value="\-?P(\d*D)?(T(\d*H)?(\d*M)?(\d*(\.\d*)?S)?)?" />
+          <xs:minInclusive value="-P10675199DT2H48M5.4775808S" />
+          <xs:maxInclusive value="P10675199DT2H48M5.4775807S" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:element name="guid" nillable="true" type="tns:guid" />
+      <xs:simpleType name="guid">
+        <xs:restriction base="xs:string">
+          <xs:pattern value="[\da-fA-F]{8}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{12}" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:attribute name="FactoryType" type="xs:QName" />
+      <xs:attribute name="Id" type="xs:ID" />
+      <xs:attribute name="Ref" type="xs:IDREF" />
+    </xs:schema>
+    <xs:schema xmlns:ser="http://schemas.microsoft.com/2003/10/Serialization/" xmlns:tns="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/Wherigo.UI.API" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:import namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+      <xs:import namespace="http://schemas.datacontract.org/2004/07/Wherigo.Classes" />
+      <xs:import namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" />
+      <xs:import namespace="http://schemas.datacontract.org/2004/07/Wherigo.Data" />
+      <xs:complexType name="TestRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence />
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="TestRequest" nillable="true" type="tns:TestRequest" />
+      <xs:complexType name="APIRequest">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="consumerToken" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="APIRequest" nillable="true" type="tns:APIRequest" />
+      <xs:complexType name="TestResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence />
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="TestResponse" nillable="true" type="tns:TestResponse" />
+      <xs:complexType name="APIResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Status" nillable="true" type="tns:StatusResponse" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="APIResponse" nillable="true" type="tns:APIResponse" />
+      <xs:complexType name="StatusResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="StatusCode" type="xs:short" />
+          <xs:element minOccurs="0" name="StatusMessage" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="StatusResponse" nillable="true" type="tns:StatusResponse" />
+      <xs:complexType name="GetUserInfoResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="AvatarUrl" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="CartridgesCompleted" type="xs:int" />
+              <xs:element minOccurs="0" name="Locale" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="MembershipLevel" type="xs:int" />
+              <xs:element minOccurs="0" name="MembershipLevelString" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="UserGUID" type="ser:guid" />
+              <xs:element minOccurs="0" name="UserName" nillable="true" type="xs:string" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="GetUserInfoResponse" nillable="true" type="tns:GetUserInfoResponse" />
+      <xs:complexType name="GetUserInfoRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="UserGUID" nillable="true" type="ser:guid" />
+              <xs:element minOccurs="0" name="UserName" nillable="true" type="xs:string" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="GetUserInfoRequest" nillable="true" type="tns:GetUserInfoRequest" />
+      <xs:complexType name="GetCartridgeInfoResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="Cartridge" nillable="true" type="tns:WherigoCartridge" />
+              <xs:element xmlns:q1="http://schemas.datacontract.org/2004/07/Wherigo.Classes" minOccurs="0" name="UserInformation" nillable="true" type="q1:CartridgeUserInformation" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="GetCartridgeInfoResponse" nillable="true" type="tns:GetCartridgeInfoResponse" />
+      <xs:complexType name="WherigoCartridge">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="ActivityType" type="tns:WherigoCartridge.ActivityTypes" />
+          <xs:element minOccurs="0" name="AuthorCompany" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="AuthorName" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="CompletionTime" type="tns:WherigoCartridge.CompletionTimes" />
+          <xs:element minOccurs="0" name="CountryID" type="xs:int" />
+          <xs:element minOccurs="0" name="DateAdded" nillable="true" type="xs:dateTime" />
+          <xs:element minOccurs="0" name="DateLastPlayed" nillable="true" type="xs:dateTime" />
+          <xs:element minOccurs="0" name="DateLastUpdated" nillable="true" type="xs:dateTime" />
+          <xs:element minOccurs="0" name="IconFileURL" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="IsArchived" type="xs:boolean" />
+          <xs:element minOccurs="0" name="IsDisabled" type="xs:boolean" />
+          <xs:element minOccurs="0" name="IsOpenSource" type="xs:boolean" />
+          <xs:element minOccurs="0" name="IsPlayAnywhere" type="xs:boolean" />
+          <xs:element minOccurs="0" name="Latitude" type="xs:double" />
+          <xs:element xmlns:q2="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="LinkedGeocacheGCs" nillable="true" type="q2:ArrayOfstring" />
+          <xs:element xmlns:q3="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="LinkedGeocacheGuids" nillable="true" type="q3:ArrayOfguid" />
+          <xs:element xmlns:q4="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="LinkedGeocacheNames" nillable="true" type="q4:ArrayOfstring" />
+          <xs:element minOccurs="0" name="LongDescription" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="Longitude" type="xs:double" />
+          <xs:element minOccurs="0" name="Name" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="NumberOfCompletions" type="xs:int" />
+          <xs:element minOccurs="0" name="NumberOfUsersWatching" type="xs:int" />
+          <xs:element minOccurs="0" name="PosterFileURL" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="ShortDescription" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="StateID" type="xs:int" />
+          <xs:element minOccurs="0" name="UniqueDownloads" type="xs:int" />
+          <xs:element minOccurs="0" name="WGCode" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="WherigoCartridge" nillable="true" type="tns:WherigoCartridge" />
+      <xs:simpleType name="WherigoCartridge.ActivityTypes">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="Geocache" />
+          <xs:enumeration value="TourGuide" />
+          <xs:enumeration value="Puzzle" />
+          <xs:enumeration value="Story" />
+          <xs:enumeration value="Action" />
+          <xs:enumeration value="Arcade" />
+          <xs:enumeration value="Challenge" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:element name="WherigoCartridge.ActivityTypes" nillable="true" type="tns:WherigoCartridge.ActivityTypes" />
+      <xs:simpleType name="WherigoCartridge.CompletionTimes">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="Unknown" />
+          <xs:enumeration value="LessThanOneHour" />
+          <xs:enumeration value="OneToTwoHours" />
+          <xs:enumeration value="TwoToThreeHours" />
+          <xs:enumeration value="ThreeToFourHours" />
+          <xs:enumeration value="MoreThanFourHours" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:element name="WherigoCartridge.CompletionTimes" nillable="true" type="tns:WherigoCartridge.CompletionTimes" />
+      <xs:complexType name="GetCartridgeInfoRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="IncludeUserInformation" type="xs:boolean" />
+              <xs:element minOccurs="0" name="WGCode" nillable="true" type="xs:string" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="GetCartridgeInfoRequest" nillable="true" type="tns:GetCartridgeInfoRequest" />
+      <xs:complexType name="SearchCartridgesResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="Cartridges" nillable="true" type="tns:ArrayOfCartridgeSearchResult" />
+              <xs:element minOccurs="0" name="TotalSearchResults" type="xs:int" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="SearchCartridgesResponse" nillable="true" type="tns:SearchCartridgesResponse" />
+      <xs:complexType name="ArrayOfCartridgeSearchResult">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="CartridgeSearchResult" nillable="true" type="tns:CartridgeSearchResult" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfCartridgeSearchResult" nillable="true" type="tns:ArrayOfCartridgeSearchResult" />
+      <xs:complexType name="CartridgeSearchResult">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:WherigoCartridge">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="DistanceFromCenter" type="xs:double" />
+              <xs:element minOccurs="0" name="UserHasCompleted" type="xs:boolean" />
+              <xs:element minOccurs="0" name="UserHasPartiallyPlayed" type="xs:boolean" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="CartridgeSearchResult" nillable="true" type="tns:CartridgeSearchResult" />
+      <xs:complexType name="SearchCartridgesRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="PageNumber" type="xs:short" />
+              <xs:element minOccurs="0" name="ResultsPerPage" type="xs:short" />
+              <xs:element minOccurs="0" name="SearchArguments" nillable="true" type="tns:CartridgeSearchArguments" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="SearchCartridgesRequest" nillable="true" type="tns:SearchCartridgesRequest" />
+      <xs:complexType name="CartridgeSearchArguments">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="CartridgeName" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="CountryID" nillable="true" type="xs:short" />
+          <xs:element minOccurs="0" name="ExternalAuthorNameOrGroupName" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="IsOpenSource" nillable="true" type="xs:boolean" />
+          <xs:element minOccurs="0" name="IsPlayAnywhere" nillable="true" type="xs:boolean" />
+          <xs:element minOccurs="0" name="Latitude" nillable="true" type="xs:double" />
+          <xs:element minOccurs="0" name="Longitude" nillable="true" type="xs:double" />
+          <xs:element minOccurs="0" name="OrderSearchBy" nillable="true" type="tns:CartridgeSearchArguments.OrderBy" />
+          <xs:element minOccurs="0" name="SearchRadiusInKm" nillable="true" type="xs:double" />
+          <xs:element minOccurs="0" name="StateID" nillable="true" type="xs:short" />
+          <xs:element minOccurs="0" name="UserHasCompleted" nillable="true" type="xs:boolean" />
+          <xs:element minOccurs="0" name="UserHasNotPlayed" nillable="true" type="xs:boolean" />
+          <xs:element minOccurs="0" name="UserHasPartiallyPlayed" nillable="true" type="xs:boolean" />
+          <xs:element minOccurs="0" name="UserOwns" nillable="true" type="xs:boolean" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="CartridgeSearchArguments" nillable="true" type="tns:CartridgeSearchArguments" />
+      <xs:simpleType name="CartridgeSearchArguments.OrderBy">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="PublishDate">
+            <xs:annotation>
+              <xs:appinfo>
+                <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">2</EnumerationValue>
+              </xs:appinfo>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="Distance">
+            <xs:annotation>
+              <xs:appinfo>
+                <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">0</EnumerationValue>
+              </xs:appinfo>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="Name">
+            <xs:annotation>
+              <xs:appinfo>
+                <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">1</EnumerationValue>
+              </xs:appinfo>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="CompletionTime" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:element name="CartridgeSearchArguments.OrderBy" nillable="true" type="tns:CartridgeSearchArguments.OrderBy" />
+      <xs:complexType name="DownloadCartridgeResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="CartridgeBytes" nillable="true" type="xs:base64Binary" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="DownloadCartridgeResponse" nillable="true" type="tns:DownloadCartridgeResponse" />
+      <xs:complexType name="DownloadCartridgeRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="WGCode" nillable="true" type="xs:string" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="DownloadCartridgeRequest" nillable="true" type="tns:DownloadCartridgeRequest" />
+      <xs:complexType name="UserCompletedCartridgeResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence>
+              <xs:element xmlns:q5="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="OtherUserCompletionSuccessfullyMarked" nillable="true" type="q5:ArrayOfboolean" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="UserCompletedCartridgeResponse" nillable="true" type="tns:UserCompletedCartridgeResponse" />
+      <xs:complexType name="UserCompletedCartridgeRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="CompletionCode" nillable="true" type="xs:string" />
+              <xs:element xmlns:q6="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="NamesOfOtherUsersPlaying" nillable="true" type="q6:ArrayOfstring" />
+              <xs:element minOccurs="0" name="WGCode" nillable="true" type="xs:string" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="UserCompletedCartridgeRequest" nillable="true" type="tns:UserCompletedCartridgeRequest" />
+      <xs:complexType name="GetCartridgeLogsResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="Logs" nillable="true" type="tns:ArrayOfCartridgeLog" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="GetCartridgeLogsResponse" nillable="true" type="tns:GetCartridgeLogsResponse" />
+      <xs:complexType name="ArrayOfCartridgeLog">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="CartridgeLog" nillable="true" type="tns:CartridgeLog" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfCartridgeLog" nillable="true" type="tns:ArrayOfCartridgeLog" />
+      <xs:complexType name="CartridgeLog">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Date" type="xs:dateTime" />
+          <xs:element minOccurs="0" name="Guid" type="ser:guid" />
+          <xs:element xmlns:q7="http://schemas.datacontract.org/2004/07/Wherigo.Classes" minOccurs="0" name="LogType" type="q7:LogEntry.LogTypes" />
+          <xs:element minOccurs="0" name="LogTypeIconUrl" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="LogTypeInt" type="xs:int" />
+          <xs:element minOccurs="0" name="Photos" nillable="true" type="tns:ArrayOfLogPhoto" />
+          <xs:element minOccurs="0" name="Text" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="UserAvatarUrl" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="UserGuid" type="ser:guid" />
+          <xs:element minOccurs="0" name="UserName" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="CartridgeLog" nillable="true" type="tns:CartridgeLog" />
+      <xs:complexType name="ArrayOfLogPhoto">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="LogPhoto" nillable="true" type="tns:LogPhoto" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfLogPhoto" nillable="true" type="tns:ArrayOfLogPhoto" />
+      <xs:complexType name="LogPhoto">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Caption" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="Description" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="IsThumbnail" type="xs:boolean" />
+          <xs:element minOccurs="0" name="Photo" nillable="true" type="xs:base64Binary" />
+          <xs:element minOccurs="0" name="URL" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="LogPhoto" nillable="true" type="tns:LogPhoto" />
+      <xs:complexType name="GetCartridgeLogsRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="LogsPerPage" type="xs:int" />
+              <xs:element minOccurs="0" name="PageNumber" type="xs:int" />
+              <xs:element minOccurs="0" name="WGCode" nillable="true" type="xs:string" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="GetCartridgeLogsRequest" nillable="true" type="tns:GetCartridgeLogsRequest" />
+      <xs:complexType name="AddCartridgeLogResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="LogGuid" type="ser:guid" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="AddCartridgeLogResponse" nillable="true" type="tns:AddCartridgeLogResponse" />
+      <xs:complexType name="AddCartridgeLogRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="Log" nillable="true" type="tns:CartridgeLog" />
+              <xs:element minOccurs="0" name="WGCode" nillable="true" type="xs:string" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="AddCartridgeLogRequest" nillable="true" type="tns:AddCartridgeLogRequest" />
+      <xs:complexType name="GetCartridgeVersionsResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="CanDownloadSourceCode" type="xs:boolean" />
+              <xs:element minOccurs="0" name="Versions" nillable="true" type="tns:ArrayOfVersionInformation" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="GetCartridgeVersionsResponse" nillable="true" type="tns:GetCartridgeVersionsResponse" />
+      <xs:complexType name="ArrayOfVersionInformation">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="VersionInformation" nillable="true" type="tns:VersionInformation" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfVersionInformation" nillable="true" type="tns:ArrayOfVersionInformation" />
+      <xs:complexType name="VersionInformation">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="SourceCodeIsAvailable" type="xs:boolean" />
+          <xs:element minOccurs="0" name="UploadComments" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="UploadedBy" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="UploadedOn" type="xs:dateTime" />
+          <xs:element minOccurs="0" name="VersionNumber" type="xs:int" />
+          <xs:element minOccurs="0" name="VersionType" type="tns:VersionInformation.VersionTypes" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="VersionInformation" nillable="true" type="tns:VersionInformation" />
+      <xs:simpleType name="VersionInformation.VersionTypes">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="Final" />
+          <xs:enumeration value="Test" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:element name="VersionInformation.VersionTypes" nillable="true" type="tns:VersionInformation.VersionTypes" />
+      <xs:complexType name="GetCartridgeVersionsRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="WGCode" nillable="true" type="xs:string" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="GetCartridgeVersionsRequest" nillable="true" type="tns:GetCartridgeVersionsRequest" />
+      <xs:complexType name="GetCartridgeGWZResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="GWZ" nillable="true" type="xs:base64Binary" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="GetCartridgeGWZResponse" nillable="true" type="tns:GetCartridgeGWZResponse" />
+      <xs:complexType name="GetCartridgeGWZRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="VersionNumber" type="xs:int" />
+              <xs:element minOccurs="0" name="WGCode" nillable="true" type="xs:string" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="GetCartridgeGWZRequest" nillable="true" type="tns:GetCartridgeGWZRequest" />
+      <xs:complexType name="UpdateCartridgeGWZResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence />
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="UpdateCartridgeGWZResponse" nillable="true" type="tns:UpdateCartridgeGWZResponse" />
+      <xs:complexType name="UpdateCartridgeGWZRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="GWZ" nillable="true" type="xs:base64Binary" />
+              <xs:element minOccurs="0" name="LogEntryText" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="WGCode" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="isTestVersion" type="xs:boolean" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="UpdateCartridgeGWZRequest" nillable="true" type="tns:UpdateCartridgeGWZRequest" />
+      <xs:complexType name="UploadNewCartridgeResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="WGCode" nillable="true" type="xs:string" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="UploadNewCartridgeResponse" nillable="true" type="tns:UploadNewCartridgeResponse" />
+      <xs:complexType name="UploadNewCartridgeRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence>
+              <xs:element xmlns:q8="http://schemas.datacontract.org/2004/07/Wherigo.Data" minOccurs="0" name="Activity" type="q8:Cartridge.Activities" />
+              <xs:element minOccurs="0" name="AuthorName" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="CartridgeDetailsDescription" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="CartridgeIconImage" nillable="true" type="xs:base64Binary" />
+              <xs:element minOccurs="0" name="CartridgePosterImage" nillable="true" type="xs:base64Binary" />
+              <xs:element minOccurs="0" name="CompletionTime" type="xs:short" />
+              <xs:element minOccurs="0" name="CountryID" nillable="true" type="xs:short" />
+              <xs:element minOccurs="0" name="GWZ" nillable="true" type="xs:base64Binary" />
+              <xs:element minOccurs="0" name="IsPlayAnywhere" type="xs:boolean" />
+              <xs:element minOccurs="0" name="Latitude" nillable="true" type="xs:double" />
+              <xs:element minOccurs="0" name="ListCartridgeInDirectory" type="xs:boolean" />
+              <xs:element minOccurs="0" name="Longitude" nillable="true" type="xs:double" />
+              <xs:element minOccurs="0" name="Name" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="SearchPageDescription" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="StartingLocationDescription" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="StateID" nillable="true" type="xs:short" />
+              <xs:element minOccurs="0" name="VersionNumber" nillable="true" type="xs:string" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="UploadNewCartridgeRequest" nillable="true" type="tns:UploadNewCartridgeRequest" />
+      <xs:complexType name="UpdateLogResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence />
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="UpdateLogResponse" nillable="true" type="tns:UpdateLogResponse" />
+      <xs:complexType name="UpdateLogRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="UpdatedLog" nillable="true" type="tns:CartridgeLog" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="UpdateLogRequest" nillable="true" type="tns:UpdateLogRequest" />
+      <xs:complexType name="ArchiveLogResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence />
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="ArchiveLogResponse" nillable="true" type="tns:ArchiveLogResponse" />
+      <xs:complexType name="ArchiveLogRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="LogGUID" type="ser:guid" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="ArchiveLogRequest" nillable="true" type="tns:ArchiveLogRequest" />
+      <xs:complexType name="UpdateCartridgeContributorsResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence>
+              <xs:element xmlns:q9="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="Success" nillable="true" type="q9:ArrayOfboolean" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="UpdateCartridgeContributorsResponse" nillable="true" type="tns:UpdateCartridgeContributorsResponse" />
+      <xs:complexType name="UpdateCartridgeContributorsRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence>
+              <xs:element xmlns:q10="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="ContributorUserGUIDs" nillable="true" type="q10:ArrayOfguid" />
+              <xs:element minOccurs="0" name="PermissionRequested" nillable="true" type="tns:ArrayOfUpdateCartridgeContributorsRequest.PermissionType" />
+              <xs:element minOccurs="0" name="WGCode" nillable="true" type="xs:string" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="UpdateCartridgeContributorsRequest" nillable="true" type="tns:UpdateCartridgeContributorsRequest" />
+      <xs:complexType name="ArrayOfUpdateCartridgeContributorsRequest.PermissionType">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="UpdateCartridgeContributorsRequest.PermissionType" type="tns:UpdateCartridgeContributorsRequest.PermissionType" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfUpdateCartridgeContributorsRequest.PermissionType" nillable="true" type="tns:ArrayOfUpdateCartridgeContributorsRequest.PermissionType" />
+      <xs:simpleType name="UpdateCartridgeContributorsRequest.PermissionType">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="Revoke" />
+          <xs:enumeration value="ReadOnly" />
+          <xs:enumeration value="ReadWrite" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:element name="UpdateCartridgeContributorsRequest.PermissionType" nillable="true" type="tns:UpdateCartridgeContributorsRequest.PermissionType" />
+      <xs:complexType name="ArchiveCartridgeResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="LogGuid" type="ser:guid" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="ArchiveCartridgeResponse" nillable="true" type="tns:ArchiveCartridgeResponse" />
+      <xs:complexType name="ArchiveCartridgeRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="ArchiveLogEntry" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="WGCode" nillable="true" type="xs:string" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="ArchiveCartridgeRequest" nillable="true" type="tns:ArchiveCartridgeRequest" />
+      <xs:complexType name="AttachLogMediaResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="Results" nillable="true" type="tns:ArrayOfAPIResponse" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="AttachLogMediaResponse" nillable="true" type="tns:AttachLogMediaResponse" />
+      <xs:complexType name="ArrayOfAPIResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="APIResponse" nillable="true" type="tns:APIResponse" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfAPIResponse" nillable="true" type="tns:ArrayOfAPIResponse" />
+      <xs:complexType name="AttachLogMediaRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="LogGuid" type="ser:guid" />
+              <xs:element minOccurs="0" name="Photos" nillable="true" type="tns:ArrayOfLogPhoto" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="AttachLogMediaRequest" nillable="true" type="tns:AttachLogMediaRequest" />
+      <xs:complexType name="DeleteLogMediaResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence />
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="DeleteLogMediaResponse" nillable="true" type="tns:DeleteLogMediaResponse" />
+      <xs:complexType name="DeleteLogMediaRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="LogGuid" type="ser:guid" />
+              <xs:element minOccurs="0" name="MediaGuid" type="ser:guid" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="DeleteLogMediaRequest" nillable="true" type="tns:DeleteLogMediaRequest" />
+      <xs:complexType name="UpdateLogMediaResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence />
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="UpdateLogMediaResponse" nillable="true" type="tns:UpdateLogMediaResponse" />
+      <xs:complexType name="UpdateLogMediaRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="Caption" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="Description" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="LogGuid" type="ser:guid" />
+              <xs:element minOccurs="0" name="MediaGuid" type="ser:guid" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="UpdateLogMediaRequest" nillable="true" type="tns:UpdateLogMediaRequest" />
+      <xs:complexType name="GetCountryListResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence>
+              <xs:element xmlns:q11="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="CountryIDs" nillable="true" type="q11:ArrayOfshort" />
+              <xs:element xmlns:q12="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="CountryNames" nillable="true" type="q12:ArrayOfstring" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="GetCountryListResponse" nillable="true" type="tns:GetCountryListResponse" />
+      <xs:complexType name="GetCountryListRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence />
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="GetCountryListRequest" nillable="true" type="tns:GetCountryListRequest" />
+      <xs:complexType name="UpdateListingVisibilityResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence />
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="UpdateListingVisibilityResponse" nillable="true" type="tns:UpdateListingVisibilityResponse" />
+      <xs:complexType name="UpdateListingVisibilityRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="MakeListingPublic" type="xs:boolean" />
+              <xs:element minOccurs="0" name="WGCode" nillable="true" type="xs:string" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="UpdateListingVisibilityRequest" nillable="true" type="tns:UpdateListingVisibilityRequest" />
+      <xs:complexType name="UpdateCartridgeMediaResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence />
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="UpdateCartridgeMediaResponse" nillable="true" type="tns:UpdateCartridgeMediaResponse" />
+      <xs:complexType name="UpdateCartridgeMediaRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="Icon" nillable="true" type="xs:base64Binary" />
+              <xs:element minOccurs="0" name="Poster" nillable="true" type="xs:base64Binary" />
+              <xs:element minOccurs="0" name="WGCode" nillable="true" type="xs:string" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="UpdateCartridgeMediaRequest" nillable="true" type="tns:UpdateCartridgeMediaRequest" />
+      <xs:complexType name="UpdateListingResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence />
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="UpdateListingResponse" nillable="true" type="tns:UpdateListingResponse" />
+      <xs:complexType name="UpdateListingRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="ActivityInt" nillable="true" type="xs:int" />
+              <xs:element minOccurs="0" name="AuthorName" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="CartridgeDetailsDescription" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="CompletionTime" nillable="true" type="xs:short" />
+              <xs:element minOccurs="0" name="CountryID" nillable="true" type="xs:short" />
+              <xs:element minOccurs="0" name="Latitude" nillable="true" type="xs:double" />
+              <xs:element minOccurs="0" name="ListInDirectory" nillable="true" type="xs:boolean" />
+              <xs:element minOccurs="0" name="Longitude" nillable="true" type="xs:double" />
+              <xs:element minOccurs="0" name="Name" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="SearchPageDescription" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="StartingLocationDescription" nillable="true" type="xs:string" />
+              <xs:element minOccurs="0" name="StateID" nillable="true" type="xs:short" />
+              <xs:element minOccurs="0" name="WGCode" nillable="true" type="xs:string" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="UpdateListingRequest" nillable="true" type="tns:UpdateListingRequest" />
+      <xs:complexType name="UploadCartridgePlaythroughsResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence />
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="UploadCartridgePlaythroughsResponse" nillable="true" type="tns:UploadCartridgePlaythroughsResponse" />
+      <xs:complexType name="UploadCartridgePlaythroughsRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="Playthroughs" nillable="true" type="tns:ArrayOfCartridgePlaythrough" />
+              <xs:element minOccurs="0" name="WGCode" nillable="true" type="xs:string" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="UploadCartridgePlaythroughsRequest" nillable="true" type="tns:UploadCartridgePlaythroughsRequest" />
+      <xs:complexType name="ArrayOfCartridgePlaythrough">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="CartridgePlaythrough" nillable="true" type="tns:CartridgePlaythrough" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfCartridgePlaythrough" nillable="true" type="tns:ArrayOfCartridgePlaythrough" />
+      <xs:complexType name="CartridgePlaythrough">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="AltitudeDifferenceFromStartInMeters" nillable="true" type="xs:double" />
+          <xs:element minOccurs="0" name="CountOfCharactersEncountered" nillable="true" type="xs:int" />
+          <xs:element minOccurs="0" name="CountOfZonesVisited" nillable="true" type="xs:int" />
+          <xs:element minOccurs="0" name="CumulativeAltitudeAscentInMeters" nillable="true" type="xs:double" />
+          <xs:element minOccurs="0" name="CumulativeAltitudeDescentInMeters" nillable="true" type="xs:double" />
+          <xs:element minOccurs="0" name="DistanceCoveredInKm" nillable="true" type="xs:double" />
+          <xs:element minOccurs="0" name="EndTime" nillable="true" type="xs:dateTime" />
+          <xs:element minOccurs="0" name="IsGameOver" nillable="true" type="xs:boolean" />
+          <xs:element minOccurs="0" name="IsResumingGame" nillable="true" type="xs:boolean" />
+          <xs:element minOccurs="0" name="MetTheAuthor" nillable="true" type="xs:boolean" />
+          <xs:element minOccurs="0" name="StartTime" nillable="true" type="xs:dateTime" />
+          <xs:element minOccurs="0" name="TotalMinutesPlayed" nillable="true" type="xs:int" />
+          <xs:element minOccurs="0" name="TotalPlayersMet" nillable="true" type="xs:int" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="CartridgePlaythrough" nillable="true" type="tns:CartridgePlaythrough" />
+      <xs:complexType name="GetCartridgeVariablesResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="Variables" nillable="true" type="tns:ArrayOfCartridgeVariable" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="GetCartridgeVariablesResponse" nillable="true" type="tns:GetCartridgeVariablesResponse" />
+      <xs:complexType name="ArrayOfCartridgeVariable">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="CartridgeVariable" nillable="true" type="tns:CartridgeVariable" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfCartridgeVariable" nillable="true" type="tns:ArrayOfCartridgeVariable" />
+      <xs:complexType name="CartridgeVariable">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="ExpiresInSeconds" nillable="true" type="xs:int" />
+          <xs:element minOccurs="0" name="Name" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="Scope" type="tns:CartridgeVariableScope" />
+          <xs:element minOccurs="0" name="SessionID" nillable="true" type="xs:int" />
+          <xs:element minOccurs="0" name="Value" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="CartridgeVariable" nillable="true" type="tns:CartridgeVariable" />
+      <xs:simpleType name="CartridgeVariableScope">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="User" />
+          <xs:enumeration value="UserSession" />
+          <xs:enumeration value="UserGroup" />
+          <xs:enumeration value="UserGroupSession" />
+          <xs:enumeration value="Cartridge" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:element name="CartridgeVariableScope" nillable="true" type="tns:CartridgeVariableScope" />
+      <xs:complexType name="GetCartridgeVariablesRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="Scopes" nillable="true" type="tns:ArrayOfCartridgeVariableScope" />
+              <xs:element xmlns:q13="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="VariableNames" nillable="true" type="q13:ArrayOfstring" />
+              <xs:element minOccurs="0" name="WGCode" nillable="true" type="xs:string" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="GetCartridgeVariablesRequest" nillable="true" type="tns:GetCartridgeVariablesRequest" />
+      <xs:complexType name="ArrayOfCartridgeVariableScope">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="CartridgeVariableScope" type="tns:CartridgeVariableScope" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfCartridgeVariableScope" nillable="true" type="tns:ArrayOfCartridgeVariableScope" />
+      <xs:complexType name="SetCartridgeVariablesResponse">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIResponse">
+            <xs:sequence />
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="SetCartridgeVariablesResponse" nillable="true" type="tns:SetCartridgeVariablesResponse" />
+      <xs:complexType name="SetCartridgeVariablesRequest">
+        <xs:complexContent mixed="false">
+          <xs:extension base="tns:APIRequest">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="Variables" nillable="true" type="tns:ArrayOfCartridgeVariable" />
+              <xs:element minOccurs="0" name="WGCode" nillable="true" type="xs:string" />
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="SetCartridgeVariablesRequest" nillable="true" type="tns:SetCartridgeVariablesRequest" />
+    </xs:schema>
+    <xs:schema xmlns:ser="http://schemas.microsoft.com/2003/10/Serialization/" xmlns:tns="http://schemas.microsoft.com/2003/10/Serialization/Arrays" elementFormDefault="qualified" targetNamespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:import namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+      <xs:import namespace="http://schemas.datacontract.org/2004/07/Wherigo.Classes" />
+      <xs:complexType name="ArrayOfstring">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="string" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfstring" nillable="true" type="tns:ArrayOfstring" />
+      <xs:complexType name="ArrayOfguid">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="guid" type="ser:guid" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfguid" nillable="true" type="tns:ArrayOfguid" />
+      <xs:complexType name="ArrayOfanyType">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="anyType" nillable="true" type="xs:anyType" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfanyType" nillable="true" type="tns:ArrayOfanyType" />
+      <xs:complexType name="ArrayOfKeyValueOfLogEntry.InternalInfostring54O2aPAC">
+        <xs:annotation>
+          <xs:appinfo>
+            <IsDictionary xmlns="http://schemas.microsoft.com/2003/10/Serialization/">true</IsDictionary>
+          </xs:appinfo>
+        </xs:annotation>
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="KeyValueOfLogEntry.InternalInfostring54O2aPAC">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element xmlns:q1="http://schemas.datacontract.org/2004/07/Wherigo.Classes" name="Key" type="q1:LogEntry.InternalInfo" />
+                <xs:element name="Value" nillable="true" type="xs:string" />
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfKeyValueOfLogEntry.InternalInfostring54O2aPAC" nillable="true" type="tns:ArrayOfKeyValueOfLogEntry.InternalInfostring54O2aPAC" />
+      <xs:complexType name="ArrayOfboolean">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="boolean" type="xs:boolean" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfboolean" nillable="true" type="tns:ArrayOfboolean" />
+      <xs:complexType name="ArrayOfshort">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="short" type="xs:short" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfshort" nillable="true" type="tns:ArrayOfshort" />
+    </xs:schema>
+    <xs:schema xmlns:ser="http://schemas.microsoft.com/2003/10/Serialization/" xmlns:tns="http://schemas.datacontract.org/2004/07/Wherigo.Classes" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/Wherigo.Classes" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:import namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+      <xs:import namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" />
+      <xs:complexType name="CartridgeUserInformation">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="UserGUID" type="ser:guid" />
+          <xs:element minOccurs="0" name="UserLogs" nillable="true" type="tns:ArrayOfLogEntry" />
+          <xs:element minOccurs="0" name="WGCode" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="isUserWatchingCartridge" type="xs:boolean" />
+          <xs:element minOccurs="0" name="userCanDownloadSource" type="xs:boolean" />
+          <xs:element minOccurs="0" name="userIsOwner" type="xs:boolean" />
+          <xs:element minOccurs="0" name="userIsReadWriteUser" type="xs:boolean" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="CartridgeUserInformation" nillable="true" type="tns:CartridgeUserInformation" />
+      <xs:complexType name="ArrayOfLogEntry">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="LogEntry" nillable="true" type="tns:LogEntry" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfLogEntry" nillable="true" type="tns:ArrayOfLogEntry" />
+      <xs:complexType name="LogEntry">
+        <xs:sequence>
+          <xs:element name="CartridgeArchived" type="xs:boolean" />
+          <xs:element name="CartridgeDisabled" type="xs:boolean" />
+          <xs:element name="CartridgeIcon" nillable="true" type="xs:string" />
+          <xs:element name="CartridgeName" nillable="true" type="xs:string" />
+          <xs:element name="LogEntryResult" nillable="true" type="tns:LogResult" />
+          <xs:element name="Media" nillable="true" type="tns:ArrayOfLogMedia" />
+          <xs:element name="WGCode" nillable="true" type="xs:string" />
+          <xs:element xmlns:q1="http://schemas.microsoft.com/2003/10/Serialization/Arrays" name="crossPostToGeocaches" nillable="true" type="q1:ArrayOfstring" />
+          <xs:element xmlns:q2="http://schemas.microsoft.com/2003/10/Serialization/Arrays" name="internalInfo" nillable="true" type="q2:ArrayOfKeyValueOfLogEntry.InternalInfostring54O2aPAC" />
+          <xs:element name="isArchived" type="xs:boolean" />
+          <xs:element name="logDate" type="xs:dateTime" />
+          <xs:element name="logDateString" nillable="true" type="xs:string" />
+          <xs:element name="logGUID" type="ser:guid" />
+          <xs:element name="logText" nillable="true" type="xs:string" />
+          <xs:element name="logType" type="tns:LogEntry.LogTypes" />
+          <xs:element name="logTypeIconUrl" nillable="true" type="xs:string" />
+          <xs:element name="logTypeString" nillable="true" type="xs:string" />
+          <xs:element name="userAchievements" type="xs:int" />
+          <xs:element name="userAvatar" nillable="true" type="xs:string" />
+          <xs:element name="userCanDelete" type="xs:boolean" />
+          <xs:element name="userCanEdit" type="xs:boolean" />
+          <xs:element name="userCompletions" type="xs:int" />
+          <xs:element name="userGUID" type="ser:guid" />
+          <xs:element name="userMembershipLevel" nillable="true" type="xs:string" />
+          <xs:element name="userName" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="LogEntry" nillable="true" type="tns:LogEntry" />
+      <xs:complexType name="LogResult">
+        <xs:sequence>
+          <xs:element xmlns:q3="http://schemas.microsoft.com/2003/10/Serialization/Arrays" name="GeocachingCrossPostingResult" nillable="true" type="q3:ArrayOfanyType" />
+          <xs:element name="error" nillable="true" type="xs:string" />
+          <xs:element xmlns:q4="http://schemas.microsoft.com/2003/10/Serialization/Arrays" name="iconsEarned" nillable="true" type="q4:ArrayOfstring" />
+          <xs:element name="logGUID" nillable="true" type="ser:guid" />
+          <xs:element name="logargs" nillable="true" type="tns:LogEntry" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="LogResult" nillable="true" type="tns:LogResult" />
+      <xs:complexType name="ArrayOfLogMedia">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="LogMedia" nillable="true" type="tns:LogMedia" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfLogMedia" nillable="true" type="tns:ArrayOfLogMedia" />
+      <xs:complexType name="LogMedia">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="AddedOn" type="xs:dateTime" />
+          <xs:element minOccurs="0" name="Description" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="FileName" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="LogGUID" type="ser:guid" />
+          <xs:element minOccurs="0" name="LogMediaGUID" type="ser:guid" />
+          <xs:element minOccurs="0" name="MediaType" type="tns:LogMedia.MediaTypes" />
+          <xs:element minOccurs="0" name="Name" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="LogMedia" nillable="true" type="tns:LogMedia" />
+      <xs:simpleType name="LogMedia.MediaTypes">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="Picture" />
+          <xs:enumeration value="Thumbnail" />
+          <xs:enumeration value="Video" />
+          <xs:enumeration value="GWZ" />
+          <xs:enumeration value="PlayLog" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:element name="LogMedia.MediaTypes" nillable="true" type="tns:LogMedia.MediaTypes" />
+      <xs:simpleType name="LogEntry.InternalInfo">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="CartridgeName" />
+          <xs:enumeration value="isArchived" />
+          <xs:enumeration value="CartridgeIcon" />
+          <xs:enumeration value="isDisabled" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:element name="LogEntry.InternalInfo" nillable="true" type="tns:LogEntry.InternalInfo" />
+      <xs:simpleType name="LogEntry.LogTypes">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="CartridgeComplete" />
+          <xs:enumeration value="IncompletePlaythrough" />
+          <xs:enumeration value="Note" />
+          <xs:enumeration value="DisableListing" />
+          <xs:enumeration value="EnableListing" />
+          <xs:enumeration value="Archive" />
+          <xs:enumeration value="VersionUpdate" />
+          <xs:enumeration value="VersionRestore" />
+          <xs:enumeration value="Unarchive" />
+          <xs:enumeration value="AdminLock" />
+          <xs:enumeration value="AdminUnlock" />
+          <xs:enumeration value="RequestArchive" />
+          <xs:enumeration value="AdminNote" />
+          <xs:enumeration value="NeedsUpdating" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:element name="LogEntry.LogTypes" nillable="true" type="tns:LogEntry.LogTypes" />
+    </xs:schema>
+    <xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/Wherigo.Data" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/Wherigo.Data" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:simpleType name="Cartridge.Activities">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="Geocache" />
+          <xs:enumeration value="TourGuide" />
+          <xs:enumeration value="Puzzle" />
+          <xs:enumeration value="Story" />
+          <xs:enumeration value="Action" />
+          <xs:enumeration value="Arcade" />
+          <xs:enumeration value="Challenge" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:element name="Cartridge.Activities" nillable="true" type="tns:Cartridge.Activities" />
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="IAPIv1_Test_InputMessage">
+    <wsdl:part name="parameters" element="Test" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_Test_OutputMessage">
+    <wsdl:part name="parameters" element="TestResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_GetUserInfo_InputMessage">
+    <wsdl:part name="parameters" element="GetUserInfo" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_GetUserInfo_OutputMessage">
+    <wsdl:part name="parameters" element="GetUserInfoResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_GetCartridgeInfo_InputMessage">
+    <wsdl:part name="parameters" element="GetCartridgeInfo" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_GetCartridgeInfo_OutputMessage">
+    <wsdl:part name="parameters" element="GetCartridgeInfoResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_SearchCartridges_InputMessage">
+    <wsdl:part name="parameters" element="SearchCartridges" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_SearchCartridges_OutputMessage">
+    <wsdl:part name="parameters" element="SearchCartridgesResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_DownloadCartridge_InputMessage">
+    <wsdl:part name="parameters" element="DownloadCartridge" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_DownloadCartridge_OutputMessage">
+    <wsdl:part name="parameters" element="DownloadCartridgeResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_UserCompletedCartridge_InputMessage">
+    <wsdl:part name="parameters" element="UserCompletedCartridge" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_UserCompletedCartridge_OutputMessage">
+    <wsdl:part name="parameters" element="UserCompletedCartridgeResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_GetCartridgeLogs_InputMessage">
+    <wsdl:part name="parameters" element="GetCartridgeLogs" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_GetCartridgeLogs_OutputMessage">
+    <wsdl:part name="parameters" element="GetCartridgeLogsResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_AddCartridgeLog_InputMessage">
+    <wsdl:part name="parameters" element="AddCartridgeLog" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_AddCartridgeLog_OutputMessage">
+    <wsdl:part name="parameters" element="AddCartridgeLogResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_GetCartridgeVersions_InputMessage">
+    <wsdl:part name="parameters" element="GetCartridgeVersions" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_GetCartridgeVersions_OutputMessage">
+    <wsdl:part name="parameters" element="GetCartridgeVersionsResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_GetCartridgeGWZ_InputMessage">
+    <wsdl:part name="parameters" element="GetCartridgeGWZ" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_GetCartridgeGWZ_OutputMessage">
+    <wsdl:part name="parameters" element="GetCartridgeGWZResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_UpdateCartridgeGWZ_InputMessage">
+    <wsdl:part name="parameters" element="UpdateCartridgeGWZ" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_UpdateCartridgeGWZ_OutputMessage">
+    <wsdl:part name="parameters" element="UpdateCartridgeGWZResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_UploadNewCartridge_InputMessage">
+    <wsdl:part name="parameters" element="UploadNewCartridge" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_UploadNewCartridge_OutputMessage">
+    <wsdl:part name="parameters" element="UploadNewCartridgeResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_UpdateLog_InputMessage">
+    <wsdl:part name="parameters" element="UpdateLog" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_UpdateLog_OutputMessage">
+    <wsdl:part name="parameters" element="UpdateLogResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_ArchiveLog_InputMessage">
+    <wsdl:part name="parameters" element="ArchiveLog" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_ArchiveLog_OutputMessage">
+    <wsdl:part name="parameters" element="ArchiveLogResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_UpdateCartridgeContributors_InputMessage">
+    <wsdl:part name="parameters" element="UpdateCartridgeContributors" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_UpdateCartridgeContributors_OutputMessage">
+    <wsdl:part name="parameters" element="UpdateCartridgeContributorsResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_ArchiveCartridge_InputMessage">
+    <wsdl:part name="parameters" element="ArchiveCartridge" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_ArchiveCartridge_OutputMessage">
+    <wsdl:part name="parameters" element="ArchiveCartridgeResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_AttachLogMedia_InputMessage">
+    <wsdl:part name="parameters" element="AttachLogMedia" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_AttachLogMedia_OutputMessage">
+    <wsdl:part name="parameters" element="AttachLogMediaResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_DeleteLogMedia_InputMessage">
+    <wsdl:part name="parameters" element="DeleteLogMedia" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_DeleteLogMedia_OutputMessage">
+    <wsdl:part name="parameters" element="DeleteLogMediaResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_UpdateLogMedia_InputMessage">
+    <wsdl:part name="parameters" element="UpdateLogMedia" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_UpdateLogMedia_OutputMessage">
+    <wsdl:part name="parameters" element="UpdateLogMediaResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_GetCountryList_InputMessage">
+    <wsdl:part name="parameters" element="GetCountryList" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_GetCountryList_OutputMessage">
+    <wsdl:part name="parameters" element="GetCountryListResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_UpdateListingVisibility_InputMessage">
+    <wsdl:part name="parameters" element="UpdateListingVisibility" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_UpdateListingVisibility_OutputMessage">
+    <wsdl:part name="parameters" element="UpdateListingVisibilityResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_UpdateCartridgeMedia_InputMessage">
+    <wsdl:part name="parameters" element="UpdateCartridgeMedia" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_UpdateCartridgeMedia_OutputMessage">
+    <wsdl:part name="parameters" element="UpdateCartridgeMediaResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_UpdateListing_InputMessage">
+    <wsdl:part name="parameters" element="UpdateListing" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_UpdateListing_OutputMessage">
+    <wsdl:part name="parameters" element="UpdateListingResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_UploadCartridgePlaythroughs_InputMessage">
+    <wsdl:part name="parameters" element="UploadCartridgePlaythroughs" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_UploadCartridgePlaythroughs_OutputMessage">
+    <wsdl:part name="parameters" element="UploadCartridgePlaythroughsResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_GetCartridgeVariables_InputMessage">
+    <wsdl:part name="parameters" element="GetCartridgeVariables" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_GetCartridgeVariables_OutputMessage">
+    <wsdl:part name="parameters" element="GetCartridgeVariablesResponse" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_SetCartridgeVariables_InputMessage">
+    <wsdl:part name="parameters" element="SetCartridgeVariables" />
+  </wsdl:message>
+  <wsdl:message name="IAPIv1_SetCartridgeVariables_OutputMessage">
+    <wsdl:part name="parameters" element="SetCartridgeVariablesResponse" />
+  </wsdl:message>
+  <wsdl:portType name="IAPIv1">
+    <wsdl:operation name="Test">
+      <wsdl:input wsaw:Action="urn:IAPIv1/Test" message="IAPIv1_Test_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/TestResponse" message="IAPIv1_Test_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetUserInfo">
+      <wsdl:input wsaw:Action="urn:IAPIv1/GetUserInfo" message="IAPIv1_GetUserInfo_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/GetUserInfoResponse" message="IAPIv1_GetUserInfo_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCartridgeInfo">
+      <wsdl:input wsaw:Action="urn:IAPIv1/GetCartridgeInfo" message="IAPIv1_GetCartridgeInfo_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/GetCartridgeInfoResponse" message="IAPIv1_GetCartridgeInfo_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="SearchCartridges">
+      <wsdl:input wsaw:Action="urn:IAPIv1/SearchCartridges" message="IAPIv1_SearchCartridges_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/SearchCartridgesResponse" message="IAPIv1_SearchCartridges_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="DownloadCartridge">
+      <wsdl:input wsaw:Action="urn:IAPIv1/DownloadCartridge" message="IAPIv1_DownloadCartridge_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/DownloadCartridgeResponse" message="IAPIv1_DownloadCartridge_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="UserCompletedCartridge">
+      <wsdl:input wsaw:Action="urn:IAPIv1/UserCompletedCartridge" message="IAPIv1_UserCompletedCartridge_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/UserCompletedCartridgeResponse" message="IAPIv1_UserCompletedCartridge_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCartridgeLogs">
+      <wsdl:input wsaw:Action="urn:IAPIv1/GetCartridgeLogs" message="IAPIv1_GetCartridgeLogs_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/GetCartridgeLogsResponse" message="IAPIv1_GetCartridgeLogs_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="AddCartridgeLog">
+      <wsdl:input wsaw:Action="urn:IAPIv1/AddCartridgeLog" message="IAPIv1_AddCartridgeLog_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/AddCartridgeLogResponse" message="IAPIv1_AddCartridgeLog_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCartridgeVersions">
+      <wsdl:input wsaw:Action="urn:IAPIv1/GetCartridgeVersions" message="IAPIv1_GetCartridgeVersions_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/GetCartridgeVersionsResponse" message="IAPIv1_GetCartridgeVersions_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCartridgeGWZ">
+      <wsdl:input wsaw:Action="urn:IAPIv1/GetCartridgeGWZ" message="IAPIv1_GetCartridgeGWZ_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/GetCartridgeGWZResponse" message="IAPIv1_GetCartridgeGWZ_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="UpdateCartridgeGWZ">
+      <wsdl:input wsaw:Action="urn:IAPIv1/UpdateCartridgeGWZ" message="IAPIv1_UpdateCartridgeGWZ_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/UpdateCartridgeGWZResponse" message="IAPIv1_UpdateCartridgeGWZ_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="UploadNewCartridge">
+      <wsdl:input wsaw:Action="urn:IAPIv1/UploadNewCartridge" message="IAPIv1_UploadNewCartridge_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/UploadNewCartridgeResponse" message="IAPIv1_UploadNewCartridge_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="UpdateLog">
+      <wsdl:input wsaw:Action="urn:IAPIv1/UpdateLog" message="IAPIv1_UpdateLog_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/UpdateLogResponse" message="IAPIv1_UpdateLog_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="ArchiveLog">
+      <wsdl:input wsaw:Action="urn:IAPIv1/ArchiveLog" message="IAPIv1_ArchiveLog_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/ArchiveLogResponse" message="IAPIv1_ArchiveLog_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="UpdateCartridgeContributors">
+      <wsdl:input wsaw:Action="urn:IAPIv1/UpdateCartridgeContributors" message="IAPIv1_UpdateCartridgeContributors_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/UpdateCartridgeContributorsResponse" message="IAPIv1_UpdateCartridgeContributors_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="ArchiveCartridge">
+      <wsdl:input wsaw:Action="urn:IAPIv1/ArchiveCartridge" message="IAPIv1_ArchiveCartridge_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/ArchiveCartridgeResponse" message="IAPIv1_ArchiveCartridge_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="AttachLogMedia">
+      <wsdl:input wsaw:Action="urn:IAPIv1/AttachLogMedia" message="IAPIv1_AttachLogMedia_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/AttachLogMediaResponse" message="IAPIv1_AttachLogMedia_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="DeleteLogMedia">
+      <wsdl:input wsaw:Action="urn:IAPIv1/DeleteLogMedia" message="IAPIv1_DeleteLogMedia_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/DeleteLogMediaResponse" message="IAPIv1_DeleteLogMedia_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="UpdateLogMedia">
+      <wsdl:input wsaw:Action="urn:IAPIv1/UpdateLogMedia" message="IAPIv1_UpdateLogMedia_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/UpdateLogMediaResponse" message="IAPIv1_UpdateLogMedia_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCountryList">
+      <wsdl:input wsaw:Action="urn:IAPIv1/GetCountryList" message="IAPIv1_GetCountryList_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/GetCountryListResponse" message="IAPIv1_GetCountryList_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="UpdateListingVisibility">
+      <wsdl:input wsaw:Action="urn:IAPIv1/UpdateListingVisibility" message="IAPIv1_UpdateListingVisibility_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/UpdateListingVisibilityResponse" message="IAPIv1_UpdateListingVisibility_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="UpdateCartridgeMedia">
+      <wsdl:input wsaw:Action="urn:IAPIv1/UpdateCartridgeMedia" message="IAPIv1_UpdateCartridgeMedia_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/UpdateCartridgeMediaResponse" message="IAPIv1_UpdateCartridgeMedia_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="UpdateListing">
+      <wsdl:input wsaw:Action="urn:IAPIv1/UpdateListing" message="IAPIv1_UpdateListing_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/UpdateListingResponse" message="IAPIv1_UpdateListing_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="UploadCartridgePlaythroughs">
+      <wsdl:input wsaw:Action="urn:IAPIv1/UploadCartridgePlaythroughs" message="IAPIv1_UploadCartridgePlaythroughs_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/UploadCartridgePlaythroughsResponse" message="IAPIv1_UploadCartridgePlaythroughs_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCartridgeVariables">
+      <wsdl:input wsaw:Action="urn:IAPIv1/GetCartridgeVariables" message="IAPIv1_GetCartridgeVariables_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/GetCartridgeVariablesResponse" message="IAPIv1_GetCartridgeVariables_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="SetCartridgeVariables">
+      <wsdl:input wsaw:Action="urn:IAPIv1/SetCartridgeVariables" message="IAPIv1_SetCartridgeVariables_InputMessage" />
+      <wsdl:output wsaw:Action="urn:IAPIv1/SetCartridgeVariablesResponse" message="IAPIv1_SetCartridgeVariables_OutputMessage" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="BasicHttpBinding_IAPIv1" type="IAPIv1">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="Test">
+      <soap:operation soapAction="urn:IAPIv1/Test" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetUserInfo">
+      <soap:operation soapAction="urn:IAPIv1/GetUserInfo" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCartridgeInfo">
+      <soap:operation soapAction="urn:IAPIv1/GetCartridgeInfo" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SearchCartridges">
+      <soap:operation soapAction="urn:IAPIv1/SearchCartridges" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DownloadCartridge">
+      <soap:operation soapAction="urn:IAPIv1/DownloadCartridge" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UserCompletedCartridge">
+      <soap:operation soapAction="urn:IAPIv1/UserCompletedCartridge" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCartridgeLogs">
+      <soap:operation soapAction="urn:IAPIv1/GetCartridgeLogs" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddCartridgeLog">
+      <soap:operation soapAction="urn:IAPIv1/AddCartridgeLog" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCartridgeVersions">
+      <soap:operation soapAction="urn:IAPIv1/GetCartridgeVersions" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCartridgeGWZ">
+      <soap:operation soapAction="urn:IAPIv1/GetCartridgeGWZ" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UpdateCartridgeGWZ">
+      <soap:operation soapAction="urn:IAPIv1/UpdateCartridgeGWZ" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UploadNewCartridge">
+      <soap:operation soapAction="urn:IAPIv1/UploadNewCartridge" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UpdateLog">
+      <soap:operation soapAction="urn:IAPIv1/UpdateLog" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ArchiveLog">
+      <soap:operation soapAction="urn:IAPIv1/ArchiveLog" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UpdateCartridgeContributors">
+      <soap:operation soapAction="urn:IAPIv1/UpdateCartridgeContributors" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ArchiveCartridge">
+      <soap:operation soapAction="urn:IAPIv1/ArchiveCartridge" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AttachLogMedia">
+      <soap:operation soapAction="urn:IAPIv1/AttachLogMedia" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DeleteLogMedia">
+      <soap:operation soapAction="urn:IAPIv1/DeleteLogMedia" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UpdateLogMedia">
+      <soap:operation soapAction="urn:IAPIv1/UpdateLogMedia" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCountryList">
+      <soap:operation soapAction="urn:IAPIv1/GetCountryList" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UpdateListingVisibility">
+      <soap:operation soapAction="urn:IAPIv1/UpdateListingVisibility" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UpdateCartridgeMedia">
+      <soap:operation soapAction="urn:IAPIv1/UpdateCartridgeMedia" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UpdateListing">
+      <soap:operation soapAction="urn:IAPIv1/UpdateListing" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UploadCartridgePlaythroughs">
+      <soap:operation soapAction="urn:IAPIv1/UploadCartridgePlaythroughs" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCartridgeVariables">
+      <soap:operation soapAction="urn:IAPIv1/GetCartridgeVariables" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SetCartridgeVariables">
+      <soap:operation soapAction="urn:IAPIv1/SetCartridgeVariables" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="APIv1">
+    <wsdl:port name="BasicHttpBinding_IAPIv1" binding="BasicHttpBinding_IAPIv1">
+      <soap:address location="http://foundation.rangerfox.com/rangerfox/foundation/API/APIv1.svc" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
