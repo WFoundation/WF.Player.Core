@@ -19,41 +19,51 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
-using System.ServiceModel;
 using System.Linq;
+using System.Net;
 using System.Text;
+using Newtonsoft.Json;
+
+
 
 namespace WF.Player.Core
 {
-    public class Cartridges : List<Cartridge>
+    public class Cartridges : ObservableCollection<Cartridge>
     {
-        private string consumerToken = "";
+		public const string apiEndpoint = "http://foundation.rangerfox.com/API/APIv1JSON.svc";
+
+		private string consumerToken = "";
         private int status = 0;
         private string statusMessage = "";
-        private API.APIv1Client webClient;
 
         #region Constructor
 
-        public Cartridges(string token) : base ()
+		public Cartridges() : base ()
+		{
+		}
+
+		public Cartridges(string token) : base ()
         {
             consumerToken = token;
-
-            try
-            {
-                System.ServiceModel.BasicHttpBinding binding = new System.ServiceModel.BasicHttpBinding();
-//                binding.MaxReceivedMessageSize = 1024 * 1024 * 1024;
-                System.ServiceModel.EndpointAddress endpoint = new System.ServiceModel.EndpointAddress(new Uri("http://foundation.rangerfox.com/API/APIv1.svc"));
-
-                webClient = new API.APIv1Client(binding, endpoint);
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
         }
 
         #endregion
+
+		#region Properties
+
+		public string Token {
+			get {
+				return consumerToken;
+			}
+			set {
+				if (consumerToken != value)
+					consumerToken = value;
+			}
+		}
+
+		#endregion
 
         #region Methods
 
@@ -61,17 +71,17 @@ namespace WF.Player.Core
         /// Fill cartridge list by a list of filenames. All filenames in the list contains a valid path and filename.
         /// </summary>
         /// <param name="dir">Path to directory to get cartridges from.</param>
-        /// <returns>True, if the list has changed, else false.</returns>
-        public bool GetByFileList(List<string> files)
+        public void GetByFileList(List<string> files)
         {
             if (files == null)
             {
                 statusMessage = "No files found";
-                return false;
+
+				throw new ArgumentNullException("files");
             }
 
             // Delete old ones
-            RemoveRange(0, Count);
+			Clear();
 
             foreach (string fileName in files)
             {
@@ -82,8 +92,6 @@ namespace WF.Player.Core
                     Add(cart);
                 }
             }
-
-            return false;
         }
 
         /// <summary>
@@ -92,69 +100,87 @@ namespace WF.Player.Core
         /// <param name="lat">Latitude</param>
         /// <param name="lon">Longitude</param>
         /// <param name="radius">Radius in km</param>
-        /// <returns>True, if the list has changed, else false.</returns>
-        public bool GetByCoords(double lat, double lon, double radius)
+        public void BeginGetByCoords(double lat, double lon, double radius)
         {
-            if (!checkConnection())
-                return false;
+			if (!checkConnection())
+				throw new InvalidOperationException("Invalid connection to the API.");
 
-   			API.SearchCartridgesRequest search = new API.SearchCartridgesRequest();
-			search.consumerToken = consumerToken;
-			search.PageNumber = 1;
-			search.ResultsPerPage = 50;
-			search.SearchArguments = new API.CartridgeSearchArguments();
-			search.SearchArguments.OrderSearchBy = API.CartridgeSearchArguments.OrderBy.Distance;
-			search.SearchArguments.Latitude = lat;
-			search.SearchArguments.Longitude = lon;
-			search.SearchArguments.SearchRadiusInKm = radius;
+			API.SearchCartridgesRequest search = new API.SearchCartridgesRequest()
+			{
+				PageNumber = 1,
+				ResultsPerPage = 50,
+				SearchArguments = new API.CartridgeSearchArguments()
+				{
+					Latitude = lat,
+					Longitude = lon,
+					SearchRadiusInKm = radius
+				}
+			};
 
-            return getCartridges(search);
+            beginGetCartridges(search);
         }
 
         /// <summary>
         /// Get cartridge list by a part of the name.
         /// </summary>
         /// <param name="name">Part of the name</param>
-        /// <returns>True, if the list has changed, else false.</returns>
-        public bool GetByName(string name)
+        public void BeginGetByName(string name)
         {
             if (!checkConnection())
-                return false;
-            
-            API.SearchCartridgesRequest search = new API.SearchCartridgesRequest();
-			search.consumerToken = consumerToken;
-			search.PageNumber = 1;
-			search.ResultsPerPage = 50;
-			search.SearchArguments = new API.CartridgeSearchArguments();
-			search.SearchArguments.CartridgeName = name.Trim();
-			search.SearchArguments.OrderSearchBy = API.CartridgeSearchArguments.OrderBy.Distance;
+				throw new InvalidOperationException("Invalid connection to the API.");
 
-            return getCartridges(search);
+			API.SearchCartridgesRequest search = new API.SearchCartridgesRequest()
+			{
+				PageNumber = 1,
+				ResultsPerPage = 50,
+				SearchArguments = new API.CartridgeSearchArguments()
+				{
+					CartridgeName = name.Trim(),
+					OrderSearchBy = API.CartridgeSearchArguments.OrderBy.Distance
+				}
+			};
+
+            beginGetCartridges(search);
         }
 
         /// <summary>
         /// Get cartridge list with only play anywhere cartridges. Sort list by date.
         /// </summary>
-        /// <returns>True, if the list has changed, else false.</returns>
-        public bool GetByPlayAnywhere()
+        public void BeginGetByPlayAnywhere()
         {
             if (!checkConnection())
-                return false;
-            
-            API.SearchCartridgesRequest search = new API.SearchCartridgesRequest();
-			search.consumerToken = consumerToken;
-			search.PageNumber = 1;
-			search.ResultsPerPage = 50;
-			search.SearchArguments = new API.CartridgeSearchArguments();
-			search.SearchArguments.OrderSearchBy = API.CartridgeSearchArguments.OrderBy.PublishDate;
-			search.SearchArguments.IsPlayAnywhere = true;
+				throw new InvalidOperationException("Invalid connection to the API.");
 
-            return getCartridges(search);
+			API.SearchCartridgesRequest search = new API.SearchCartridgesRequest()
+			{
+				PageNumber = 1,
+				ResultsPerPage = 50,
+				SearchArguments = new API.CartridgeSearchArguments()
+				{
+					OrderSearchBy = API.CartridgeSearchArguments.OrderBy.PublishDate,
+					IsPlayAnywhere = true
+				}
+			};
+
+            beginGetCartridges(search);
         }
 
         #endregion
 
         #region Private Functions
+
+ 		private string callAPI (string name, object obj)
+		{
+			string uri = apiEndpoint + "/" + name;
+			var jsonRequest = new Dictionary<string, object>{
+				{"req", obj}
+			};
+			string json = JsonConvert.SerializeObject(jsonRequest);
+			using (WebClient client = new WebClient()) {
+				client.Headers.Add("Content-Type", "application/json; charset=utf-8");
+				return client.UploadString(uri, json);
+			}
+		}
 
         /// <summary>
         /// Check, if the connection is ok.
@@ -175,80 +201,66 @@ namespace WF.Player.Core
         /// Search cartridges via web client.
         /// </summary>
         /// <param name="search">Search parameters</param>
-        /// <returns>True, if the request was ok, else false.</returns>
-        private bool getCartridges(API.SearchCartridgesRequest search)
+        private void beginGetCartridges(API.SearchCartridgesRequest search)
         {
-            search.consumerToken = consumerToken;
+			// Starts the asynchronous search operation.
+			// The result happens in the event handler onSearchCartridgesCompleted.
+			string result = callAPI("SearchCartridges", search);
 
-            try
-            {
-//                API.DownloadCartridgeRequest req = new API.DownloadCartridgeRequest();
-//                req.consumerToken = consumerToken;
-//                req.WGCode = "WG13";
-//                API.DownloadCartridgeResponse response = webClient.DownloadCartridge(req);
+			API.SearchCartridgesResponse resp = JsonConvert.DeserializeObject<API.SearchCartridgesResponse>(result);
 
-                API.SearchCartridgesResponse resp = webClient.SearchCartridges(search);
+			status = resp.Status.StatusCode;
 
-                status = resp.Status.StatusCode;
+			if (status == 0)
+			{
+				if (resp.Cartridges != null)
+				{
+					// Delete old ones
+					Clear();
 
-                if (resp.Status.StatusCode == 0)
-                {
-                    if (resp.Cartridges != null)
-                    {
-                        // Delete old ones
-                        RemoveRange(0, Count);
-                        // Get new ones
-                        foreach (API.CartridgeSearchResult res in resp.Cartridges)
-                        {
-                            Cartridge cart = new Cartridge(res.WGCode);
+					// Get new ones
+					foreach (API.CartridgeSearchResult res in resp.Cartridges)
+					{
+						Cartridge cart = new Cartridge(res.WGCode);
 
-                            cart.Name = res.Name;
-                            cart.AuthorName = res.AuthorName;
-                            cart.AuthorCompany = res.AuthorCompany;
-                            cart.DateAdded = res.DateAdded;
-                            cart.DateLastPlayed = res.DateLastPlayed;
-                            cart.DateLastUpdated = res.DateLastUpdated;
-                            cart.CompletionTime = res.CompletionTime;
-                            cart.ActivityType = res.ActivityType;
-                            cart.CountryID = res.CountryID;
-                            cart.StateID = res.StateID;
-                            cart.IsArchived = res.IsArchived;
-                            cart.IsDisabled = res.IsDisabled;
-                            cart.IsOpenSource = res.IsOpenSource;
-                            cart.IsPlayAnywhere = res.IsPlayAnywhere;
-                            cart.IconFileURL = res.IconFileURL;
-                            cart.PosterFileURL = res.PosterFileURL;
-                            cart.SetStartingLocation(res.Latitude, res.Longitude);
-                            cart.LinkedGeocacheNames = res.LinkedGeocacheNames;
-                            cart.LinkedGeocacheGCs = res.LinkedGeocacheGCs;
-                            cart.LinkedGeocacheGUIDs = res.LinkedGeocacheGuids;
-                            cart.LongDescription = res.LongDescription;
-                            cart.ShortDescription = res.ShortDescription;
-                            cart.NumberOfCompletions = res.NumberOfCompletions;
-                            cart.NumberOfUsersWatching = res.NumberOfUsersWatching;
-                            cart.UniqueDownloads = res.UniqueDownloads;
-                            cart.Complete = res.UserHasCompleted;
-                            cart.UserHasPartiallyPlayed = res.UserHasPartiallyPlayed;
+						cart.Name = res.Name;
+						cart.AuthorName = res.AuthorName;
+						cart.AuthorCompany = res.AuthorCompany;
+						cart.DateAdded = res.DateAdded;
+						cart.DateLastPlayed = res.DateLastPlayed;
+						cart.DateLastUpdated = res.DateLastUpdated;
+						cart.CompletionTime = res.CompletionTime;
+						cart.ActivityType = res.ActivityType;
+						cart.CountryID = res.CountryID;
+						cart.StateID = res.StateID;
+						cart.IsArchived = res.IsArchived;
+						cart.IsDisabled = res.IsDisabled;
+						cart.IsOpenSource = res.IsOpenSource;
+						cart.IsPlayAnywhere = res.IsPlayAnywhere;
+						cart.IconFileURL = res.IconFileURL;
+						cart.PosterFileURL = res.PosterFileURL;
+						cart.StartingLocationLatitude = res.Latitude;
+						cart.StartingLocationLongitude = res.Longitude;
+						cart.LinkedGeocacheNames = res.LinkedGeocacheNames;
+						cart.LinkedGeocacheGCs = res.LinkedGeocacheGCs;
+						cart.LinkedGeocacheGUIDs = res.LinkedGeocacheGuids;
+						cart.LongDescription = res.LongDescription;
+						cart.ShortDescription = res.ShortDescription;
+						cart.NumberOfCompletions = res.NumberOfCompletions;
+						cart.NumberOfUsersWatching = res.NumberOfUsersWatching;
+						cart.UniqueDownloads = res.UniqueDownloads;
+						cart.Complete = res.UserHasCompleted;
+						cart.UserHasPartiallyPlayed = res.UserHasPartiallyPlayed;
 
-                            Add(cart);
-                        }
-                    }
-
-                    return true;
-                }
-                else
-                {
-                    statusMessage = resp.Status.StatusMessage;
-                    return false;
-                }
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-
-
-        }
+						Add(cart);
+					}
+				}
+			}
+			else
+			{
+				statusMessage = resp.Status.StatusMessage;
+			}
+		}
 
         #endregion
 

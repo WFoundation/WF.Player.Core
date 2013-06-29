@@ -211,7 +211,7 @@ namespace WF.Player.Core
 
             luaState["Env.CartFilename"] = cartridge.Filename;
 
-            cartridge.LoadGWC(input);
+			FileFormats.Load(input, cartridge);
 
             try
             {

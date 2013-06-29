@@ -34,7 +34,7 @@ namespace WF.Player.Core
     #if MONOTOUCH
 	    [MonoTouch.Foundation.Preserve(AllMembers=true)]
     #endif
-    class Wherigo
+    public class Wherigo
     {
 
         #region Private variables
@@ -108,10 +108,10 @@ namespace WF.Player.Core
 			package["preload.WIGInternal"] = wiginternal;
 
             // Now load Wherigo.luac
-			using (BinaryReader bw = new BinaryReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("Core.Resources.Wherigo.luac")))
+			using (BinaryReader bw = new BinaryReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("WF.Player.Core.Resources.Wherigo.luac")))
 			{
 				byte[] binChunk = bw.ReadBytes ((int)bw.BaseStream.Length);
-				luaState.DoString (binChunk,"Wherigo.lua");
+				luaState.DoString (binChunk, "Wherigo.lua");
 			}
 		}
 

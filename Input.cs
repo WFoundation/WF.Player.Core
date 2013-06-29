@@ -68,6 +68,7 @@ namespace WF.Player.Core
 				    return engine.GetMedia (Convert.ToInt32 ((double)((LuaTable)media)["ObjIndex"]));
                 else
 					return null;
+
 			}
 		}
 

@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 using NLua;
+using System.Net;
 
 
 namespace WF.Player.Core
@@ -81,12 +82,6 @@ namespace WF.Player.Core
         private bool userHasPartiallyPlayed;
         private string version;
 		private LuaTable wigTable;
-
-        #endregion
-
-        #region Public variables
-
-        public string Filename { get; internal set; }
 
         #endregion
 
@@ -406,6 +401,15 @@ namespace WF.Player.Core
             }
         }
 
+		/// <summary>
+		/// Filename of the cartridge.
+		/// </summary>
+		public string Filename 
+		{ 
+			get; 
+			internal set; 
+		}
+
         /// <summary>
         /// Guid of the cartridge.
         /// </summary>
@@ -435,12 +439,15 @@ namespace WF.Player.Core
                 if (icon == null && !String.IsNullOrEmpty(iconFileURL))
                 {
                     // Load icon from URL
-                    MemoryStream ms = downloadFile(iconFileURL);
-                    if (ms != null)
-                    {
-                        icon = new Media();
-                        icon.Data = ms.ToArray();
-                    }
+					BeginDownloadFile(iconFileURL, ms =>
+					{
+						if (ms != null)
+						{
+							icon = new Media();
+							icon.Data = ms.ToArray();
+							NotifyPropertyChanged("Icon");
+						}
+					});
                 }
                 return icon;
             }
@@ -473,13 +480,15 @@ namespace WF.Player.Core
                     if (icon != null)
                     {
                         // Load icon from URL
-                        MemoryStream ms = downloadFile(iconFileURL);
-                        if (ms != null)
-                        {
-                            Media temp = new Media();
-                            temp.Data = ms.ToArray();
-                            Icon = temp;
-                        }
+						BeginDownloadFile(iconFileURL, ms =>
+						{
+							if (ms != null)
+							{
+								Media temp = new Media();
+								temp.Data = ms.ToArray();
+								Icon = temp;
+							}
+						});
                     }
                 }
             }
@@ -732,12 +741,15 @@ namespace WF.Player.Core
                 if (poster == null && !String.IsNullOrEmpty(posterFileURL))
                 {
                     // Load icon from URL
-                    MemoryStream ms = downloadFile(posterFileURL);
-                    if (ms != null)
-                    {
-                        poster = new Media();
-                        poster.Data = ms.ToArray();
-                    }
+					BeginDownloadFile(posterFileURL, ms =>
+					{
+						if (ms != null)
+						{
+							poster = new Media();
+							poster.Data = ms.ToArray();
+							NotifyPropertyChanged("Poster");
+						}
+					});
                 }
 
                 return poster;
@@ -771,14 +783,16 @@ namespace WF.Player.Core
                     if (poster != null)
                     {
                         // Load icon from URL
-                        MemoryStream ms = downloadFile(posterFileURL);
-                        if (ms != null)
-                        {
-                            // Use a temp Media, because of NotifyPropertyEvent
-                            Media temp = new Media();
-                            temp.Data = ms.ToArray();
-                            Poster = temp;
-                        }
+						BeginDownloadFile(posterFileURL, ms =>
+						{
+							if (ms != null)
+							{
+								// Use a temp Media, because of NotifyPropertyEvent
+								Media temp = new Media();
+								temp.Data = ms.ToArray();
+								Poster = temp;
+							}
+						});
                     }
                 }
             }
@@ -1005,13 +1019,6 @@ namespace WF.Player.Core
 
         #region C# Methods
 
-        public void SetStartingLocation(double lat, double lon)
-        {
-            // Set first internally ...
-            startingLocationLatitude = lat;
-            // ... and the second by property, so that NotifyPropertyChanged is called
-            StartingLocationLongitude = lon;
-        }
 
         #endregion
 
@@ -1203,48 +1210,68 @@ namespace WF.Player.Core
 			}
 		}
 
-        internal MemoryStream downloadFile(string url)
-        {
-            // From http://stackoverflow.com/questions/11700563/how-do-i-display-an-image-from-url-in-c
-            MemoryStream result = new MemoryStream();
+		#endregion
 
+		internal void BeginDownloadFile(string url, Action<MemoryStream> callback)
+        {
             try
             {
                 // Open a connection
-                System.Net.HttpWebRequest httpWebRequest = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(url);
+                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(url);
 
+#if !WINDOWS_PHONE
                 httpWebRequest.AllowWriteStreamBuffering = true;
-
-                // You can also specify additional header values like the user agent or the referer: (Optional)
-                httpWebRequest.UserAgent = "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)";
                 httpWebRequest.Referer = @"http://www.google.com/";
-
-                // set timeout for 20 seconds (Optional)
                 httpWebRequest.Timeout = 20000;
+#endif
 
-                // Request response:
-                System.Net.WebResponse webResponse = httpWebRequest.GetResponse();
+				//httpWebRequest.UserAgent = "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)";
+				
+				// Waits for response asynchronously.
+				IAsyncResult asyncResult = httpWebRequest.BeginGetResponse(new AsyncCallback(r =>
+				{
+					// Async handling of the response.
+					HttpWebRequest request = r.AsyncState as HttpWebRequest;
+					if (request != null)
+					{
+						// The target memory stream.
+						MemoryStream result = new MemoryStream();
+						
+						try
+						{							
+							// Gets and copies the response stream to the result stream.
+							using (WebResponse response = request.EndGetResponse(r))
+							{
+								using (Stream webStream = response.GetResponseStream())
+								{
+									webStream.CopyTo(result);
+								}
+							}
 
-                // Open data stream:
-                System.IO.Stream webStream = webResponse.GetResponseStream();
+						}
+						catch (Exception)
+						{
+							// Exception, therefore null returns.
+							callback(null);
+						}
 
-                // Convert webstream to memorystream
-                webStream.CopyTo(result);
+						// Calls the callback with the stream.
+						callback(result);
+					}
+					else
+					{
+						// No appropriate response, therefore null returns.
+						callback(null);
+					}
 
-                // Cleanup
-                webStream.Close();
-                webResponse.Close();
+				}), httpWebRequest);
+
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                // Error
-                return null;
+				throw;
             }
-
-            return result;
-        } 
-
-		#endregion
+        }
 
     }
 
