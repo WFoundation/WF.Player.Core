@@ -62,11 +62,6 @@
     <Compile Include="IUserInterface.cs" />
     <Compile Include="Media.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Service References\API\Reference.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Compile>
     <Compile Include="UIObject.cs" />
     <Compile Include="Wherigo.cs" />
     <Compile Include="Cartridge.cs" />
@@ -80,6 +75,11 @@
     <Compile Include="Thing.cs" />
     <Compile Include="Zone.cs" />
     <Compile Include="ZonePoint.cs" />
+    <Compile Include="API\Reference.cs" />
+    <Compile Include="FileGWC.cs" />
+    <Compile Include="FileGWZ.cs" />
+    <Compile Include="FileWFC.cs" />
+    <Compile Include="FileWFZ.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -89,110 +89,19 @@
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml" />
+    <Reference Include="Newtonsoft.Json.MonoTouch">
+      <HintPath>Lib\Newtonsoft.Json.MonoTouch.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpZipLib.iOS">
+      <HintPath>Lib\SharpZipLib.iOS.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\Wherigo.luac" />
   </ItemGroup>
   <ItemGroup>
-    <WCFMetadata Include="Service References\" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="app.config">
       <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\API\APIv1.wsdl" />
-    <None Include="Service References\API\WF.Player.Core.API.AddCartridgeLogResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.ArchiveCartridgeResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.ArchiveLogResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.AttachLogMediaResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.DeleteLogMediaResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.DownloadCartridgeResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.GetCartridgeGWZResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.GetCartridgeInfoResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.GetCartridgeLogsResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.GetCartridgeVariablesResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.GetCartridgeVersionsResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.GetCountryListResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.GetUserInfoResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.SearchCartridgesResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.SetCartridgeVariablesResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.TestResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.UpdateCartridgeContributorsResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.UpdateCartridgeGWZResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.UpdateCartridgeMediaResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.UpdateListingResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.UpdateListingVisibilityResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.UpdateLogMediaResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.UpdateLogResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.UploadCartridgePlaythroughsResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.UploadNewCartridgeResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\API\WF.Player.Core.API.UserCompletedCartridgeResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadataStorage Include="Service References\API\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\API\configuration91.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\API\configuration.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\API\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -203,4 +112,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ItemGroup>
+    <Folder Include="API\" />
+  </ItemGroup>
 </Project>

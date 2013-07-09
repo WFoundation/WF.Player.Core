@@ -39,6 +39,28 @@ namespace WF.Player.Core
 
 	#endregion
 
+	#region Enums
+
+	public enum ScreenType {
+		MainScreen = 0,
+		LocationScreen,
+		ItemScreen,
+		InventoryScreen,
+		TaskScreen,
+		DetailScreen,
+		DialogScreen
+	}
+
+	public enum LogLevel {
+		LogDebug = 0,
+		LogCartridge,
+		LogInfo,
+		LogWarning,
+		LogError
+	}
+
+	#endregion
+
     /// <summary>
     /// Engine handling all things for the cartridge, including loading, saving and other things.
     /// </summary>
@@ -56,10 +78,12 @@ namespace WF.Player.Core
 		private double alt = 0;
 		private double accuracy = 0;
 		private double heading = 0;
+		private string device;
+		private string deviceId;
+		private string uiVersion;
         private Lua luaState;
         private Wherigo wherigo;
         private LuaTable player;
-        private IUserInterface ui;
 		private Dictionary<int, Timer> timers = new Dictionary<int,Timer> ();
 		private Dictionary<int,UIObject> uiObjects = new Dictionary<int, UIObject> ();
 		private object[] threadResult;
@@ -73,35 +97,32 @@ namespace WF.Player.Core
 
         #endregion
 
-        #region Constants
+		#region Event handlers
 
-        // Definitions for ShowScreen
-		public int MAINSCREEN;
-		public int LOCATIONSCREEN;
-		public int ITEMSCREEN;
-		public int INVENTORYSCREEN;
-		public int TASKSCREEN;
-		public int DETAILSCREEN;
-		public int DIALOGSCREEN;
+		public event EventHandler<AttributeChangedEventArgs> AttributeChangedEvent;
+		public event EventHandler<CartridgeChangedEventArgs> CartridgeChangedEvent;
+		public event EventHandler<CommandChangedEventArgs> CommandChangedEvent;
+		public event EventHandler<GetInputEventArgs> GetInputEvent;
+		public event EventHandler<InventoryChangedEventArgs> InventoryChangedEvent;
+		public event EventHandler<LogMessageEventArgs> LogMessageEvent;
+		public event EventHandler<NotifyOSEventArgs> NotifyOSEvent;
+		public event EventHandler<PlayMediaEventArgs> PlayMediaEvent;
+		public event EventHandler<ShowMessageEventArgs> ShowMessageEvent;
+		public event EventHandler<ShowScreenEventArgs> ShowScreenEvent;
+		public event EventHandler<ShowStatusTextEventArgs> ShowStatusTextEvent;
+		public event EventHandler<SynchronizeEventArgs> SynchronizeEvent;
+		public event EventHandler<ZoneStateChangedEventArgs> ZoneStateChangedEvent;
 
-        // Definitions for LogMessage
-		public int LOGDEBUG;
-		public int LOGCARTRIDGE;
-		public int LOGINFO;
-		public int LOGWARNING;
-		public int LOGERROR;
-
-        #endregion
+		#endregion
 
         #region Constructor
 
-        public Engine(IUserInterface ui)
+        public Engine()
         {
             this.luaState = new Lua();
-            this.ui = ui;
 
             // Create Wherigo environment
-            wherigo = new Wherigo(this, luaState, ui);
+            wherigo = new Wherigo(this, luaState);
 
             // Register events
             wherigo.OnTimerStarted += TimerStarted;
@@ -112,21 +133,21 @@ namespace WF.Player.Core
 			wherigo.OnAttributeChanged += AttributeChanged;
 			wherigo.OnCommandChanged += CommandChanged;
 
-			// Get definitions from Wherigo for ShowScreen
-			MAINSCREEN = Convert.ToInt32 ((double)luaState["Wherigo.MAINSCREEN"]);
-			LOCATIONSCREEN = Convert.ToInt32 ((double)luaState["Wherigo.LOCATIONSCREEN"]);
-			ITEMSCREEN = Convert.ToInt32 ((double)luaState["Wherigo.ITEMSCREEN"]);
-			INVENTORYSCREEN = Convert.ToInt32 ((double)luaState["Wherigo.INVENTORYSCREEN"]);
-			TASKSCREEN = Convert.ToInt32 ((double)luaState["Wherigo.TASKSCREEN"]);
-			DETAILSCREEN = Convert.ToInt32 ((double)luaState["Wherigo.DETAILSCREEN"]);
-			DIALOGSCREEN = Convert.ToInt32 ((double)luaState["Wherigo.DIALOGSCREEN"]);
+			// Set definitions from Wherigo for ShowScreen
+			luaState ["Wherigo.MAINSCREEN"] = ScreenType.MainScreen;
+			luaState ["Wherigo.LOCATIONSCREEN"] = ScreenType.LocationScreen;
+			luaState ["Wherigo.ITEMSCREEN"] = ScreenType.ItemScreen;
+			luaState ["Wherigo.INVENTORYSCREEN"] = ScreenType.InventoryScreen;
+			luaState ["Wherigo.TASKSCREEN"] = ScreenType.TaskScreen;
+			luaState ["Wherigo.DETAILSCREEN"] = ScreenType.DetailScreen;
+			luaState ["Wherigo.DIALOGSCREEN"] = ScreenType.DialogScreen;
 
-            // Get definitions from Wherigo for LogMessage
-            LOGDEBUG = Convert.ToInt32((double)luaState["Wherigo.LOGDEBUG"]);
-			LOGCARTRIDGE = Convert.ToInt32 ((double)luaState["Wherigo.LOGCARTRIDGE"]);
-			LOGINFO = Convert.ToInt32 ((double)luaState["Wherigo.LOGINFO"]);
-			LOGWARNING = Convert.ToInt32 ((double)luaState["Wherigo.LOGWARNING"]);
-			LOGERROR = Convert.ToInt32 ((double)luaState["Wherigo.LOGERROR"]);
+            // Set definitions from Wherigo for LogMessage
+			luaState ["Wherigo.LOGDEBUG"] = LogLevel.LogDebug;
+			luaState ["Wherigo.LOGCARTRIDGE"] = LogLevel.LogCartridge;
+			luaState ["Wherigo.LOGINFO"] = LogLevel.LogInfo;
+			luaState ["Wherigo.LOGWARNING"] = LogLevel.LogWarning;
+			luaState ["Wherigo.LOGERROR"] = LogLevel.LogError;
 
             // Get information about the player
             // Create table for Env, ...
@@ -140,9 +161,9 @@ namespace WF.Player.Core
             env["PathSep"] = System.IO.Path.DirectorySeparatorChar;
             env["Downloaded"] = 0.0;
             env["Platform"] = CorePlatform;
-            env["Device"] = ui.GetDevice();
-            env["DeviceID"] = ui.GetDeviceId();
-            env["Version"] = ui.GetVersion() + " (" + CorePlatform + " " + CoreVersion + ")";
+            env["Device"] = device;
+            env["DeviceID"] = deviceId;
+            env["Version"] = uiVersion + " (" + CorePlatform + " " + CoreVersion + ")";
         }
 
         #endregion
@@ -154,6 +175,42 @@ namespace WF.Player.Core
         public double Accuracy { get { return accuracy; } }
 
         public Cartridge Cartridge { get { return cartridge; } }
+
+		public string Device {
+			get { 
+				return device; 
+			} 
+			set { 
+				if (device != value) {
+					device = value;
+					luaState.GetTable ("Env") ["Device"] = device;
+				}
+			}
+		}
+
+		public string DeviceId {
+			get { 
+				return deviceId; 
+			} 
+			set { 
+				if (deviceId != value) {
+					deviceId = value;
+					luaState.GetTable ("Env") ["DeviceId"] = deviceId;
+				}
+			}
+		}
+
+		public string UIVersion {
+			get { 
+				return uiVersion; 
+			} 
+			set { 
+				if (uiVersion != value) {
+					uiVersion = value;
+					luaState.GetTable ("Env") ["Version"] = uiVersion + " (" + CorePlatform + " " + CoreVersion + ")";
+				}
+			}
+		}
 
         public double Heading { get { return heading; } }
 
@@ -183,7 +240,7 @@ namespace WF.Player.Core
 			foreach(Timer t in timers.Values)
 				t.Dispose ();
 
-			ui.NotifyOS ("StopSound");
+			NotifyOS ("StopSound");
 
 			Call (cartridge.WIGTable,"Stop",new object[] { cartridge.WIGTable });
 		}
@@ -310,9 +367,9 @@ namespace WF.Player.Core
 
         #endregion
 
-        #region Wherigo Events
+		#region Wherigo Events
 
-        /// <summary>
+		/// <summary>
         /// Event, which is called, if the attribute of an object has changed.
         /// </summary>
         /// <param name="t">LuaTable for object, which attribute has changed.</param>
@@ -325,7 +382,8 @@ namespace WF.Player.Core
 				if (IsUIObject (obj))
 					((UIObject)obj).NotifyPropertyChanged (s);
 
-				ui.AttributeChanged (GetTable(t), s);
+				if (AttributeChangedEvent != null)
+					AttributeChangedEvent (this, new AttributeChangedEventArgs(GetTable(t), s));
 
 				if (cartridge.WIGTable != null && ((string)t ["ClassName"]).Equals ("Zone") && s.Equals ("Active"))
 					RefreshLocation (lat, lon, alt, accuracy);
@@ -336,6 +394,21 @@ namespace WF.Player.Core
 			}
 		}
 		
+        /// <summary>
+        /// Event, which is called, if the cartridge has changed.
+        /// </summary>
+        /// <param name="s">String with the name of the cartridge attribute, that has changed.</param>
+		internal void CartridgeChanged(string s)
+		{
+			if (s.ToLower().Equals("complete"))
+				cartridge.Complete = true;
+
+			cartridge.NotifyPropertyChanged (s);
+
+			if (CartridgeChangedEvent != null)
+				CartridgeChangedEvent(this, new CartridgeChangedEventArgs(s));
+		}
+
         /// <summary>
         /// Event, which is called, if a command has changed.
         /// </summary>
@@ -349,21 +422,18 @@ namespace WF.Player.Core
 
 			// TODO: Reciprocal commands should also inform the targets.
 
-			ui.CommandChanged(c);
+			if (CommandChangedEvent != null)
+				CommandChangedEvent(this, new CommandChangedEventArgs(c));
 		}
 
-        /// <summary>
-        /// Event, which is called, if the cartridge has changed.
-        /// </summary>
-        /// <param name="s">String with the name of the cartridge attribute, that has changed.</param>
-		internal void CartridgeChanged(string s)
+		/// <summary>
+		/// Get an input from the user interface.
+		/// </summary>
+		/// <param name="input">Detail object for the input.</param>
+		internal void GetInput (Input input)
 		{
-			if (s.ToLower().Equals("complete"))
-				cartridge.Complete = true;
-
-			cartridge.NotifyPropertyChanged (s);
-
-			ui.CartridgeChanged(s);
+			if (GetInputEvent != null)
+				GetInputEvent (this, new GetInputEventArgs(input));
 		}
 
 		/// <summary>
@@ -385,7 +455,75 @@ namespace WF.Player.Core
 			if (to != null)
 				((UIObject)obj).NotifyPropertyChanged ("Inventory");
 
-			ui.InventoryChanged(obj, from, to);
+			if (InventoryChangedEvent != null)
+				InventoryChangedEvent(this,new InventoryChangedEventArgs(obj, from, to));
+		}
+
+		/// <summary>
+		/// Logs the message via the user interface.
+		/// </summary>
+		/// <param name="level">Level of the message.</param>
+		/// <param name="message">Text of the message.</param>
+		internal void LogMessage (int level, string message)
+		{
+			if (LogMessageEvent != null)
+				LogMessageEvent (this, new LogMessageEventArgs(level, message));
+		}
+
+		/// <summary>
+		/// Notifies the user interface about a special command, which is sent from Lua.
+		/// </summary>
+		/// <param name="command">Name of command.</param>
+		public void NotifyOS (string command)
+		{
+			if (NotifyOSEvent != null)
+				NotifyOSEvent (this, new NotifyOSEventArgs(command));
+		}
+
+		/// <summary>
+		/// Play the media via user interface.
+		/// </summary>
+		/// <param name="type">Type of media.</param>
+		/// <param name="mediaObj">Media object itself.</param>
+		internal void PlayMedia (int type, Media mediaObj)
+		{
+			if (PlayMediaEvent != null)
+				PlayMediaEvent (this, new PlayMediaEventArgs(mediaObj));
+		}
+
+		/// <summary>
+		/// Show the message via the user interface.
+		/// </summary>
+		/// <param name="text">Text of the message.</param>
+		/// <param name="media">Media which belongs to the message.</param>
+		/// <param name="btn1Label">Button1 label.</param>
+		/// <param name="btn2Label">Button2 label.</param>
+		/// <param name="par">Callback function, which is called, if one of the buttons is pressed or the message is abondend.</param>
+		internal void ShowMessage (string text, Media media, string btn1Label, string btn2Label, Action<object[]> par)
+		{
+			if (ShowMessageEvent != null)
+				ShowMessageEvent (this, new ShowMessageEventArgs(text, media, btn1Label, btn2Label, par));
+		}
+
+		/// <summary>
+		/// Shows the screen via the user interface.
+		/// </summary>
+		/// <param name="screen">Screen number to show.</param>
+		/// <param name="idxObj">Index of the object to show.</param>
+		internal void ShowScreen (int screen, int idxObj)
+		{
+			if (ShowScreenEvent != null)
+				ShowScreenEvent (this, new ShowScreenEventArgs(screen, idxObj));
+		}
+
+		/// <summary>
+		/// Shows the status text via user interface.
+		/// </summary>
+		/// <param name="text">Text to show.</param>
+		internal void ShowStatusText (string text)
+		{
+			if (ShowStatusTextEvent != null)
+				ShowStatusTextEvent (this, new ShowStatusTextEventArgs(text));
 		}
 
 		/// <summary>
@@ -405,7 +543,8 @@ namespace WF.Player.Core
 				list.Add ((Zone)GetTable((LuaTable)z.Value));
 			}
 
-			ui.ZoneStateChanged(list);
+			if (ZoneStateChangedEvent != null)
+				ZoneStateChangedEvent(this, new ZoneStateChangedEventArgs(list));
 		}
 
         #endregion
@@ -451,7 +590,8 @@ namespace WF.Player.Core
 			// It could be, that function is called from thread, even if the timer didn't exists anymore.
 			if (timers.ContainsKey(objIndex))
             	// Call Tick syncronized with the GUI (for not thread save interfaces)
-            	ui.Syncronize(timerTick, source);
+				if (SynchronizeEvent != null)
+					SynchronizeEvent(this, new SynchronizeEventArgs(timerTick, source));
         }
 
         /// <summary>
@@ -1052,7 +1192,6 @@ namespace WF.Player.Core
 			int lengthOfHeader = 0;
             lengthOfHeader += writeCString(output,cartridge.Name);
 			output.Write (BitConverter.GetBytes ((long)((cartridge.CreateDate.Ticks - new DateTime(2004,02,10,01,00,00).Ticks) / TimeSpan.TicksPerSecond)));
-//            output.Write(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, });
             lengthOfHeader += 8;
             lengthOfHeader += writeCString(output, cartridge.Player);
 			// MUST be "Windows PPC" for Emulator
@@ -1117,14 +1256,6 @@ namespace WF.Player.Core
             var entry = obj.GetEnumerator();
             while (entry.MoveNext())
             {
-				// Don't save default values
-//				if (entry.Value is bool && !(bool)entry.Value)
-//					continue;
-//				if (entry.Value is double && (double)entry.Value == 0)
-//					continue;
-//				if (entry.Value is string && ((string)entry.Value).Equals (""))
-//					continue;
-
                 // Save key
                 if (entry.Key is bool)
                 {
@@ -1289,22 +1420,215 @@ namespace WF.Player.Core
 
     }
 
-	#region Helper class
+	#region Helper classes
 
-	class ThreadParams
+	/// <summary>
+	/// Class for event arguments of AttributeChangedEvent.
+	/// </summary>
+	public class AttributeChangedEventArgs : EventArgs
+	{
+		public Table Table;
+		public string Property;
+
+		public AttributeChangedEventArgs(Table t, string s)
+		{
+			Table = t;
+			Property = s;
+		}
+	}
+
+	/// <summary>
+	/// Class for event arguments of CartridgeChangedEvent.
+	/// </summary>
+	public class CartridgeChangedEventArgs : EventArgs
+	{
+		public string Property;
+
+		internal CartridgeChangedEventArgs(string s)
+		{
+			Property = s;
+		}
+	}
+
+	/// <summary>
+	/// Class for event arguments of CommandChangedEvent.
+	/// </summary>
+	public class CommandChangedEventArgs : EventArgs
+	{
+		public Command Command;
+
+		internal CommandChangedEventArgs(Command c)
+		{
+			Command = c;
+		}
+	}
+
+	/// <summary>
+	/// Class for event arguments of GetInputEvent.
+	/// </summary>
+	public class GetInputEventArgs : EventArgs
+	{
+		public Input Input;
+
+		internal GetInputEventArgs(Input input)
+		{
+			Input = input;
+		}
+	}
+
+	/// <summary>
+	/// Class for event arguments of InventoryChangedEvent.
+	/// </summary>
+	public class InventoryChangedEventArgs : EventArgs
+	{
+		Thing Thing;
+		Thing From;
+		Thing To;
+
+
+		internal InventoryChangedEventArgs(Thing obj, Thing from, Thing to)
+		{
+			Thing = obj;
+			From = from;
+			To = to;
+		}
+	}
+
+	/// <summary>
+	/// Class for event arguments of LogMessageEvent.
+	/// </summary>
+	public class LogMessageEventArgs : EventArgs
+	{
+		public int Level { get; private set; }
+		public string Message { get; private set; }
+
+		internal LogMessageEventArgs(int level, string message)
+		{
+			Level = level;
+			Message = message;
+		}
+	}
+
+	/// <summary>
+	/// Class for event arguments of NotifyOSEvent.
+	/// </summary>
+	public class NotifyOSEventArgs : EventArgs
+	{
+		public string Command;
+
+		internal NotifyOSEventArgs(string c)
+		{
+			Command = c;
+		}
+	}
+
+	/// <summary>
+	/// Class for event arguments of PlayMediaEvent.
+	/// </summary>
+	public class PlayMediaEventArgs : EventArgs
+	{
+		public Media Media;
+
+		internal PlayMediaEventArgs(Media media)
+		{
+			Media = media;
+		}
+	}
+
+	/// <summary>
+	/// Class for event arguments of ShowMessageEvent.
+	/// </summary>
+	public class ShowMessageEventArgs : EventArgs
+	{
+		public string Text { get; private set; }
+		public Media Media { get; private set; }
+		public string ButtonLabel1 { get; private set; }
+		public string ButtonLabel2 { get; private set; }
+		public Action<object[]> Callback { get; private set; }
+
+		internal ShowMessageEventArgs(string text, Media media, string btn1Label, string btn2Label, Action<object[]> par)
+		{
+			Text = text;
+			Media = media;
+			ButtonLabel1 = btn1Label;
+			ButtonLabel2 = btn2Label;
+			Callback = par;
+		}
+	}
+
+	/// <summary>
+	/// Class for event arguments of ShowScreenEvent.
+	/// </summary>
+	public class ShowScreenEventArgs : EventArgs
+	{
+		public int Screen;
+		public int IndexObject;
+
+		internal ShowScreenEventArgs(int screen, int idxObj)
+		{
+			Screen = screen;
+			IndexObject = idxObj;
+		}
+	}
+
+	/// <summary>
+	/// Class for event arguments of ShowStatusTextEvent.
+	/// </summary>
+	public class ShowStatusTextEventArgs : EventArgs
+	{
+		public string Text;
+
+		internal ShowStatusTextEventArgs(string text)
+		{
+			Text = text;
+		}
+	}
+
+	/// <summary>
+	/// Class for event arguments of SynchronizeEvent.
+	/// </summary>
+	public class SynchronizeEventArgs: EventArgs
+	{
+		public SyncronizeTick Func;
+		public object Source;
+
+		internal SynchronizeEventArgs(SyncronizeTick tick, object source)
+		{
+			Func = tick;
+			Source = source;
+		}
+	}
+
+	/// <summary>
+	/// Class for thread parameters.
+	/// </summary>
+	public class ThreadParams
 	{
 		public LuaTable Obj;
 		public string Func;
 		public object[] Parameter;
 		public bool Running;
 
-		public ThreadParams(LuaTable obj,string func,object[] parameter)
+		internal ThreadParams(LuaTable obj,string func,object[] parameter)
 		{
 			Obj = obj;
 			Func = func;
 			Parameter = parameter;
 		}
 
+	}
+
+	/// <summary>
+	/// Class for event arguments of ZoneStateChangedEvent.
+	/// </summary>
+	public class ZoneStateChangedEventArgs : EventArgs
+	{
+		public List<Zone> Zones;
+
+		internal ZoneStateChangedEventArgs(List<Zone> z)
+		{
+			Zones = z;
+		}
 	}
 
 	#endregion

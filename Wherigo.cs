@@ -41,7 +41,6 @@ namespace WF.Player.Core
 
 		private Engine engine;
         private Lua luaState;
-        private IUserInterface ui;
 		private NumberFormatInfo nfi;
 
         #endregion
@@ -59,11 +58,10 @@ namespace WF.Player.Core
 
         #region Constructor
 
-        public Wherigo( Engine engine, Lua luaState, IUserInterface ui)
+        public Wherigo( Engine engine, Lua luaState)
         {
 			this.engine = engine;
             this.luaState = luaState;
-            this.ui = ui;
 
 			// Need this, because iPhone has problems at DoString with numbers, that have NumberDecimalSeparator other than "."
 			nfi = new NumberFormatInfo();
@@ -157,7 +155,7 @@ namespace WF.Player.Core
             int level = param1 == null ? 0 : Convert.ToInt32 ((double)param1);
             string message = param2 == null ? "" : (string)param2;
 
-            ui.LogMessage(level, message);
+            engine.LogMessage(level, message);
         }
 
         /// <summary>
@@ -176,7 +174,7 @@ namespace WF.Player.Core
             string btn2Label = param4 == null ? "" : (string)param4;
             LuaFunction wrapper = (LuaFunction)param5;
 
-			ui.MessageBox(text, engine.GetMedia(idxMediaObj), btn1Label, btn2Label, (retValue) => wrapper.Call (new object[] { retValue }));
+			engine.ShowMessage(text, engine.GetMedia(idxMediaObj), btn1Label, btn2Label, (retValue) => wrapper.Call (new object[] { retValue }));
         }
 
         private void call(LuaFunction func, object retValue)
@@ -191,7 +189,7 @@ namespace WF.Player.Core
 		public void GetInput(object param1)
         {
 			if (param1 != null)
-            	ui.GetInput((Input)engine.GetTable((LuaTable)param1));
+            	engine.GetInput((Input)engine.GetTable((LuaTable)param1));
         }
 
         /// <summary>
@@ -204,7 +202,7 @@ namespace WF.Player.Core
             int type = param1 == null ? 0 : Convert.ToInt32 (param1);
 			Media mediaObj = param2 == null ? null : engine.Cartridge.Resources[Convert.ToInt32 ((double)((LuaTable)param2)["ObjIndex"])];
 
-            ui.MediaEvent(type, mediaObj);
+            engine.PlayMedia(type, mediaObj);
         }
 
         /// <summary>
@@ -215,7 +213,7 @@ namespace WF.Player.Core
         {
 			string text = param1 == null ? "" : (string)param1;
 
-            ui.ShowStatusText(text);
+            engine.ShowStatusText(text);
         }
 
         /// <summary>
@@ -228,7 +226,7 @@ namespace WF.Player.Core
             int screen = param1 == null ? 0 : Convert.ToInt32 ((double)param1);
 			int idxObj = param2 == null ? -1 : Convert.ToInt32 ((double)param2);
 
-            ui.ShowScreen(screen, idxObj);
+            engine.ShowScreen(screen, idxObj);
         }
 
         /// <summary>
@@ -239,7 +237,7 @@ namespace WF.Player.Core
         {
 			string command = param1 == null ? "" : (string)param1;
 
-            ui.NotifyOS(command);
+            engine.NotifyOS(command);
         }
 
 		#endregion

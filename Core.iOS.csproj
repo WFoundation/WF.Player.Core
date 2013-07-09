@@ -93,14 +93,24 @@
     <Compile Include="Zone.cs" />
     <Compile Include="Thing.cs" />
     <Compile Include="UIObject.cs" />
+    <Compile Include="Cartridges.cs" />
+    <Compile Include="FileFormats.cs" />
+    <Compile Include="FileGWC.cs" />
+    <Compile Include="FileGWZ.cs" />
+    <Compile Include="FileWFC.cs" />
+    <Compile Include="FileWFZ.cs" />
+    <Compile Include="API\Reference.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="monotouch" />
-    <Reference Include="NLua.IOS">
-      <HintPath>..\NLua\Core\NLua\bin\Debug\NLua.IOS.dll</HintPath>
+    <Reference Include="Newtonsoft.Json.MonoTouch">
+      <HintPath>Lib\Newtonsoft.Json.MonoTouch.dll</HintPath>
+    </Reference>
+    <Reference Include="Ionic.Zip.iOS">
+      <HintPath>Lib\Ionic.Zip.iOS.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -113,12 +123,15 @@
   -->
   <ItemGroup>
     <Folder Include="Resources\" />
+    <Folder Include="API\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Info.plist" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\Wherigo.lua" />
     <EmbeddedResource Include="Resources\Wherigo.luac" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="NLua\Core\NLua\NLua.iOS.csproj">
+      <Project>{7064B157-DD57-4828-94C5-CA149B25CB40}</Project>
+      <Name>NLua.iOS</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

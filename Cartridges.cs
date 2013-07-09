@@ -32,7 +32,7 @@ namespace WF.Player.Core
 {
     public class Cartridges : ObservableCollection<Cartridge>
     {
-		public const string apiEndpoint = "http://foundation.rangerfox.com/API/APIv1JSON.svc";
+		public const string apiEndpoint = "http://foundation.rangerfox.com/API/APIv1.svc";
 
 		private string consumerToken = "";
         private int status = 0;

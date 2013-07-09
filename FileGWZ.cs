@@ -1,4 +1,4 @@
-using ICSharpCode.SharpZipLib.Zip;
+using Ionic.Zip;
 using System;
 using System.IO;
 using System.Linq;
@@ -40,7 +40,7 @@ namespace WF.Player.Core
 			ZipInputStream zipInputStream = new ZipInputStream(inputStream);
 			ZipEntry zipEntry = zipInputStream.GetNextEntry();
 			while (zipEntry != null) {
-				String entryFileName = zipEntry.Name;
+				String entryFileName = zipEntry.FileName;
 				if (Path.GetExtension (entryFileName).Equals ("lua"))
 					// Lua file exists, so it should be a valid GWZ file
 					return true;
