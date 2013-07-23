@@ -1,4 +1,4 @@
-﻿///
+///
 /// WF.Player.Core - A Wherigo Player Core for different platforms.
 /// Copyright (C) 2012-2013  Dirk Weltz <web@weltz-online.de>
 ///
@@ -26,14 +26,11 @@ using System.Net;
 using System.Text;
 using Newtonsoft.Json;
 
-
-
 namespace WF.Player.Core
 {
     public class Cartridges : ObservableCollection<Cartridge>
     {
-		public const string apiEndpoint = "http://foundation.rangerfox.com/API/APIv1.svc";
-
+		private const string apiEndpoint = "http://foundation.rangerfox.com/API/APIv1JSON.svc";
 		private string consumerToken = "";
         private int status = 0;
         private string statusMessage = "";
@@ -165,6 +162,25 @@ namespace WF.Player.Core
             beginGetCartridges(search);
         }
 
+		public void DownloadCartridge (Cartridge cart, string path, Stream output)
+		{
+			API.DownloadCartridgeRequest downloadRequest = new API.DownloadCartridgeRequest ();
+
+			downloadRequest.WGCode = cart.WGCode;
+			downloadRequest.consumerToken = consumerToken;
+
+			string result = callAPI ("DownloadCartridge",downloadRequest);
+
+			API.DownloadCartridgeResponse resp = JsonConvert.DeserializeObject<API.DownloadCartridgeResponse> (result);
+
+			if (resp != null && resp.CartridgeBytes != null)
+			{
+				cart.Filename = Path.Combine (path, cart.WGCode+".gwc");
+				output.Write(resp.CartridgeBytes, 0, resp.CartridgeBytes.Length);
+				output.Flush();
+			}
+		}
+
         #endregion
 
         #region Private Functions
@@ -205,6 +221,8 @@ namespace WF.Player.Core
         {
 			// Starts the asynchronous search operation.
 			// The result happens in the event handler onSearchCartridgesCompleted.
+			if (!String.IsNullOrEmpty (consumerToken))
+				search.consumerToken = consumerToken;
 			string result = callAPI("SearchCartridges", search);
 
 			API.SearchCartridgesResponse resp = JsonConvert.DeserializeObject<API.SearchCartridgesResponse>(result);
@@ -221,7 +239,7 @@ namespace WF.Player.Core
 					// Get new ones
 					foreach (API.CartridgeSearchResult res in resp.Cartridges)
 					{
-						Cartridge cart = new Cartridge(res.WGCode);
+						Cartridge cart = new Cartridge();
 
 						cart.Name = res.Name;
 						cart.AuthorName = res.AuthorName;
@@ -251,6 +269,7 @@ namespace WF.Player.Core
 						cart.UniqueDownloads = res.UniqueDownloads;
 						cart.Complete = res.UserHasCompleted;
 						cart.UserHasPartiallyPlayed = res.UserHasPartiallyPlayed;
+						cart.WGCode = res.WGCode;
 
 						Add(cart);
 					}

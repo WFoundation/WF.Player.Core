@@ -24,7 +24,7 @@ using System.ComponentModel;
 using System.Text;
 using NLua;
 using System.Net;
-
+using Newtonsoft.Json;
 
 namespace WF.Player.Core
 {
@@ -81,17 +81,19 @@ namespace WF.Player.Core
         private int uniqueDownloads;
         private bool userHasPartiallyPlayed;
         private string version;
+		private string wgCode;
 		private LuaTable wigTable;
 
         #endregion
 
         #region Constructor
 
-        public Cartridge ( string filename )
+        public Cartridge ( string filename = null )
 		{
             // Save filename of the gwc file for later use.
-            // If filename starts with WG, than filename is a online cartridge
-            Filename = filename;
+            // If filename starts with WG, than filename is an online cartridge
+			if (filename != null)
+            	Filename = filename;
         }
 
         #endregion
@@ -439,7 +441,7 @@ namespace WF.Player.Core
                 if (icon == null && !String.IsNullOrEmpty(iconFileURL))
                 {
                     // Load icon from URL
-					BeginDownloadFile(iconFileURL, ms =>
+					asyncDownloadFile(iconFileURL, ms =>
 					{
 						if (ms != null)
 						{
@@ -480,7 +482,7 @@ namespace WF.Player.Core
                     if (icon != null)
                     {
                         // Load icon from URL
-						BeginDownloadFile(iconFileURL, ms =>
+						asyncDownloadFile(iconFileURL, ms =>
 						{
 							if (ms != null)
 							{
@@ -532,6 +534,10 @@ namespace WF.Player.Core
             }
         }
 
+		/// <summary>
+		/// If the cartridge is an open source, so that the source is availible for download.
+		/// </summary>
+		/// <value><c>true</c> if this instance is open source; otherwise, <c>false</c>.</value>
         public bool IsOpenSource
         {
             get
@@ -741,7 +747,7 @@ namespace WF.Player.Core
                 if (poster == null && !String.IsNullOrEmpty(posterFileURL))
                 {
                     // Load icon from URL
-					BeginDownloadFile(posterFileURL, ms =>
+					asyncDownloadFile(posterFileURL, ms =>
 					{
 						if (ms != null)
 						{
@@ -783,7 +789,7 @@ namespace WF.Player.Core
                     if (poster != null)
                     {
                         // Load icon from URL
-						BeginDownloadFile(posterFileURL, ms =>
+						asyncDownloadFile(posterFileURL, ms =>
 						{
 							if (ms != null)
 							{
@@ -1002,6 +1008,20 @@ namespace WF.Player.Core
         }
 
 		/// <summary>
+		/// Gets or sets the WGCode of this cartridge.
+		/// </summary>
+		/// <value>The WG code.</value>
+		public string WGCode {
+			get {
+				return wgCode;
+			}
+			set {
+				if (wgCode != value)
+					wgCode = value;
+			}
+		}
+
+		/// <summary>
 		/// Gets or sets the Lua table representing the object on the Lua side.
 		/// </summary>
 		/// <value>The Lua table.</value>
@@ -1018,7 +1038,6 @@ namespace WF.Player.Core
 		#endregion
 
         #region C# Methods
-
 
         #endregion
 
@@ -1144,6 +1163,11 @@ namespace WF.Player.Core
 			return obj is string ? (string)obj : "";
 		}
 
+		/// <summary>
+		/// Gets a table of a LuaTable.
+		/// </summary>
+		/// <returns>Table.</returns>
+		/// <param name="t">LuaTable.</param>
 		public Table GetTable(LuaTable t)
 		{
 			return engine.GetTable (t);
@@ -1153,66 +1177,12 @@ namespace WF.Player.Core
 
         #region C# Helper Function
 
-        /// <summary>
-        /// Read a null terminated string from binary stream.
-        /// </summary>
-        /// <param name="reader">Binary stream with gwc file as input.</param>
-        /// <returns>String, which represents the C# string.</returns>
-        private string readCString(BinaryReader input)
-        {
-            var bytes = new List<byte>();
-            byte b;
-
-            while ((b = input.ReadByte()) != 0)
-            {
-                bytes.Add(b);
-            }
-
-            return Encoding.UTF8.GetString(bytes.ToArray(), 0, bytes.ToArray().Length);
-        }
-
-        /// <summary>
-        /// Read data for the next media from binary stream.
-        /// </summary>
-        /// <param name="media"></param>
-        /// <param name="reader"></param>
-        private void readMedia(Media media, BinaryReader reader)
-        {
-			byte valid = reader.ReadByte();
-			if ( valid == 0 )
-			{
-				// No resources 
-                media.Type = 0;
-                media.Data = null;
-			}
-			else
-			{
-                // Read resources type
-                media.Type = reader.ReadInt32();
-                // Read resources data
-				long fileSize = reader.ReadInt32();
-				media.Data = new byte[fileSize];
-				reader.Read( media.Data, 0, media.Data.Length );
-			}
-        }
-
-        #endregion
-
-		#region Notify Property Change
-
-		public event PropertyChangedEventHandler PropertyChanged;
-
-		internal void NotifyPropertyChanged(String info)
-		{
-			if (PropertyChanged != null)
-			{
-				PropertyChanged(this, new PropertyChangedEventArgs(info));
-			}
-		}
-
-		#endregion
-
-		internal void BeginDownloadFile(string url, Action<MemoryStream> callback)
+		/// <summary>
+		/// Download a file from web in async mode and call if ready callback with result as MemoryStream.
+		/// </summary>
+		/// <param name="url">URL address.</param>
+		/// <param name="callback">Callback function.</param>
+		internal void asyncDownloadFile(string url, Action<MemoryStream> callback)
         {
             try
             {
@@ -1225,8 +1195,6 @@ namespace WF.Player.Core
                 httpWebRequest.Timeout = 20000;
 #endif
 
-				//httpWebRequest.UserAgent = "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)";
-				
 				// Waits for response asynchronously.
 				IAsyncResult asyncResult = httpWebRequest.BeginGetResponse(new AsyncCallback(r =>
 				{
@@ -1273,6 +1241,69 @@ namespace WF.Player.Core
             }
         }
 
-    }
+        /// <summary>
+        /// Read a null terminated string from binary stream.
+        /// </summary>
+        /// <param name="reader">Binary stream with gwc file as input.</param>
+        /// <returns>String, which represents the C# string.</returns>
+        private string readCString(BinaryReader input)
+        {
+            var bytes = new List<byte>();
+            byte b;
+
+            while ((b = input.ReadByte()) != 0)
+            {
+                bytes.Add(b);
+            }
+
+            return Encoding.UTF8.GetString(bytes.ToArray(), 0, bytes.ToArray().Length);
+        }
+
+        /// <summary>
+        /// Read data for the next media from binary stream.
+        /// </summary>
+        /// <param name="media"></param>
+        /// <param name="reader"></param>
+        private void readMedia(Media media, BinaryReader reader)
+        {
+			byte valid = reader.ReadByte();
+			if ( valid == 0 )
+			{
+				// No resources 
+                media.Type = 0;
+                media.Data = null;
+			}
+			else
+			{
+                // Read resources type
+                media.Type = (MediaTypes)Enum.ToObject(typeof(MediaTypes), reader.ReadInt32());
+                // Read resources data
+				long fileSize = reader.ReadInt32();
+				media.Data = new byte[fileSize];
+				reader.Read( media.Data, 0, media.Data.Length );
+			}
+        }
+
+		#endregion
+
+		#region Notify Property Change
+
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		/// <summary>
+		/// Notifies if a property has changed.
+		/// </summary>
+		/// <param name="info">Name of property, which has changed.</param>
+		internal void NotifyPropertyChanged(String info)
+		{
+			if (PropertyChanged != null)
+			{
+				PropertyChanged(this, new PropertyChangedEventArgs(info));
+			}
+		}
+
+		#endregion
+
+   }
 
 }

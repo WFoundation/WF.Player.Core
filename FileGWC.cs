@@ -190,7 +190,7 @@ namespace WF.Player.Core
 			}
 			catch (Exception e)
 			{
-				throw new Exception("An exception has occurred while reading the GWC file.", e);
+				throw new Exception(String.Format ("An exception has occurred while reading the GWC file: {0}.",e.Message), e);
 			}
 		}
 
@@ -229,7 +229,7 @@ namespace WF.Player.Core
 			maxMediaFiles = loadGWCOffsets(reader, out objects);
 
 			// Reads header length.
-			reader.ReadInt32();
+			int headerLength = reader.ReadInt32();
 
 			// Reads the starting location.
 			cart.StartingLocationLatitude = reader.ReadDouble();
@@ -243,7 +243,12 @@ namespace WF.Player.Core
 			}
 
 			// Dates are in seconds beyond 2004-02-10 01:00 (it's a palindrom, if you write it as 10-02-2004 ;-) )
-			cart.CreateDate = new DateTime(2004, 02, 10, 01, 00, 00).AddSeconds(reader.ReadInt64());
+			long seconds = reader.ReadInt64 ();
+
+			cart.CreateDate = new DateTime (2004, 02, 10, 01, 00, 00);
+
+			if (seconds != 0)
+				cart.CreateDate = cart.CreateDate.AddSeconds (seconds);
 
 			// Load ids for poster and incon
 			posterId = reader.ReadInt16();
@@ -281,10 +286,12 @@ namespace WF.Player.Core
 			long oldReaderPosition = reader.BaseStream.Position;
 
 			// Read poster
-			cart.Poster = tryLoadGWCMedia(reader, objects[posterId], posterId, maxMediaFiles);
+			if (posterId > 0 && posterId < maxMediaFiles)
+				cart.Poster = loadGWCMedia(reader, objects[posterId], posterId, maxMediaFiles);
 
 			// Read icon
-			cart.Icon = tryLoadGWCMedia(reader, objects[iconId], iconId, maxMediaFiles);
+			if (iconId > 0 && iconId < maxMediaFiles)
+				cart.Icon = loadGWCMedia(reader, objects[iconId], iconId, maxMediaFiles);
 
 			// Restores the reader position
 			reader.BaseStream.Position = oldReaderPosition;
@@ -298,12 +305,8 @@ namespace WF.Player.Core
 		/// <param name="id"></param>
 		/// <param name="maxMediaFiles"></param>
 		/// <returns></returns>
-		private static Media tryLoadGWCMedia(BinaryReader reader, int position, int id, int maxMediaFiles)
+		private static Media loadGWCMedia(BinaryReader reader, int position, int id, int maxMediaFiles)
 		{
-			// Validity test
-			if (id < 0 || id >= maxMediaFiles)
-				return null;
-
 			Media media = new Media();
 
 			reader.BaseStream.Position = position;
@@ -376,7 +379,7 @@ namespace WF.Player.Core
 			else
 			{
 				// Read resources type
-				media.Type = input.ReadInt32();
+				media.Type = (MediaTypes)Enum.ToObject (typeof(MediaTypes), input.ReadInt32());
 				// Read resources data
 				long fileSize = input.ReadInt32();
 				media.Data = new byte[fileSize];

@@ -62,16 +62,15 @@
     <Compile Include="Wherigo.cs" />
     <Compile Include="Zone.cs" />
     <Compile Include="ZonePoint.cs" />
-    <Compile Include="API\Reference.cs" />
     <Compile Include="Cartridges.cs" />
     <Compile Include="FileGWC.cs" />
     <Compile Include="FileGWZ.cs" />
     <Compile Include="FileWFC.cs" />
     <Compile Include="FileWFZ.cs" />
+    <Compile Include="API\APIv1JSON.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
-    <None Include="Resources\Wherigo.luac" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\values\Strings.xml" />
@@ -89,5 +88,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="API\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Wherigo.luac" />
   </ItemGroup>
 </Project>

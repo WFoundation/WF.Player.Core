@@ -27,10 +27,18 @@ using System.Reflection;
 
 namespace WF.Player.Core
 {
+	public enum CartridgeFileTypes 
+	{ 
+		Unknown, 
+		GWC, 
+		GWS, 
+		GWZ, 
+		WFC, 
+		WFZ 
+	};
+
     class FileFormats
     {
-
-        public enum FileType { ffUnknown, ffGWC, ffGWS, ffGWZ, ffWFC, ffWFZ };
 
         #region Public static functions
 
@@ -39,15 +47,15 @@ namespace WF.Player.Core
         /// </summary>
         /// <param name="inputStream">Stream, which holds the file to check.</param>
         /// <returns>FileFormat of given stream.</returns>
-        public static FileType GetFileFormat(Stream inputStream)
+		public static CartridgeFileTypes GetFileFormat(Stream inputStream)
         {
 			if (FileGWC.IsValidFile (inputStream))
-				return FileType.ffGWC;
+				return CartridgeFileTypes.GWC;
 
 			if (FileGWZ.IsValidFile (inputStream))
-				return FileType.ffGWZ;
+				return CartridgeFileTypes.GWZ;
 
-			return FileType.ffUnknown;
+			return CartridgeFileTypes.Unknown;
         }
 
         /// <summary>
@@ -55,12 +63,12 @@ namespace WF.Player.Core
         /// </summary>
         /// <param name="filename">Filename with path of the file to check.</param>
         /// <returns>The FileFormat of the file in the given MemoryStream.</returns>
-        public static FileType GetFileFormat(string filename)
+		public static CartridgeFileTypes GetFileFormat(string filename)
         {
             if (File.Exists(filename))
                 return GetFileFormat(new FileStream(filename,FileMode.Open));
             else
-                return FileType.ffUnknown;
+				return CartridgeFileTypes.Unknown;
         }
 
         /// <summary>
@@ -72,10 +80,10 @@ namespace WF.Player.Core
         {
             switch (GetFileFormat(inputStream))
             {
-                case FileType.ffGWC:
+				case CartridgeFileTypes.GWC:
                     FileGWC.Load(inputStream, cart);
                     break;
-				case FileType.ffGWZ:
+				case CartridgeFileTypes.GWZ:
 					FileGWZ.Load(inputStream, cart);
 					break;
          }
@@ -90,10 +98,10 @@ namespace WF.Player.Core
         {
             switch (GetFileFormat(inputStream))
             {
-                case FileType.ffGWC:
+				case CartridgeFileTypes.GWC:
                     FileGWC.LoadHeader(inputStream, cart);
                     break;
-				case FileType.ffGWZ:
+				case CartridgeFileTypes.GWZ:
 					FileGWZ.LoadHeader(inputStream, cart);
 					break;
          }

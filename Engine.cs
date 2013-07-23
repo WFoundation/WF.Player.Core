@@ -78,9 +78,9 @@ namespace WF.Player.Core
 		private double alt = 0;
 		private double accuracy = 0;
 		private double heading = 0;
-		private string device;
-		private string deviceId;
-		private string uiVersion;
+		private string device = "unknown";
+		private string deviceId = "unknown";
+		private string uiVersion = "unknown";
         private Lua luaState;
         private Wherigo wherigo;
         private LuaTable player;
@@ -134,20 +134,20 @@ namespace WF.Player.Core
 			wherigo.OnCommandChanged += CommandChanged;
 
 			// Set definitions from Wherigo for ShowScreen
-			luaState ["Wherigo.MAINSCREEN"] = ScreenType.MainScreen;
-			luaState ["Wherigo.LOCATIONSCREEN"] = ScreenType.LocationScreen;
-			luaState ["Wherigo.ITEMSCREEN"] = ScreenType.ItemScreen;
-			luaState ["Wherigo.INVENTORYSCREEN"] = ScreenType.InventoryScreen;
-			luaState ["Wherigo.TASKSCREEN"] = ScreenType.TaskScreen;
-			luaState ["Wherigo.DETAILSCREEN"] = ScreenType.DetailScreen;
-			luaState ["Wherigo.DIALOGSCREEN"] = ScreenType.DialogScreen;
+			luaState ["Wherigo.MAINSCREEN"] = (int)ScreenType.MainScreen;
+			luaState ["Wherigo.LOCATIONSCREEN"] = (int)ScreenType.LocationScreen;
+			luaState ["Wherigo.ITEMSCREEN"] = (int)ScreenType.ItemScreen;
+			luaState ["Wherigo.INVENTORYSCREEN"] = (int)ScreenType.InventoryScreen;
+			luaState ["Wherigo.TASKSCREEN"] = (int)ScreenType.TaskScreen;
+			luaState ["Wherigo.DETAILSCREEN"] = (int)ScreenType.DetailScreen;
+			luaState ["Wherigo.DIALOGSCREEN"] = (int)ScreenType.DialogScreen;
 
             // Set definitions from Wherigo for LogMessage
-			luaState ["Wherigo.LOGDEBUG"] = LogLevel.LogDebug;
-			luaState ["Wherigo.LOGCARTRIDGE"] = LogLevel.LogCartridge;
-			luaState ["Wherigo.LOGINFO"] = LogLevel.LogInfo;
-			luaState ["Wherigo.LOGWARNING"] = LogLevel.LogWarning;
-			luaState ["Wherigo.LOGERROR"] = LogLevel.LogError;
+			luaState ["Wherigo.LOGDEBUG"] = (int)LogLevel.LogDebug;
+			luaState ["Wherigo.LOGCARTRIDGE"] = (int)LogLevel.LogCartridge;
+			luaState ["Wherigo.LOGINFO"] = (int)LogLevel.LogInfo;
+			luaState ["Wherigo.LOGWARNING"] = (int)LogLevel.LogWarning;
+			luaState ["Wherigo.LOGERROR"] = (int)LogLevel.LogError;
 
             // Get information about the player
             // Create table for Env, ...
@@ -366,6 +366,15 @@ namespace WF.Player.Core
 		}
 
         #endregion
+
+		#region Global functions for all players
+
+		public string CreateLogMessage(string message)
+		{
+			return String.Format ("{0:yyyymmddhhmmss}|{1:+0.00000}|{2:+0.00000}|{3:+0.00000}|{4:+0.00000}|{5}", DateTime.Now.ToLocalTime (), lat, lon, alt, accuracy, message);
+		}
+
+		#endregion
 
 		#region Wherigo Events
 
@@ -1499,12 +1508,12 @@ namespace WF.Player.Core
 	/// </summary>
 	public class LogMessageEventArgs : EventArgs
 	{
-		public int Level { get; private set; }
+		public LogLevel Level { get; private set; }
 		public string Message { get; private set; }
 
 		internal LogMessageEventArgs(int level, string message)
 		{
-			Level = level;
+			Level = (LogLevel)Enum.ToObject(typeof(LogLevel), level);
 			Message = message;
 		}
 	}

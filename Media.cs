@@ -22,6 +22,15 @@ using System.Text;
 
 namespace WF.Player.Core
 {
+	public enum MediaTypes {
+		BMP = 1,
+		PNG = 2,
+		JPG = 3,
+		GIF = 4,
+		WAV = 17,
+		MP3 = 18,
+		FDL = 19
+	}
 
 	/// <summary>
 	/// Class for objects to store informations for medias.
@@ -45,23 +54,23 @@ namespace WF.Player.Core
         /// <summary>
         /// Bytes for the media.
         /// </summary>
-        public byte[] Data;
+		public byte[] Data { get; internal set; }
 
         /// <summary>
         /// Id for media, which determins the position in gwc file.
         /// </summary>
-        public int MediaId;
+		public int MediaId { get; internal set; }
 
 		/// <summary>
 		/// Gets the name.
 		/// </summary>
 		/// <value>The name.</value>
-		public string Name;
+		public string Name { get; internal set; }
 
         /// <summary>
         /// Type of the media.
         /// </summary>
-        public int Type;
+		public MediaTypes Type { get; internal set; }
 
         #endregion
 
