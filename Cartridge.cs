@@ -409,7 +409,7 @@ namespace WF.Player.Core
 		public string Filename 
 		{ 
 			get; 
-			internal set; 
+			set; 
 		}
 
         /// <summary>

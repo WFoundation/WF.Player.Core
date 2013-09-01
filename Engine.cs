@@ -508,7 +508,7 @@ namespace WF.Player.Core
 		/// <param name="btn1Label">Button1 label.</param>
 		/// <param name="btn2Label">Button2 label.</param>
 		/// <param name="par">Callback function, which is called, if one of the buttons is pressed or the message is abondend.</param>
-		internal void ShowMessage (string text, Media media, string btn1Label, string btn2Label, Action<object[]> par)
+		internal void ShowMessage (string text, Media media, string btn1Label, string btn2Label, Action<string> par)
 		{
 			if (ShowMessageEvent != null)
 				ShowMessageEvent (this, new ShowMessageEventArgs(text, media, btn1Label, btn2Label, par));
@@ -522,7 +522,7 @@ namespace WF.Player.Core
 		internal void ShowScreen (int screen, int idxObj)
 		{
 			if (ShowScreenEvent != null)
-				ShowScreenEvent (this, new ShowScreenEventArgs(screen, idxObj));
+				ShowScreenEvent (this, new ShowScreenEventArgs((ScreenType)screen, idxObj));
 		}
 
 		/// <summary>
@@ -1553,9 +1553,9 @@ namespace WF.Player.Core
 		public Media Media { get; private set; }
 		public string ButtonLabel1 { get; private set; }
 		public string ButtonLabel2 { get; private set; }
-		public Action<object[]> Callback { get; private set; }
+		public Action<string> Callback { get; private set; }
 
-		internal ShowMessageEventArgs(string text, Media media, string btn1Label, string btn2Label, Action<object[]> par)
+		internal ShowMessageEventArgs(string text, Media media, string btn1Label, string btn2Label, Action<string> par)
 		{
 			Text = text;
 			Media = media;
@@ -1570,10 +1570,10 @@ namespace WF.Player.Core
 	/// </summary>
 	public class ShowScreenEventArgs : EventArgs
 	{
-		public int Screen;
+		public ScreenType Screen;
 		public int IndexObject;
 
-		internal ShowScreenEventArgs(int screen, int idxObj)
+		internal ShowScreenEventArgs(ScreenType screen, int idxObj)
 		{
 			Screen = screen;
 			IndexObject = idxObj;

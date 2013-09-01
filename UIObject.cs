@@ -55,11 +55,8 @@ namespace WF.Player.Core
 			get {
                 if (wigTable["Icon"] is LuaTable)
                 {
-                    var media = GetTable((LuaTable)wigTable["Icon"]);
-                    if (media == null)
-                        return null;
-                    else
-                        return engine.GetMedia(media.GetInt("ObjIndex"));
+                    LuaTable media = (LuaTable)wigTable["Icon"];
+                    return engine.GetMedia(Convert.ToInt32((double)media["ObjIndex"]));
                 }
                 else
                     return null;
@@ -69,16 +66,13 @@ namespace WF.Player.Core
 		/// <summary>
 		/// Gets the image.
 		/// </summary>
-		/// <value>The image.</value>
+		/// <value>The image as Media object.</value>
 		public Media Image {
 			get {
                 if (wigTable["Media"] is LuaTable)
                 {
-                    var media = GetTable((LuaTable)wigTable["Media"]);
-                    if (media == null)
-                        return null;
-                    else
-                        return engine.GetMedia(media.GetInt("ObjIndex"));
+					LuaTable media = (LuaTable)wigTable ["Media"];
+					return engine.GetMedia(Convert.ToInt32((double)media ["ObjIndex"]));
                 }
                 else
                     return null;
