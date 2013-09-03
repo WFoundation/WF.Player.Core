@@ -40,14 +40,14 @@ namespace WF.Player.Core
 
         #region Private variables
 
-        private API.WherigoCartridge.ActivityTypes activityType;
+        private LiveAPI.WherigoCartridge.ActivityTypes activityType;
         private string authorCompany;
         private string authorName;
         private DateTime createDate;
         private bool complete;
         private DateTime completedTime = DateTime.MinValue;
         private string completionCode;
-        private API.WherigoCartridge.CompletionTimes completionTime;
+        private LiveAPI.WherigoCartridge.CompletionTimes completionTime;
         private int countryID;
         private DateTime? dateAdded;
         private DateTime? dateLastPlayed;
@@ -103,7 +103,7 @@ namespace WF.Player.Core
         /// <summary>
         /// Type of activity this cartridge has (like "Geocaching" or "Puzzle").
         /// </summary>
-        public API.WherigoCartridge.ActivityTypes ActivityType
+        public LiveAPI.WherigoCartridge.ActivityTypes ActivityType
         {
             get
             {
@@ -232,7 +232,7 @@ namespace WF.Player.Core
         /// <summary>
         /// Time to be needed to play throught the cartridge.
         /// </summary>
-        public API.WherigoCartridge.CompletionTimes CompletionTime
+        public LiveAPI.WherigoCartridge.CompletionTimes CompletionTime
         {
             get
             {

@@ -34,7 +34,7 @@ namespace WF.Player.Core
     #if MONOTOUCH
 	    [MonoTouch.Foundation.Preserve(AllMembers=true)]
     #endif
-    public class Wherigo
+    public class WIGInternalsImpl
     {
 
         #region Private variables
@@ -58,7 +58,7 @@ namespace WF.Player.Core
 
         #region Constructor
 
-        public Wherigo( Engine engine, Lua luaState)
+        public WIGInternalsImpl( Engine engine, Lua luaState)
         {
 			this.engine = engine;
             this.luaState = luaState;
@@ -155,7 +155,7 @@ namespace WF.Player.Core
             int level = param1 == null ? 0 : Convert.ToInt32 ((double)param1);
             string message = param2 == null ? "" : (string)param2;
 
-            engine.LogMessage(level, message);
+            engine.HandleLogMessage(level, message);
         }
 
         /// <summary>
@@ -174,7 +174,7 @@ namespace WF.Player.Core
             string btn2Label = param4 == null ? "" : (string)param4;
             LuaFunction wrapper = (LuaFunction)param5;
 
-			engine.ShowMessage(text, engine.GetMedia(idxMediaObj), btn1Label, btn2Label, (retValue) => wrapper.Call (new object[] { retValue }));
+			engine.HandleShowMessage(text, engine.GetMedia(idxMediaObj), btn1Label, btn2Label, (retValue) => wrapper.Call (new object[] { retValue }));
         }
 
         private void call(LuaFunction func, object retValue)
@@ -189,7 +189,7 @@ namespace WF.Player.Core
 		public void GetInput(object param1)
         {
 			if (param1 != null)
-            	engine.GetInput((Input)engine.GetTable((LuaTable)param1));
+            	engine.HandleGetInput((Input)engine.GetTable((LuaTable)param1));
         }
 
         /// <summary>
@@ -202,7 +202,7 @@ namespace WF.Player.Core
             int type = param1 == null ? 0 : Convert.ToInt32 (param1);
 			Media mediaObj = param2 == null ? null : engine.Cartridge.Resources[Convert.ToInt32 ((double)((LuaTable)param2)["ObjIndex"])];
 
-            engine.PlayMedia(type, mediaObj);
+            engine.HandlePlayMedia(type, mediaObj);
         }
 
         /// <summary>
@@ -213,7 +213,7 @@ namespace WF.Player.Core
         {
 			string text = param1 == null ? "" : (string)param1;
 
-            engine.ShowStatusText(text);
+            engine.HandleShowStatusText(text);
         }
 
         /// <summary>
@@ -226,7 +226,7 @@ namespace WF.Player.Core
             int screen = param1 == null ? 0 : Convert.ToInt32 ((double)param1);
 			int idxObj = param2 == null ? -1 : Convert.ToInt32 ((double)param2);
 
-            engine.ShowScreen(screen, idxObj);
+            engine.HandleShowScreen(screen, idxObj);
         }
 
         /// <summary>
@@ -237,7 +237,7 @@ namespace WF.Player.Core
         {
 			string command = param1 == null ? "" : (string)param1;
 
-            engine.NotifyOS(command);
+            engine.HandleNotifyOS(command);
         }
 
 		#endregion

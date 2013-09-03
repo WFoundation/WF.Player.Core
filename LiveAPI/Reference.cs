@@ -8,38 +8,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace WF.Player.Core.API {
+namespace WF.Player.Core.LiveAPI {
     using System;
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     public  class APIRequest : object {
              
@@ -123,7 +93,7 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class GetCartridgeInfoRequest : WF.Player.Core.API.APIRequest {
+    public  class GetCartridgeInfoRequest : WF.Player.Core.LiveAPI.APIRequest {
         
         
         private bool IncludeUserInformationField;
@@ -162,7 +132,7 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class SearchCartridgesRequest : WF.Player.Core.API.APIRequest {
+    public  class SearchCartridgesRequest : WF.Player.Core.LiveAPI.APIRequest {
         
         
         private short PageNumberField;
@@ -171,7 +141,7 @@ namespace WF.Player.Core.API {
         private short ResultsPerPageField;
         
         
-        private WF.Player.Core.API.CartridgeSearchArguments SearchArgumentsField;
+        private WF.Player.Core.LiveAPI.CartridgeSearchArguments SearchArgumentsField;
         
         
         public short PageNumber {
@@ -200,7 +170,7 @@ namespace WF.Player.Core.API {
         }
         
         
-        public WF.Player.Core.API.CartridgeSearchArguments SearchArguments {
+        public WF.Player.Core.LiveAPI.CartridgeSearchArguments SearchArguments {
             get {
                 return this.SearchArgumentsField;
             }
@@ -217,7 +187,7 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class DownloadCartridgeRequest : WF.Player.Core.API.APIRequest {
+    public  class DownloadCartridgeRequest : WF.Player.Core.LiveAPI.APIRequest {
         
         
         private string WGCodeField;
@@ -240,7 +210,7 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class UserCompletedCartridgeRequest : WF.Player.Core.API.APIRequest {
+    public  class UserCompletedCartridgeRequest : WF.Player.Core.LiveAPI.APIRequest {
         
         
         private string CompletionCodeField;
@@ -295,7 +265,7 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class GetCartridgeLogsRequest : WF.Player.Core.API.APIRequest {
+    public  class GetCartridgeLogsRequest : WF.Player.Core.LiveAPI.APIRequest {
         
         
         private int LogsPerPageField;
@@ -350,16 +320,16 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class AddCartridgeLogRequest : WF.Player.Core.API.APIRequest {
+    public  class AddCartridgeLogRequest : WF.Player.Core.LiveAPI.APIRequest {
         
         
-        private WF.Player.Core.API.CartridgeLog LogField;
+        private WF.Player.Core.LiveAPI.CartridgeLog LogField;
         
         
         private string WGCodeField;
         
         
-        public WF.Player.Core.API.CartridgeLog Log {
+        public WF.Player.Core.LiveAPI.CartridgeLog Log {
             get {
                 return this.LogField;
             }
@@ -389,7 +359,7 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class GetCartridgeVersionsRequest : WF.Player.Core.API.APIRequest {
+    public  class GetCartridgeVersionsRequest : WF.Player.Core.LiveAPI.APIRequest {
         
         
         private string WGCodeField;
@@ -412,7 +382,7 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class GetCartridgeGWZRequest : WF.Player.Core.API.APIRequest {
+    public  class GetCartridgeGWZRequest : WF.Player.Core.LiveAPI.APIRequest {
         
         
         private int VersionNumberField;
@@ -451,7 +421,7 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class UpdateCartridgeGWZRequest : WF.Player.Core.API.APIRequest {
+    public  class UpdateCartridgeGWZRequest : WF.Player.Core.LiveAPI.APIRequest {
         
         
         private byte GWZField;
@@ -506,10 +476,10 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class UploadNewCartridgeRequest : WF.Player.Core.API.APIRequest {
+    public  class UploadNewCartridgeRequest : WF.Player.Core.LiveAPI.APIRequest {
         
         
-        private WF.Player.Core.API.CartridgeActivities ActivityField;
+        private WF.Player.Core.LiveAPI.CartridgeActivities ActivityField;
         
         
         private string AuthorNameField;
@@ -560,7 +530,7 @@ namespace WF.Player.Core.API {
         private string VersionNumberField;
         
         
-        public WF.Player.Core.API.CartridgeActivities Activity {
+        public WF.Player.Core.LiveAPI.CartridgeActivities Activity {
             get {
                 return this.ActivityField;
             }
@@ -785,13 +755,13 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class UpdateLogRequest : WF.Player.Core.API.APIRequest {
+    public  class UpdateLogRequest : WF.Player.Core.LiveAPI.APIRequest {
         
         
-        private WF.Player.Core.API.CartridgeLog UpdatedLogField;
+        private WF.Player.Core.LiveAPI.CartridgeLog UpdatedLogField;
         
         
-        public WF.Player.Core.API.CartridgeLog UpdatedLog {
+        public WF.Player.Core.LiveAPI.CartridgeLog UpdatedLog {
             get {
                 return this.UpdatedLogField;
             }
@@ -808,7 +778,7 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class ArchiveLogRequest : WF.Player.Core.API.APIRequest {
+    public  class ArchiveLogRequest : WF.Player.Core.LiveAPI.APIRequest {
         
         
         private string LogGUIDField;
@@ -831,13 +801,13 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class UpdateCartridgeContributorsRequest : WF.Player.Core.API.APIRequest {
+    public  class UpdateCartridgeContributorsRequest : WF.Player.Core.LiveAPI.APIRequest {
         
         
         private string ContributorUserGUIDsField;
         
         
-        private WF.Player.Core.API.UpdateCartridgeContributorsRequest.PermissionType PermissionRequestedField;
+        private WF.Player.Core.LiveAPI.UpdateCartridgeContributorsRequest.PermissionType PermissionRequestedField;
         
         
         private string WGCodeField;
@@ -856,7 +826,7 @@ namespace WF.Player.Core.API {
         }
         
         
-        public WF.Player.Core.API.UpdateCartridgeContributorsRequest.PermissionType PermissionRequested {
+        public WF.Player.Core.LiveAPI.UpdateCartridgeContributorsRequest.PermissionType PermissionRequested {
             get {
                 return this.PermissionRequestedField;
             }
@@ -900,7 +870,7 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class ArchiveCartridgeRequest : WF.Player.Core.API.APIRequest {
+    public  class ArchiveCartridgeRequest : WF.Player.Core.LiveAPI.APIRequest {
         
         
         private string ArchiveLogEntryField;
@@ -939,13 +909,13 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class AttachLogMediaRequest : WF.Player.Core.API.APIRequest {
+    public  class AttachLogMediaRequest : WF.Player.Core.LiveAPI.APIRequest {
         
         
         private string LogGuidField;
         
         
-        private WF.Player.Core.API.LogPhoto PhotosField;
+        private WF.Player.Core.LiveAPI.LogPhoto PhotosField;
         
         
         public string LogGuid {
@@ -961,7 +931,7 @@ namespace WF.Player.Core.API {
         }
         
         
-        public WF.Player.Core.API.LogPhoto Photos {
+        public WF.Player.Core.LiveAPI.LogPhoto Photos {
             get {
                 return this.PhotosField;
             }
@@ -978,7 +948,7 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class DeleteLogMediaRequest : WF.Player.Core.API.APIRequest {
+    public  class DeleteLogMediaRequest : WF.Player.Core.LiveAPI.APIRequest {
         
         
         private string LogGuidField;
@@ -1017,7 +987,7 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class UpdateLogMediaRequest : WF.Player.Core.API.APIRequest {
+    public  class UpdateLogMediaRequest : WF.Player.Core.LiveAPI.APIRequest {
         
         
         private string CaptionField;
@@ -1088,14 +1058,14 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class GetCountryListRequest : WF.Player.Core.API.APIRequest {
+    public  class GetCountryListRequest : WF.Player.Core.LiveAPI.APIRequest {
     }
     
     
     
     
     
-    public  class UpdateListingVisibilityRequest : WF.Player.Core.API.APIRequest {
+    public  class UpdateListingVisibilityRequest : WF.Player.Core.LiveAPI.APIRequest {
         
         
         private bool MakeListingPublicField;
@@ -1134,7 +1104,7 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class UpdateCartridgeMediaRequest : WF.Player.Core.API.APIRequest {
+    public  class UpdateCartridgeMediaRequest : WF.Player.Core.LiveAPI.APIRequest {
         
         
         private byte IconField;
@@ -1189,7 +1159,7 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class UpdateListingRequest : WF.Player.Core.API.APIRequest {
+    public  class UpdateListingRequest : WF.Player.Core.LiveAPI.APIRequest {
         
         
         private System.Nullable<int> ActivityIntField;
@@ -1404,16 +1374,16 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class UploadCartridgePlaythroughsRequest : WF.Player.Core.API.APIRequest {
+    public  class UploadCartridgePlaythroughsRequest : WF.Player.Core.LiveAPI.APIRequest {
         
         
-        private WF.Player.Core.API.CartridgePlaythrough PlaythroughsField;
+        private WF.Player.Core.LiveAPI.CartridgePlaythrough PlaythroughsField;
         
         
         private string WGCodeField;
         
         
-        public WF.Player.Core.API.CartridgePlaythrough Playthroughs {
+        public WF.Player.Core.LiveAPI.CartridgePlaythrough Playthroughs {
             get {
                 return this.PlaythroughsField;
             }
@@ -1443,10 +1413,10 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class GetCartridgeVariablesRequest : WF.Player.Core.API.APIRequest {
+    public  class GetCartridgeVariablesRequest : WF.Player.Core.LiveAPI.APIRequest {
         
         
-        private WF.Player.Core.API.CartridgeVariableScope ScopesField;
+        private WF.Player.Core.LiveAPI.CartridgeVariableScope ScopesField;
         
         
         private string VariableNamesField;
@@ -1455,7 +1425,7 @@ namespace WF.Player.Core.API {
         private string WGCodeField;
         
         
-        public WF.Player.Core.API.CartridgeVariableScope Scopes {
+        public WF.Player.Core.LiveAPI.CartridgeVariableScope Scopes {
             get {
                 return this.ScopesField;
             }
@@ -1498,16 +1468,16 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class SetCartridgeVariablesRequest : WF.Player.Core.API.APIRequest {
+    public  class SetCartridgeVariablesRequest : WF.Player.Core.LiveAPI.APIRequest {
         
         
-        private WF.Player.Core.API.CartridgeVariable VariablesField;
+        private WF.Player.Core.LiveAPI.CartridgeVariable VariablesField;
         
         
         private string WGCodeField;
         
         
-        public WF.Player.Core.API.CartridgeVariable Variables {
+        public WF.Player.Core.LiveAPI.CartridgeVariable Variables {
             get {
                 return this.VariablesField;
             }
@@ -1537,7 +1507,7 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class TestRequest : WF.Player.Core.API.APIRequest {
+    public  class TestRequest : WF.Player.Core.LiveAPI.APIRequest {
     }
     
     
@@ -1569,7 +1539,7 @@ namespace WF.Player.Core.API {
         private System.Nullable<double> LongitudeField;
         
         
-        private System.Nullable<WF.Player.Core.API.CartridgeSearchArguments.OrderBy> OrderSearchByField;
+        private System.Nullable<WF.Player.Core.LiveAPI.CartridgeSearchArguments.OrderBy> OrderSearchByField;
         
         
         private System.Nullable<double> SearchRadiusInKmField;
@@ -1682,7 +1652,7 @@ namespace WF.Player.Core.API {
         }
         
         
-        public System.Nullable<WF.Player.Core.API.CartridgeSearchArguments.OrderBy> OrderSearchBy {
+        public System.Nullable<WF.Player.Core.LiveAPI.CartridgeSearchArguments.OrderBy> OrderSearchBy {
             get {
                 return this.OrderSearchByField;
             }
@@ -1812,7 +1782,7 @@ namespace WF.Player.Core.API {
         private string GuidField;
         
         
-        private WF.Player.Core.API.LogEntry.LogTypes LogTypeField;
+        private WF.Player.Core.LiveAPI.LogEntry.LogTypes LogTypeField;
         
         
         private string LogTypeIconUrlField;
@@ -1821,7 +1791,7 @@ namespace WF.Player.Core.API {
         private int LogTypeIntField;
         
         
-        private WF.Player.Core.API.LogPhoto PhotosField;
+        private WF.Player.Core.LiveAPI.LogPhoto PhotosField;
         
         
         private string TextField;
@@ -1863,7 +1833,7 @@ namespace WF.Player.Core.API {
         }
         
         
-        public WF.Player.Core.API.LogEntry.LogTypes LogType {
+        public WF.Player.Core.LiveAPI.LogEntry.LogTypes LogType {
             get {
                 return this.LogTypeField;
             }
@@ -1902,7 +1872,7 @@ namespace WF.Player.Core.API {
         }
         
         
-        public WF.Player.Core.API.LogPhoto Photos {
+        public WF.Player.Core.LiveAPI.LogPhoto Photos {
             get {
                 return this.PhotosField;
             }
@@ -1991,15 +1961,15 @@ namespace WF.Player.Core.API {
         
         private string CartridgeNameField;
         
-        private WF.Player.Core.API.LogResult LogEntryResultField;
+        private WF.Player.Core.LiveAPI.LogResult LogEntryResultField;
         
-        private WF.Player.Core.API.LogMedia MediaField;
+        private WF.Player.Core.LiveAPI.LogMedia MediaField;
         
         private string WGCodeField;
         
         private string crossPostToGeocachesField;
         
-        private System.Collections.Generic.Dictionary<WF.Player.Core.API.LogEntry.InternalInfo, string> internalInfoField;
+        private System.Collections.Generic.Dictionary<WF.Player.Core.LiveAPI.LogEntry.InternalInfo, string> internalInfoField;
         
         private bool isArchivedField;
         
@@ -2011,7 +1981,7 @@ namespace WF.Player.Core.API {
         
         private string logTextField;
         
-        private WF.Player.Core.API.LogEntry.LogTypes logTypeField;
+        private WF.Player.Core.LiveAPI.LogEntry.LogTypes logTypeField;
         
         private string logTypeIconUrlField;
         
@@ -2086,7 +2056,7 @@ namespace WF.Player.Core.API {
         }
         
         
-        public WF.Player.Core.API.LogResult LogEntryResult {
+        public WF.Player.Core.LiveAPI.LogResult LogEntryResult {
             get {
                 return this.LogEntryResultField;
             }
@@ -2099,7 +2069,7 @@ namespace WF.Player.Core.API {
         }
         
         
-        public WF.Player.Core.API.LogMedia Media {
+        public WF.Player.Core.LiveAPI.LogMedia Media {
             get {
                 return this.MediaField;
             }
@@ -2138,7 +2108,7 @@ namespace WF.Player.Core.API {
         }
         
         
-        public System.Collections.Generic.Dictionary<WF.Player.Core.API.LogEntry.InternalInfo, string> internalInfo {
+        public System.Collections.Generic.Dictionary<WF.Player.Core.LiveAPI.LogEntry.InternalInfo, string> internalInfo {
             get {
                 return this.internalInfoField;
             }
@@ -2216,7 +2186,7 @@ namespace WF.Player.Core.API {
         }
         
         
-        public WF.Player.Core.API.LogEntry.LogTypes logType {
+        public WF.Player.Core.LiveAPI.LogEntry.LogTypes logType {
             get {
                 return this.logTypeField;
             }
@@ -2810,7 +2780,7 @@ namespace WF.Player.Core.API {
         private string NameField;
         
         
-        private WF.Player.Core.API.CartridgeVariableScope ScopeField;
+        private WF.Player.Core.LiveAPI.CartridgeVariableScope ScopeField;
         
         
         private System.Nullable<int> SessionIDField;
@@ -2845,7 +2815,7 @@ namespace WF.Player.Core.API {
         }
         
         
-        public WF.Player.Core.API.CartridgeVariableScope Scope {
+        public WF.Player.Core.LiveAPI.CartridgeVariableScope Scope {
             get {
                 return this.ScopeField;
             }
@@ -2925,12 +2895,12 @@ namespace WF.Player.Core.API {
     public  class APIResponse : object {
         
         
-        private WF.Player.Core.API.StatusResponse StatusField;
+        private WF.Player.Core.LiveAPI.StatusResponse StatusField;
         
         
         
         
-        public WF.Player.Core.API.StatusResponse Status {
+        public WF.Player.Core.LiveAPI.StatusResponse Status {
             get {
                 return this.StatusField;
             }
@@ -3004,16 +2974,16 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class GetCartridgeInfoResponse : WF.Player.Core.API.APIResponse {
+    public  class GetCartridgeInfoResponse : WF.Player.Core.LiveAPI.APIResponse {
         
         
-        private WF.Player.Core.API.WherigoCartridge CartridgeField;
+        private WF.Player.Core.LiveAPI.WherigoCartridge CartridgeField;
         
         
-        private WF.Player.Core.API.CartridgeUserInformation UserInformationField;
+        private WF.Player.Core.LiveAPI.CartridgeUserInformation UserInformationField;
         
         
-        public WF.Player.Core.API.WherigoCartridge Cartridge {
+        public WF.Player.Core.LiveAPI.WherigoCartridge Cartridge {
             get {
                 return this.CartridgeField;
             }
@@ -3026,7 +2996,7 @@ namespace WF.Player.Core.API {
         }
         
         
-        public WF.Player.Core.API.CartridgeUserInformation UserInformation {
+        public WF.Player.Core.LiveAPI.CartridgeUserInformation UserInformation {
             get {
                 return this.UserInformationField;
             }
@@ -3043,16 +3013,16 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class SearchCartridgesResponse : WF.Player.Core.API.APIResponse {
+    public  class SearchCartridgesResponse : WF.Player.Core.LiveAPI.APIResponse {
         
         
-        private WF.Player.Core.API.CartridgeSearchResult[] CartridgesField;
+        private WF.Player.Core.LiveAPI.CartridgeSearchResult[] CartridgesField;
         
         
         private int TotalSearchResultsField;
         
         
-        public WF.Player.Core.API.CartridgeSearchResult[] Cartridges {
+        public WF.Player.Core.LiveAPI.CartridgeSearchResult[] Cartridges {
             get {
                 return this.CartridgesField;
             }
@@ -3082,7 +3052,7 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class DownloadCartridgeResponse : WF.Player.Core.API.APIResponse {
+    public  class DownloadCartridgeResponse : WF.Player.Core.LiveAPI.APIResponse {
         
         
         private byte CartridgeBytesField;
@@ -3105,7 +3075,7 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class UserCompletedCartridgeResponse : WF.Player.Core.API.APIResponse {
+    public  class UserCompletedCartridgeResponse : WF.Player.Core.LiveAPI.APIResponse {
         
         
         private bool OtherUserCompletionSuccessfullyMarkedField;
@@ -3128,13 +3098,13 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class GetCartridgeLogsResponse : WF.Player.Core.API.APIResponse {
+    public  class GetCartridgeLogsResponse : WF.Player.Core.LiveAPI.APIResponse {
         
         
-        private WF.Player.Core.API.CartridgeLog LogsField;
+        private WF.Player.Core.LiveAPI.CartridgeLog LogsField;
         
         
-        public WF.Player.Core.API.CartridgeLog Logs {
+        public WF.Player.Core.LiveAPI.CartridgeLog Logs {
             get {
                 return this.LogsField;
             }
@@ -3151,7 +3121,7 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class AddCartridgeLogResponse : WF.Player.Core.API.APIResponse {
+    public  class AddCartridgeLogResponse : WF.Player.Core.LiveAPI.APIResponse {
         
         
         private string LogGuidField;
@@ -3174,13 +3144,13 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class GetCartridgeVersionsResponse : WF.Player.Core.API.APIResponse {
+    public  class GetCartridgeVersionsResponse : WF.Player.Core.LiveAPI.APIResponse {
         
         
         private bool CanDownloadSourceCodeField;
         
         
-        private WF.Player.Core.API.VersionInformation VersionsField;
+        private WF.Player.Core.LiveAPI.VersionInformation VersionsField;
         
         
         public bool CanDownloadSourceCode {
@@ -3196,7 +3166,7 @@ namespace WF.Player.Core.API {
         }
         
         
-        public WF.Player.Core.API.VersionInformation Versions {
+        public WF.Player.Core.LiveAPI.VersionInformation Versions {
             get {
                 return this.VersionsField;
             }
@@ -3213,7 +3183,7 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class GetCartridgeGWZResponse : WF.Player.Core.API.APIResponse {
+    public  class GetCartridgeGWZResponse : WF.Player.Core.LiveAPI.APIResponse {
         
         
         private byte GWZField;
@@ -3236,14 +3206,14 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class UpdateCartridgeGWZResponse : WF.Player.Core.API.APIResponse {
+    public  class UpdateCartridgeGWZResponse : WF.Player.Core.LiveAPI.APIResponse {
     }
     
     
     
     
     
-    public  class UploadNewCartridgeResponse : WF.Player.Core.API.APIResponse {
+    public  class UploadNewCartridgeResponse : WF.Player.Core.LiveAPI.APIResponse {
         
         
         private string WGCodeField;
@@ -3266,21 +3236,21 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class UpdateLogResponse : WF.Player.Core.API.APIResponse {
+    public  class UpdateLogResponse : WF.Player.Core.LiveAPI.APIResponse {
     }
     
     
     
     
     
-    public  class ArchiveLogResponse : WF.Player.Core.API.APIResponse {
+    public  class ArchiveLogResponse : WF.Player.Core.LiveAPI.APIResponse {
     }
     
     
     
     
     
-    public  class UpdateCartridgeContributorsResponse : WF.Player.Core.API.APIResponse {
+    public  class UpdateCartridgeContributorsResponse : WF.Player.Core.LiveAPI.APIResponse {
         
         
         private bool SuccessField;
@@ -3303,7 +3273,7 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class ArchiveCartridgeResponse : WF.Player.Core.API.APIResponse {
+    public  class ArchiveCartridgeResponse : WF.Player.Core.LiveAPI.APIResponse {
         
         
         private string LogGuidField;
@@ -3326,13 +3296,13 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class AttachLogMediaResponse : WF.Player.Core.API.APIResponse {
+    public  class AttachLogMediaResponse : WF.Player.Core.LiveAPI.APIResponse {
         
         
-        private WF.Player.Core.API.APIResponse ResultsField;
+        private WF.Player.Core.LiveAPI.APIResponse ResultsField;
         
         
-        public WF.Player.Core.API.APIResponse Results {
+        public WF.Player.Core.LiveAPI.APIResponse Results {
             get {
                 return this.ResultsField;
             }
@@ -3349,21 +3319,21 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class DeleteLogMediaResponse : WF.Player.Core.API.APIResponse {
+    public  class DeleteLogMediaResponse : WF.Player.Core.LiveAPI.APIResponse {
     }
     
     
     
     
     
-    public  class UpdateLogMediaResponse : WF.Player.Core.API.APIResponse {
+    public  class UpdateLogMediaResponse : WF.Player.Core.LiveAPI.APIResponse {
     }
     
     
     
     
     
-    public  class GetCountryListResponse : WF.Player.Core.API.APIResponse {
+    public  class GetCountryListResponse : WF.Player.Core.LiveAPI.APIResponse {
         
         
         private short CountryIDsField;
@@ -3402,41 +3372,41 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class UpdateListingVisibilityResponse : WF.Player.Core.API.APIResponse {
+    public  class UpdateListingVisibilityResponse : WF.Player.Core.LiveAPI.APIResponse {
     }
     
     
     
     
     
-    public  class UpdateCartridgeMediaResponse : WF.Player.Core.API.APIResponse {
+    public  class UpdateCartridgeMediaResponse : WF.Player.Core.LiveAPI.APIResponse {
     }
     
     
     
     
     
-    public  class UpdateListingResponse : WF.Player.Core.API.APIResponse {
+    public  class UpdateListingResponse : WF.Player.Core.LiveAPI.APIResponse {
     }
     
     
     
     
     
-    public  class UploadCartridgePlaythroughsResponse : WF.Player.Core.API.APIResponse {
+    public  class UploadCartridgePlaythroughsResponse : WF.Player.Core.LiveAPI.APIResponse {
     }
     
     
     
     
     
-    public  class GetCartridgeVariablesResponse : WF.Player.Core.API.APIResponse {
+    public  class GetCartridgeVariablesResponse : WF.Player.Core.LiveAPI.APIResponse {
         
         
-        private WF.Player.Core.API.CartridgeVariable VariablesField;
+        private WF.Player.Core.LiveAPI.CartridgeVariable VariablesField;
         
         
-        public WF.Player.Core.API.CartridgeVariable Variables {
+        public WF.Player.Core.LiveAPI.CartridgeVariable Variables {
             get {
                 return this.VariablesField;
             }
@@ -3453,14 +3423,14 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class SetCartridgeVariablesResponse : WF.Player.Core.API.APIResponse {
+    public  class SetCartridgeVariablesResponse : WF.Player.Core.LiveAPI.APIResponse {
     }
     
     
     
     
     
-    public  class TestResponse : WF.Player.Core.API.APIResponse {
+    public  class TestResponse : WF.Player.Core.LiveAPI.APIResponse {
     }
     
     
@@ -3470,7 +3440,7 @@ namespace WF.Player.Core.API {
     
     public  class WherigoCartridge : object {
         
-        private WF.Player.Core.API.WherigoCartridge.ActivityTypes ActivityTypeField;
+        private WF.Player.Core.LiveAPI.WherigoCartridge.ActivityTypes ActivityTypeField;
         
         
         private string AuthorCompanyField;
@@ -3479,7 +3449,7 @@ namespace WF.Player.Core.API {
         private string AuthorNameField;
         
         
-        private WF.Player.Core.API.WherigoCartridge.CompletionTimes CompletionTimeField;
+        private WF.Player.Core.LiveAPI.WherigoCartridge.CompletionTimes CompletionTimeField;
         
         
         private int CountryIDField;
@@ -3552,7 +3522,7 @@ namespace WF.Player.Core.API {
         
         
         
-        public WF.Player.Core.API.WherigoCartridge.ActivityTypes ActivityType {
+        public WF.Player.Core.LiveAPI.WherigoCartridge.ActivityTypes ActivityType {
             get {
                 return this.ActivityTypeField;
             }
@@ -3591,7 +3561,7 @@ namespace WF.Player.Core.API {
         }
         
         
-        public WF.Player.Core.API.WherigoCartridge.CompletionTimes CompletionTime {
+        public WF.Player.Core.LiveAPI.WherigoCartridge.CompletionTimes CompletionTime {
             get {
                 return this.CompletionTimeField;
             }
@@ -3971,7 +3941,7 @@ namespace WF.Player.Core.API {
         private string UserGUIDField;
         
         
-        private WF.Player.Core.API.LogEntry UserLogsField;
+        private WF.Player.Core.LiveAPI.LogEntry UserLogsField;
         
         
         private string WGCodeField;
@@ -4004,7 +3974,7 @@ namespace WF.Player.Core.API {
         }
         
         
-        public WF.Player.Core.API.LogEntry UserLogs {
+        public WF.Player.Core.LiveAPI.LogEntry UserLogs {
             get {
                 return this.UserLogsField;
             }
@@ -4095,7 +4065,7 @@ namespace WF.Player.Core.API {
     
     
     
-    public  class CartridgeSearchResult : WF.Player.Core.API.WherigoCartridge {
+    public  class CartridgeSearchResult : WF.Player.Core.LiveAPI.WherigoCartridge {
         
         
         private double DistanceFromCenterField;
@@ -4251,7 +4221,7 @@ namespace WF.Player.Core.API {
         
         private string logGUIDField;
         
-        private WF.Player.Core.API.LogEntry logargsField;
+        private WF.Player.Core.LiveAPI.LogEntry logargsField;
         
         
         
@@ -4307,7 +4277,7 @@ namespace WF.Player.Core.API {
         }
         
         
-        public WF.Player.Core.API.LogEntry logargs {
+        public WF.Player.Core.LiveAPI.LogEntry logargs {
             get {
                 return this.logargsField;
             }
@@ -4352,7 +4322,7 @@ namespace WF.Player.Core.API {
         private string LogMediaGUIDField;
         
         
-        private WF.Player.Core.API.LogMedia.MediaTypes MediaTypeField;
+        private WF.Player.Core.LiveAPI.LogMedia.MediaTypes MediaTypeField;
         
         
         private string NameField;
@@ -4424,7 +4394,7 @@ namespace WF.Player.Core.API {
         }
         
         
-        public WF.Player.Core.API.LogMedia.MediaTypes MediaType {
+        public WF.Player.Core.LiveAPI.LogMedia.MediaTypes MediaType {
             get {
                 return this.MediaTypeField;
             }

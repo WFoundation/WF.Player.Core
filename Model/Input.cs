@@ -129,9 +129,9 @@ namespace WF.Player.Core
 
 		#region Methods
 
-		public void Callback(string retValue)
+		public void GiveResult(string result)
 		{
-			engine.Call (wigTable, "GetInput", new object[] { wigTable, retValue });
+			engine.Call (wigTable, "GetInput", new object[] { wigTable, result });
 		}
 
 		#endregion

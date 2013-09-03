@@ -1,3 +1,41 @@
+#if WINDOWS_PHONE
+using System;
+using System.IO;
+namespace WF.Player.Core
+{
+	public class FileGWZ
+	{
+		/// <summary>
+		/// Determines, if stream contains a valid GWZ file.
+		/// </summary>
+		/// <returns><c>true</c> if is valid GWZ file; otherwise, <c>false</c>.</returns>
+		/// <param name="inputStream">Stream with cartridge file.</param>
+		public static bool IsValidFile(Stream inputStream)
+		{
+			throw new NotImplementedException(@"FileGWZ.IsValidFile is not implemented yet.");
+		}
+
+		/// <summary>
+		/// Load a whole GWZ file into a Cartridge object.
+		/// </summary>
+		/// <param name="cart">Cartridge object to file with data.</param>
+		public static void Load(Stream inputStream, Cartridge cart)
+		{
+			throw new NotImplementedException(@"FileGWZ.Load is not implemented yet.");
+		}
+
+		/// <summary>
+		/// Load only header data of a GWZ file into a Cartridge object.
+		/// </summary>
+		/// <param name="cart">Cartridge object to file with data.</param>
+		public static void LoadHeader(Stream inputStream, Cartridge cart)
+		{
+			throw new NotImplementedException(@"FileGWZ.LoadHeader is not implemented yet.");
+		}
+	}
+
+}
+#else
 using Ionic.Zip;
 using System;
 using System.IO;
@@ -19,7 +57,7 @@ namespace WF.Player.Core
 			if (inputStream.Length < 2)
 				return false;
 
-			BinaryReader reader = new BinaryReader (inputStream);
+			BinaryReader reader = new BinaryReader(inputStream);
 
 			// Save old position of stream
 			var oldPos = inputStream.Position;
@@ -39,9 +77,10 @@ namespace WF.Player.Core
 
 			ZipInputStream zipInputStream = new ZipInputStream(inputStream);
 			ZipEntry zipEntry = zipInputStream.GetNextEntry();
-			while (zipEntry != null) {
+			while (zipEntry != null)
+			{
 				String entryFileName = zipEntry.FileName;
-				if (Path.GetExtension (entryFileName).Equals ("lua"))
+				if (Path.GetExtension(entryFileName).Equals("lua"))
 					// Lua file exists, so it should be a valid GWZ file
 					return true;
 				zipEntry = zipInputStream.GetNextEntry();
@@ -71,3 +110,5 @@ namespace WF.Player.Core
 	}
 }
 
+
+#endif

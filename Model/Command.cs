@@ -90,7 +90,7 @@ namespace WF.Player.Core
 			get {
 				List<Thing> result = new List<Thing> ();
 
-				var t = ((LuaTable)((LuaFunction)wigTable["CalcTargetObjects"]).Call (new object[] { wigTable, engine.Cartridge.WIGTable, engine.Player })[0]).GetEnumerator();
+				var t = ((LuaTable)((LuaFunction)wigTable["CalcTargetObjects"]).Call (new object[] { wigTable, engine.Cartridge.WIGTable, engine.Player.WIGTable })[0]).GetEnumerator();
 				while (t.MoveNext())
 					result.Add ((Thing)GetTable ((LuaTable)t.Value));
 
@@ -129,7 +129,7 @@ namespace WF.Player.Core
 				// Works this command with targets?
 				if (WorksWithList) {
 					// Get all tables
-					var t = ((LuaTable)engine.Call (wigTable, "CalcTargetObjects", new object[] { wigTable, engine.Cartridge.WIGTable, engine.Player }) [0]).GetEnumerator();
+					var t = ((LuaTable)engine.Call (wigTable, "CalcTargetObjects", new object[] { wigTable, engine.Cartridge.WIGTable, engine.Player.WIGTable }) [0]).GetEnumerator();
 					while (t.MoveNext())
 						result.Add ((Thing)GetTable ((LuaTable)t.Value));
 				}
@@ -147,7 +147,7 @@ namespace WF.Player.Core
 			if (t == null)
 				((LuaFunction)wigTable["exec"]).Call (new object[] { wigTable });
 			else
-				((LuaFunction)wigTable["exec"]).Call (new object[] { wigTable, t });
+				((LuaFunction)wigTable["exec"]).Call (new object[] { wigTable, t.WIGTable });
 		}
 
 		#endregion

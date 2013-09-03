@@ -21,6 +21,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+#if SILVERLIGHT
+using System.Reflection; 
+#endif
 
 /// <summary>
 /// File format of GWC files:
@@ -264,8 +267,8 @@ namespace WF.Player.Core
 			int enumLength = Enum.GetValues(cart.ActivityType.GetType()).Length;
 			#endif
 			for (int i = 0; i < enumLength; i++)
-				if (((API.WherigoCartridge.ActivityTypes)i).ToString().Equals(activity))
-					cart.ActivityType = (API.WherigoCartridge.ActivityTypes)i;
+				if (((LiveAPI.WherigoCartridge.ActivityTypes)i).ToString().Equals(activity))
+					cart.ActivityType = (LiveAPI.WherigoCartridge.ActivityTypes)i;
 
 			// Read name of player
 			cart.Player = readCString(reader);
