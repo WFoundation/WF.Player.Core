@@ -67,6 +67,8 @@
     <Compile Include="Loaders\FileGWZ.cs" />
     <Compile Include="Loaders\FileWFC.cs" />
     <Compile Include="Loaders\FileWFZ.cs" />
+    <Compile Include="Model\Enums.cs" />
+    <Compile Include="Model\Events.cs" />
     <Compile Include="Model\Input.cs" />
     <Compile Include="Model\Item.cs" />
     <Compile Include="Model\Media.cs" />
@@ -76,7 +78,7 @@
     <Compile Include="Model\Task.cs" />
     <Compile Include="Model\Thing.cs" />
     <Compile Include="Model\UIObject.cs" />
-    <Compile Include="Engine\WIGInternalsImpl.cs" />
+    <Compile Include="Engine\WIGInternalImpl.cs" />
     <Compile Include="Model\Zone.cs" />
     <Compile Include="Model\ZonePoint.cs" />
   </ItemGroup>

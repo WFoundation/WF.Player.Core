@@ -29,12 +29,12 @@ namespace WF.Player.Core
 {
 
     /// <summary>
-    /// Class handling all WIGInternal functions and events.
+    /// This class implements the Lua libary WIGInternal.
     /// </summary>
     #if MONOTOUCH
 	    [MonoTouch.Foundation.Preserve(AllMembers=true)]
     #endif
-    public class WIGInternalsImpl
+    public class WIGInternalImpl
     {
 
         #region Private variables
@@ -58,7 +58,7 @@ namespace WF.Player.Core
 
         #region Constructor
 
-        public WIGInternalsImpl( Engine engine, Lua luaState)
+        public WIGInternalImpl( Engine engine, Lua luaState)
         {
 			this.engine = engine;
             this.luaState = luaState;
