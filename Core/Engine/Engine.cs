@@ -53,16 +53,22 @@ namespace WF.Player.Core
         private Lua luaState;
         private WIGInternalImpl wherigo;
         private LuaTable player;
-		private Dictionary<int, Timer> timers = new Dictionary<int,Timer> ();
+		private Dictionary<int, System.Threading.Timer> timers = new Dictionary<int, System.Threading.Timer>();
 		private Dictionary<int,UIObject> uiObjects = new Dictionary<int, UIObject> ();
 		private object[] threadResult;
 
         #endregion
 
+		#region Constants
+
+		private const int internalTimerDuration = 1000;
+
+		#endregion
+
         #region Engine version
 
-        public string CorePlatform = "WF.Player.Core";
-        public string CoreVersion = "0.1.0";
+        public static readonly string CorePlatform = "WF.Player.Core";
+        public static readonly string CoreVersion = "0.1.0";
 
         #endregion
 
@@ -96,8 +102,8 @@ namespace WF.Player.Core
             wherigo = new WIGInternalImpl(this, luaState);
 
             // Register events
-            wherigo.OnTimerStarted += TimerStarted;
-            wherigo.OnTimerStopped += TimerStopped;
+            wherigo.OnTimerStarted += HandleTimerStarted;
+            wherigo.OnTimerStopped += HandleTimerStopped;
 			wherigo.OnCartridgeChanged += HandleCartridgeChanged;
 			wherigo.OnZoneStateChanged += HandleZoneStateChanged;
 			wherigo.OnInventoryChanged += HandleInventoryChanged;
@@ -208,7 +214,7 @@ namespace WF.Player.Core
         /// </summary>
         public void Stop()
         {
-			foreach(Timer t in timers.Values)
+			foreach(System.Threading.Timer t in timers.Values)
 				t.Dispose ();
 
 			HandleNotifyOS ("StopSound");
@@ -603,12 +609,16 @@ namespace WF.Player.Core
         /// Start timer.
         /// </summary>
         /// <param name="t">Timer to start.</param>
-        internal void TimerStarted(LuaTable t)
+        internal void HandleTimerStarted(LuaTable t)
         {
-            int objIndex = Convert.ToInt32 ((double)t["ObjIndex"]);
+            // Gets the object index of the Timer that started.
+			int objIndex = Convert.ToInt32 ((double)t["ObjIndex"]);
 
-            Timer timer = new Timer(TimerTickSync, objIndex, Convert.ToInt32((double)t["Duration"])*1000, Timeout.Infinite);
+			// Starts a corresponding internal timer.
+			System.Threading.Timer timer = new System.Threading.Timer(InternalTimerTick, objIndex, Timeout.Infinite, internalTimerDuration);
 
+			// Keeps track of the timer.
+			// TODO: What happens if the timer is already in the dictionary?
 			if (!timers.ContainsKey(objIndex))
             	timers.Add(objIndex, timer);
         }
@@ -617,44 +627,72 @@ namespace WF.Player.Core
         /// Stop timer.
         /// </summary>
         /// <param name="t">Timer to stop.</param>
-        internal void TimerStopped(LuaTable t)
+        internal void HandleTimerStopped(LuaTable t)
         {
 			int objIndex = Convert.ToInt32 ((double)t["ObjIndex"]);
-            Timer timer = timers[objIndex];
+			System.Threading.Timer timer = timers[objIndex];
 
             timer.Dispose();
             timers.Remove(objIndex);
         }
 
         /// <summary>
-        /// Function, which calls the syncronize function of the ui.
+        /// Updates the ZTimer's attributes and checks if its Tick event should be called.
         /// </summary>
         /// <param name="source">ObjIndex of the timer that released the tick.</param>
-        private void TimerTickSync(object source)
+        private void InternalTimerTick(object source)
         {
 			int objIndex = (int)source;
 
+			LuaTable t = GetObject(objIndex).WIGTable;
+
+			// Gets the ZTimer's properties.
+			object elapsedRaw = t["Elapsed"];
+			object remainingRaw = t["Remaining"];
+			if (elapsedRaw == null)
+				elapsedRaw = 0.0d;
+			if (remainingRaw == null)
+				remainingRaw = t["Duration"];
+
+			double elapsed = (double)elapsedRaw * 1000;
+			double remaining = (double)remainingRaw * 1000;
+			string type = (string)t["Type"];
+
+			// Updates the ZTimer properties and considers if it should tick.
+			elapsed += internalTimerDuration;
+			remaining -= internalTimerDuration;
+
+			bool shoudTimerTick = false;
+			if (remaining <= 0.0d)
+			{
+				remaining = 0;
+
+				shoudTimerTick = true;
+			}
+
+			t["Elapsed"] = elapsed / 1000;
+			t["Remaining"] = remaining / 1000;
+
 			// Call only, if timer still exists.
 			// It could be, that function is called from thread, even if the timer didn't exists anymore.
-			if (timers.ContainsKey(objIndex))
+			if (shoudTimerTick && timers.ContainsKey(objIndex))
             	// Call Tick syncronized with the GUI (for not thread save interfaces)
-				if (SynchronizeRequested != null)
-					SynchronizeRequested(this, new SynchronizeEventArgs(new Action(() => timerTick(source))));
+				RaiseSynchronizeRequested(new Action(() => WherigoTimerTickCore(source)));
         }
 
         /// <summary>
         /// Function for tick of a timer in source.
         /// </summary>
         /// <param name="source">ObjIndex of the timer that released the tick.</param>
-        private void timerTick(object source)
+        private void WherigoTimerTickCore(object source)
         {
             int objIndex = (int)source;
-            Timer timer = timers[objIndex];
+			System.Threading.Timer timer = timers[objIndex];
 
 			timer.Dispose();
 			timers.Remove(objIndex);
 
-			LuaTable t = (LuaTable)((LuaTable)cartridge.WIGTable["AllZObjects"])[objIndex];
+			LuaTable t = GetObject(objIndex).WIGTable;
 
 			Call (t,"Tick",new object[] { t });
 		}
@@ -995,16 +1033,18 @@ namespace WF.Player.Core
 				else {
 					Table tab = null;
 					// Check for objects, that have a ObjIndex, but didn't derived from UIObject
-					if (className.Equals ("ZInput"))
-						return new Input (this, t);
+					if (className.Equals("ZInput"))
+						return new Input(this, t);
+					else if (className.Equals("ZTimer"))
+						return new Timer(this, t);
 					// Now check for UIObjects
-					if (className.Equals ("ZCharacter"))
+					else if (className.Equals("ZCharacter"))
 						tab = new Character (this, t);
-					if (className.Equals ("ZItem"))
+					else if (className.Equals("ZItem"))
 						tab = new Item (this, t);
-					if (className.Equals ("ZTask"))
+					else if (className.Equals("ZTask"))
 						tab = new Task (this, t);
-					if (className.Equals ("Zone"))
+					else if (className.Equals("Zone"))
 						tab = new Zone (this, t);
 					// Save UIObject for later use
 					if (tab != null)
@@ -1662,6 +1702,23 @@ namespace WF.Player.Core
 			}
 			
 			ShowStatusTextRequested(this, new StatusTextEventArgs(text));
+		}
+
+		private void RaiseSynchronizeRequested(Action tick, bool throwIfNoHandler = true)
+		{
+			if (SynchronizeRequested == null)
+			{
+				if (throwIfNoHandler)
+				{
+					throw new InvalidOperationException("No SynchronizeRequested handler has been found.");
+				}
+				else
+				{
+					return;
+				}
+			}
+
+			SynchronizeRequested(this, new SynchronizeEventArgs(tick));
 		}
 
 		#endregion

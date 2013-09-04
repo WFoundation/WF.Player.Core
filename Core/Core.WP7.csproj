@@ -73,6 +73,7 @@
     <Compile Include="Model\Item.cs" />
     <Compile Include="Model\Media.cs" />
     <Compile Include="Model\MessageBox.cs" />
+    <Compile Include="Model\Timer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Model\Table.cs" />
     <Compile Include="Model\Task.cs" />

@@ -22,12 +22,6 @@ using NLua;
 
 namespace WF.Player.Core
 {
-	public enum InputTypes
-	{ 
-		Text, 
-		MultipleChoice,
-		Unknown
-	}; 
 
 	public class Input : Table
 	{
@@ -57,15 +51,15 @@ namespace WF.Player.Core
 		/// Gets the standard input type.
 		/// </summary>
 		/// <value>The input type.</value>
-		public InputTypes InputType {
+		public InputType InputType {
 			get 
 			{
 				string type = GetString("InputType");
 					
 				if (String.IsNullOrWhiteSpace(type))
-					return InputTypes.Unknown;
+					return InputType.Unknown;
 
-				return (InputTypes) Enum.Parse(typeof(InputTypes), type, true);
+				return (InputType) Enum.Parse(typeof(InputType), type, true);
 			}
 		}
 

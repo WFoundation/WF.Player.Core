@@ -382,7 +382,7 @@ namespace WF.Player.Core
 			else
 			{
 				// Read resources type
-				media.Type = (MediaTypes)Enum.ToObject (typeof(MediaTypes), input.ReadInt32());
+				media.Type = (MediaType)Enum.ToObject (typeof(MediaType), input.ReadInt32());
 				// Read resources data
 				long fileSize = input.ReadInt32();
 				media.Data = new byte[fileSize];

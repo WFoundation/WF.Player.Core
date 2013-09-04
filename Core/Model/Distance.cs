@@ -23,17 +23,6 @@ namespace WF.Player.Core
 {
 	public class Distance : Table
 	{
-		/// <summary>
-		/// Units of distance.
-		/// </summary>
-		public enum Unit
-		{
-			Meters,
-			Kilometers,
-			Miles,
-			Feet,
-			NauticalMiles
-		}
 
 		#region Constructor
 
@@ -62,24 +51,24 @@ namespace WF.Player.Core
 		/// Gets the value of the distance with given unit.
 		/// </summary>
 		/// <value>The value.</value>
-		public double ValueAs(Unit unit)
+		public double ValueAs(DistanceUnit unit)
 		{
 			double value = GetDouble ("value");
 
 			switch (unit) {
-				case Unit.Kilometers:
+				case DistanceUnit.Kilometers:
 					value = value / 1000.0;
 					break;
 
-				case Unit.Miles:
+				case DistanceUnit.Miles:
 					value = value / 1609.344;
 					break;
 
-				case Unit.Feet:
+				case DistanceUnit.Feet:
 					value = value * 3.2808399;
 					break;
 
-				case Unit.NauticalMiles:
+				case DistanceUnit.NauticalMiles:
 					value = value / 1852.216;
 					break;
 

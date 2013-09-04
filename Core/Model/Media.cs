@@ -22,16 +22,6 @@ using System.Text;
 
 namespace WF.Player.Core
 {
-	public enum MediaTypes {
-		BMP = 1,
-		PNG = 2,
-		JPG = 3,
-		GIF = 4,
-		WAV = 17,
-		MP3 = 18,
-		FDL = 19
-	}
-
 	/// <summary>
 	/// Class for objects to store informations for medias.
 	/// </summary>
@@ -70,7 +60,7 @@ namespace WF.Player.Core
         /// <summary>
         /// Type of the media.
         /// </summary>
-		public MediaTypes Type { get; internal set; }
+		public MediaType Type { get; internal set; }
 
         #endregion
 
