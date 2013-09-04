@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // Attribute gesteuert. Ändern Sie diese Attributwerte, um die Informationen zu ändern,
 // die mit einer Assembly verknüpft sind.
 [assembly: AssemblyTitle("WF.Player.Core")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Core of Wherigo players")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Weltz EDV-Beratung")]
-[assembly: AssemblyProduct("Core.Properties")]
-[assembly: AssemblyCopyright("Dirk Weltz, 2012-2013")]
+[assembly: AssemblyCompany("Wherigo Foundation")]
+[assembly: AssemblyProduct("Wherigo")]
+[assembly: AssemblyCopyright("Wherigo Foundation, 2012-2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

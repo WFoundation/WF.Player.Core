@@ -56,36 +56,33 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Cartridges.cs" />
-    <Compile Include="Engine.cs" />
-    <Compile Include="FileFormats.cs" />
-    <Compile Include="IUserInterface.cs" />
-    <Compile Include="Media.cs" />
+    <Compile Include="Engine\Engine.cs" />
+    <Compile Include="Engine\WIGInternalsImpl.cs" />
+    <Compile Include="LiveAPI\Cartridges.cs" />
+    <Compile Include="LiveAPI\Reference.cs" />
+    <Compile Include="Loaders\FileFormats.cs" />
+    <Compile Include="Loaders\FileGWC.cs" />
+    <Compile Include="Loaders\FileGWZ.cs" />
+    <Compile Include="Loaders\FileWFC.cs" />
+    <Compile Include="Loaders\FileWFZ.cs" />
+    <Compile Include="Model\Cartridge.cs" />
+    <Compile Include="Model\Character.cs" />
+    <Compile Include="Model\Command.cs" />
+    <Compile Include="Model\Distance.cs" />
+    <Compile Include="Model\Input.cs" />
+    <Compile Include="Model\Item.cs" />
+    <Compile Include="Model\Media.cs" />
+    <Compile Include="Model\MessageBox.cs" />
+    <Compile Include="Model\Table.cs" />
+    <Compile Include="Model\Task.cs" />
+    <Compile Include="Model\Thing.cs" />
+    <Compile Include="Model\UIObject.cs" />
+    <Compile Include="Model\Zone.cs" />
+    <Compile Include="Model\ZonePoint.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UIObject.cs" />
-    <Compile Include="Wherigo.cs" />
-    <Compile Include="Cartridge.cs" />
-    <Compile Include="Character.cs" />
-    <Compile Include="Command.cs" />
-    <Compile Include="Distance.cs" />
-    <Compile Include="Input.cs" />
-    <Compile Include="Item.cs" />
-    <Compile Include="Table.cs" />
-    <Compile Include="Task.cs" />
-    <Compile Include="Thing.cs" />
-    <Compile Include="Zone.cs" />
-    <Compile Include="ZonePoint.cs" />
-    <Compile Include="API\Reference.cs" />
-    <Compile Include="FileGWC.cs" />
-    <Compile Include="FileGWZ.cs" />
-    <Compile Include="FileWFC.cs" />
-    <Compile Include="FileWFZ.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="NLua">
-      <HintPath>NLua\Run\Debug\NLua.dll</HintPath>
-    </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml" />
@@ -99,11 +96,6 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\Wherigo.luac" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config">
-      <SubType>Designer</SubType>
-    </None>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -112,7 +104,11 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="API\" />
+    <ProjectReference Include="..\NLua\Core\NLua\NLua.csproj">
+      <Project>{F55CABBB-4108-4A39-94E1-581FD46DC021}</Project>
+      <Name>NLua</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>
