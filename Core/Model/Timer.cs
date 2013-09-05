@@ -26,7 +26,7 @@ namespace WF.Player.Core
 		#region Properties
 
 		/// <summary>
-		/// Gets the type of the Timer, among "Countdown" or "Interval".
+		/// Gets the type of the Timer.
 		/// </summary>
 		public TimerType Type
 		{

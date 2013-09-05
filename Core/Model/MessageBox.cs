@@ -13,16 +13,6 @@ namespace WF.Player.Core
 {
 	public class MessageBox
 	{
-		/// <summary>
-		/// Represents the different kinds of results a message box can have.
-		/// </summary>
-		public enum Result
-		{
-			FirstButton,
-			SecondButton,
-			Cancel
-		}
-
 		#region Properties
 		/// <summary>
 		/// Gets the text of the message box to display.
@@ -74,7 +64,7 @@ namespace WF.Player.Core
 		/// Gives a result to the message box, allowing its underlying execution tree to continue.
 		/// </summary>
 		/// <param name="result"></param>
-		public void GiveResult(Result result)
+		public void GiveResult(MessageBoxResult result)
 		{
 			if (_Callback == null)
 			{
@@ -83,7 +73,7 @@ namespace WF.Player.Core
 
 			switch (result)
 			{
-				case Result.FirstButton:
+				case MessageBoxResult.FirstButton:
 					if (FirstButtonLabel == null)
 					{
 						throw new InvalidOperationException("There is no first button on this message box.");
@@ -93,7 +83,7 @@ namespace WF.Player.Core
 
 					break;
 
-				case Result.SecondButton:
+				case MessageBoxResult.SecondButton:
 
 					if (SecondButtonLabel == null)
 					{
@@ -104,7 +94,7 @@ namespace WF.Player.Core
 
 					break;
 
-				case Result.Cancel:
+				case MessageBoxResult.Cancel:
 
 					// TODO: Cancelled message boxes call the callback with a nil parameter.
 

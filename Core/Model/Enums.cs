@@ -81,4 +81,14 @@ namespace WF.Player.Core
 		Countdown,
 		Interval
 	}
+
+	/// <summary>
+	/// A kind of result a message box can have.
+	/// </summary>
+	public enum MessageBoxResult
+	{
+		FirstButton,
+		SecondButton,
+		Cancel
+	}
 }
