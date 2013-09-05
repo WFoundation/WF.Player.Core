@@ -22,7 +22,6 @@ namespace WF.Player.Core
 		Inventory,
 		Tasks,
 		Details
-		//DialogScreen // TODO: Not part of the specification?
 	}
 
 	/// <summary>

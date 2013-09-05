@@ -125,7 +125,7 @@ namespace WF.Player.Core
 
 		public void GiveResult(string result)
 		{
-			engine.Call (wigTable, "GetInput", new object[] { wigTable, result });
+			engine.Call (wigTable, "OnGetInput", new object[] { wigTable, result });
 		}
 
 		#endregion

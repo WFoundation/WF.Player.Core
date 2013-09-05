@@ -177,11 +177,6 @@ namespace WF.Player.Core
 			engine.HandleShowMessage(text, engine.GetMedia(idxMediaObj), btn1Label, btn2Label, (retValue) => wrapper.Call (new object[] { retValue }));
         }
 
-        private void call(LuaFunction func, object retValue)
-        {
-
-        }
-
         /// <summary>
         /// Show a dialog to input text or a multiple choice.
         /// </summary>
@@ -521,7 +516,7 @@ namespace WF.Player.Core
             double bearing = (double)param3;
 
             double lat = (double)zonePoint["latitude"];
-            double lon = (double)zonePoint["latitude"];
+            double lon = (double)zonePoint["longitude"];
             double alt = (double)zonePoint["altitude.value"];
             double dist = (double)distance["value"];
 

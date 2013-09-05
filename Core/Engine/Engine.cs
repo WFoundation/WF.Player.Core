@@ -117,7 +117,6 @@ namespace WF.Player.Core
 			luaState ["Wherigo.INVENTORYSCREEN"] = (int)ScreenType.Inventory;
 			luaState ["Wherigo.TASKSCREEN"] = (int)ScreenType.Tasks;
 			luaState ["Wherigo.DETAILSCREEN"] = (int)ScreenType.Details;
-			//luaState ["Wherigo.DIALOGSCREEN"] = (int)ScreenType.DialogScreen;
 
             // Set definitions from Wherigo for LogMessage
 			luaState ["Wherigo.LOGDEBUG"] = (int)LogLevel.Debug;
@@ -470,7 +469,7 @@ namespace WF.Player.Core
 			if (from != null)
 				((UIObject)from).NotifyPropertyChanged ("Inventory");
 			if (to != null)
-				((UIObject)obj).NotifyPropertyChanged ("Inventory");
+				((UIObject)to).NotifyPropertyChanged ("Inventory");
 
 			// Check for player inventory changes.
 			if (player.Equals(ltTo) || player.Equals(ltFrom))
@@ -871,6 +870,19 @@ namespace WF.Player.Core
 		private bool IsDistance(object obj)
 		{
 			return obj is Distance || IsLuaTableWithClassName(obj, "Distance");
+		}
+
+		/// <summary>
+		/// Check, if the given element is in the Inventory.
+		/// </summary>
+		/// <returns><c>true</c> if obj is in the Inventory of player; otherwise, <c>false</c>.</returns>
+		/// <param name="obj">LuaTable with object to check.</param>
+		public bool IsInInventory(Thing obj)
+		{
+			if (player == null)
+				return false;
+
+			return Player.Inventory.Contains(obj);
 		}
 
 		/// <summary>

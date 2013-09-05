@@ -90,9 +90,14 @@ namespace WF.Player.Core
 			get {
 				List<Thing> result = new List<Thing> ();
 
-				var t = ((LuaTable)((LuaFunction)wigTable["CalcTargetObjects"]).Call (new object[] { wigTable, engine.Cartridge.WIGTable, engine.Player.WIGTable })[0]).GetEnumerator();
-				while (t.MoveNext())
-					result.Add ((Thing)GetTable ((LuaTable)t.Value));
+				// Works this command with targets?
+				if (CmdWith)
+				{
+					// Get all tables, active and inactive
+					var t = ((LuaTable)((LuaFunction)wigTable["CalcTargetObjects"]).Call(new object[] { wigTable, engine.Cartridge.WIGTable, engine.Player.WIGTable })[0]).GetEnumerator();
+					while (t.MoveNext())
+						result.Add((Thing)GetTable((LuaTable)t.Value));
+				} 
 
 				return result;
 			}
@@ -109,29 +114,22 @@ namespace WF.Player.Core
 		}
 
 		/// <summary>
-		/// Gets a value indicating whether this <see cref="WF.Player.Core.Command"/> works only with special objects.
-		/// </summary>
-		/// <value><c>true</c> if works with list; otherwise, <c>false</c>.</value>
-		public bool WorksWithList {
-			get {
-				return GetBool ("WorksWithList");
-			}
-		}
-
-		/// <summary>
-		/// Gets the works with list objects for this commands, which are in the list and visible.
+		/// Gets the works with list objects for this commands, independent if active or inactive.
 		/// </summary>
 		/// <value>The works with list objects.</value>
-		public List<Thing> WorksWithListObjects {
-			get {
-				List<Thing> result = new List<Thing> ();
+		public List<Thing> WorksWithList
+		{
+			get
+			{
+				List<Thing> result = new List<Thing>();
 
 				// Works this command with targets?
-				if (WorksWithList) {
-					// Get all tables
-					var t = ((LuaTable)engine.Call (wigTable, "CalcTargetObjects", new object[] { wigTable, engine.Cartridge.WIGTable, engine.Player.WIGTable }) [0]).GetEnumerator();
+				if (CmdWith)
+				{
+					// Get all tables, active and inactive
+					var t = ((LuaTable)wigTable["WorksWithList"]).GetEnumerator();
 					while (t.MoveNext())
-						result.Add ((Thing)GetTable ((LuaTable)t.Value));
+						result.Add((Thing)GetTable((LuaTable)t.Value));
 				}
 
 				return result;
