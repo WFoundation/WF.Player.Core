@@ -1,13 +1,20 @@
-﻿using System;
-using System.Net;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Ink;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
+﻿/// WF.Player.Core - A Wherigo Player Core for different platforms.
+/// Copyright (C) 2012-2013  Dirk Weltz <web@weltz-online.de>
+///
+/// This program is free software: you can redistribute it and/or modify
+/// it under the terms of the GNU Lesser General Public License as
+/// published by the Free Software Foundation, either version 3 of the
+/// License, or (at your option) any later version.
+/// 
+/// This program is distributed in the hope that it will be useful,
+/// but WITHOUT ANY WARRANTY; without even the implied warranty of
+/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+/// GNU Lesser General Public License for more details.
+/// 
+/// You should have received a copy of the GNU Lesser General Public License
+/// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+using System;
 
 namespace WF.Player.Core
 {
@@ -38,7 +45,7 @@ namespace WF.Player.Core
 
 		#region Fields
 
-		private Action<string> _Callback;
+		private Action<string> callback;
 
 		#endregion
 
@@ -50,14 +57,14 @@ namespace WF.Player.Core
 		/// <param name="btn1label">Label of the first button (if null or empty, a default value will be used.)</param>
 		/// <param name="btn2label">Label of the second button (if null or empty, the button will not be shown.)</param>
 		/// <param name="callback">Function to call once the message box has gotten a result.</param>
-		public MessageBox(string text, Media mediaObj, string btn1label, string btn2label, Action<string> callback)
+		public MessageBox(string text, Media mediaObj, string btn1label, string btn2label, Action<string> cb)
 		{
 			Text = text;
 			MediaObject = mediaObj;
 			FirstButtonLabel = String.IsNullOrEmpty(btn1label) ? null : btn1label;
 			SecondButtonLabel = String.IsNullOrEmpty(btn2label) ? null : btn2label;
 
-			_Callback = callback;
+			callback = cb;
 		}
 
 		/// <summary>
@@ -66,7 +73,7 @@ namespace WF.Player.Core
 		/// <param name="result"></param>
 		public void GiveResult(MessageBoxResult result)
 		{
-			if (_Callback == null)
+			if (callback == null)
 			{
 				throw new InvalidOperationException("No callback has been specified for this message box.");
 			}
@@ -79,7 +86,7 @@ namespace WF.Player.Core
 						throw new InvalidOperationException("There is no first button on this message box.");
 					}
 
-					_Callback(FirstButtonLabel);
+					callback(FirstButtonLabel);
 
 					break;
 
@@ -90,13 +97,14 @@ namespace WF.Player.Core
 						throw new InvalidOperationException("There is no second button on this message box.");
 					}
 
-					_Callback(SecondButtonLabel);
+					callback(SecondButtonLabel);
 
 					break;
 
 				case MessageBoxResult.Cancel:
 
 					// TODO: Cancelled message boxes call the callback with a nil parameter.
+					callback (null);
 
 					break;
 

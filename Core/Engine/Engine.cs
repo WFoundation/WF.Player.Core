@@ -1,4 +1,3 @@
-///
 /// WF.Player.Core - A Wherigo Player Core for different platforms.
 /// Copyright (C) 2012-2013  Dirk Weltz <web@weltz-online.de>
 ///
@@ -14,17 +13,16 @@
 /// 
 /// You should have received a copy of the GNU Lesser General Public License
 /// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-/// 
 
 using System;
-using System.Reflection;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using NLua;
-using System.ComponentModel;
 
 
 namespace WF.Player.Core
@@ -68,7 +66,7 @@ namespace WF.Player.Core
         #region Engine version
 
         public static readonly string CorePlatform = "WF.Player.Core";
-        public static readonly string CoreVersion = "0.1.0";
+        public static readonly string CoreVersion = "0.2.0";
 
         #endregion
 
@@ -347,7 +345,7 @@ namespace WF.Player.Core
 
 		public string CreateLogMessage(string message)
 		{
-			return String.Format ("{0:yyyymmddhhmmss}|{1:+0.00000}|{2:+0.00000}|{3:+0.00000}|{4:+0.00000}|{5}", DateTime.Now.ToLocalTime (), lat, lon, alt, accuracy, message);
+			return String.Format ("{0:yyyyMMddhhmmss}|{1:+0.00000}|{2:+0.00000}|{3:+0.00000}|{4:+0.00000}|{5}", DateTime.Now.ToLocalTime (), lat, lon, alt, accuracy, message);
 		}
 
 		#endregion
@@ -371,6 +369,9 @@ namespace WF.Player.Core
 					((UIObject)obj).NotifyPropertyChanged (attribute);
 
 				// TODO: Why is this doing that?
+				// Because of the fact, that is zone getting active and should be handled by the RefreshLocation event.
+				// For example: you stay at a place, no new GPS correction, but a script activates a zone. In this case,
+				// if you are in the zone, we should fire an OnEnter event.
 				if (cartridge.WIGTable != null && ("Zone".Equals(classname) && "Active".Equals(attribute)))
 					RefreshLocation(lat, lon, alt, accuracy);
 
@@ -653,8 +654,8 @@ namespace WF.Player.Core
 			if (remainingRaw == null)
 				remainingRaw = t["Duration"];
 
-			double elapsed = (double)elapsedRaw * 1000;
-			double remaining = (double)remainingRaw * 1000;
+			double elapsed = (double)elapsedRaw * internalTimerDuration;
+			double remaining = (double)remainingRaw * internalTimerDuration;
 			string type = (string)t["Type"];
 
 			// Updates the ZTimer properties and considers if it should tick.
@@ -669,8 +670,8 @@ namespace WF.Player.Core
 				shoudTimerTick = true;
 			}
 
-			t["Elapsed"] = elapsed / 1000;
-			t["Remaining"] = remaining / 1000;
+			t["Elapsed"] = elapsed / internalTimerDuration;
+			t["Remaining"] = remaining / internalTimerDuration;
 
 			// Call only, if timer still exists.
 			// It could be, that function is called from thread, even if the timer didn't exists anymore.

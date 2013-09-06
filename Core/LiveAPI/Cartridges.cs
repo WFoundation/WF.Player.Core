@@ -1,4 +1,3 @@
-///
 /// WF.Player.Core - A Wherigo Player Core for different platforms.
 /// Copyright (C) 2012-2013  Dirk Weltz <web@weltz-online.de>
 ///
@@ -14,7 +13,6 @@
 /// 
 /// You should have received a copy of the GNU Lesser General Public License
 /// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-/// 
 
 using System;
 using System.Collections;
@@ -31,7 +29,7 @@ namespace WF.Player.Core
     public class Cartridges : ObservableCollection<Cartridge>
     {
 		private const string apiEndpoint = "http://foundation.rangerfox.com/API/APIv1JSON.svc";
-		private string consumerToken = "";
+		private string userToken = "";
         private int status = 0;
         private string statusMessage = "";
 
@@ -43,7 +41,7 @@ namespace WF.Player.Core
 
 		public Cartridges(string token) : base ()
         {
-            consumerToken = token;
+            userToken = token;
         }
 
         #endregion
@@ -52,11 +50,11 @@ namespace WF.Player.Core
 
 		public string Token {
 			get {
-				return consumerToken;
+				return userToken;
 			}
 			set {
-				if (consumerToken != value)
-					consumerToken = value;
+				if (userToken != value)
+					userToken = value;
 			}
 		}
 
@@ -102,11 +100,11 @@ namespace WF.Player.Core
 			if (!checkConnection())
 				throw new InvalidOperationException("Invalid connection to the API.");
 
-			API.SearchCartridgesRequest search = new API.SearchCartridgesRequest()
+			LiveAPI.SearchCartridgesRequest search = new LiveAPI.SearchCartridgesRequest()
 			{
 				PageNumber = 1,
 				ResultsPerPage = 50,
-				SearchArguments = new API.CartridgeSearchArguments()
+				SearchArguments = new LiveAPI.CartridgeSearchArguments()
 				{
 					Latitude = lat,
 					Longitude = lon,
@@ -126,14 +124,14 @@ namespace WF.Player.Core
             if (!checkConnection())
 				throw new InvalidOperationException("Invalid connection to the API.");
 
-			API.SearchCartridgesRequest search = new API.SearchCartridgesRequest()
+			LiveAPI.SearchCartridgesRequest search = new LiveAPI.SearchCartridgesRequest()
 			{
 				PageNumber = 1,
 				ResultsPerPage = 50,
-				SearchArguments = new API.CartridgeSearchArguments()
+				SearchArguments = new LiveAPI.CartridgeSearchArguments()
 				{
 					CartridgeName = name.Trim(),
-					OrderSearchBy = API.CartridgeSearchArguments.OrderBy.Distance
+					OrderSearchBy = LiveAPI.CartridgeSearchArguments.OrderBy.Distance
 				}
 			};
 
@@ -148,13 +146,13 @@ namespace WF.Player.Core
             if (!checkConnection())
 				throw new InvalidOperationException("Invalid connection to the API.");
 
-			API.SearchCartridgesRequest search = new API.SearchCartridgesRequest()
+			LiveAPI.SearchCartridgesRequest search = new LiveAPI.SearchCartridgesRequest()
 			{
 				PageNumber = 1,
 				ResultsPerPage = 50,
-				SearchArguments = new API.CartridgeSearchArguments()
+				SearchArguments = new LiveAPI.CartridgeSearchArguments()
 				{
-					OrderSearchBy = API.CartridgeSearchArguments.OrderBy.PublishDate,
+					OrderSearchBy = LiveAPI.CartridgeSearchArguments.OrderBy.PublishDate,
 					IsPlayAnywhere = true
 				}
 			};
@@ -164,14 +162,14 @@ namespace WF.Player.Core
 
 		public void DownloadCartridge (Cartridge cart, string path, Stream output)
 		{
-			API.DownloadCartridgeRequest downloadRequest = new API.DownloadCartridgeRequest ();
+			LiveAPI.DownloadCartridgeRequest downloadRequest = new LiveAPI.DownloadCartridgeRequest ();
 
 			downloadRequest.WGCode = cart.WGCode;
-			downloadRequest.consumerToken = consumerToken;
+			downloadRequest.UserToken = userToken;
 
 			string result = callAPI ("DownloadCartridge",downloadRequest);
 
-			API.DownloadCartridgeResponse resp = JsonConvert.DeserializeObject<API.DownloadCartridgeResponse> (result);
+			LiveAPI.DownloadCartridgeResponse resp = JsonConvert.DeserializeObject<LiveAPI.DownloadCartridgeResponse> (result);
 
 			if (resp != null && resp.CartridgeBytes != null)
 			{
@@ -204,7 +202,7 @@ namespace WF.Player.Core
         /// <returns>True, if the connections is ok, else false.</returns>
         private bool checkConnection()
         {
-            if (String.Empty.Equals(consumerToken))
+            if (String.Empty.Equals(userToken))
             {
                 statusMessage = "Missing token";
                 return false;
@@ -217,15 +215,15 @@ namespace WF.Player.Core
         /// Search cartridges via web client.
         /// </summary>
         /// <param name="search">Search parameters</param>
-        private void beginGetCartridges(API.SearchCartridgesRequest search)
+        private void beginGetCartridges(LiveAPI.SearchCartridgesRequest search)
         {
 			// Starts the asynchronous search operation.
 			// The result happens in the event handler onSearchCartridgesCompleted.
-			if (!String.IsNullOrEmpty (consumerToken))
-				search.consumerToken = consumerToken;
+			if (!String.IsNullOrEmpty (userToken))
+				search.UserToken = userToken;
 			string result = callAPI("SearchCartridges", search);
 
-			API.SearchCartridgesResponse resp = JsonConvert.DeserializeObject<API.SearchCartridgesResponse>(result);
+			LiveAPI.SearchCartridgesResponse resp = JsonConvert.DeserializeObject<LiveAPI.SearchCartridgesResponse>(result);
 
 			status = resp.Status.StatusCode;
 
@@ -237,7 +235,7 @@ namespace WF.Player.Core
 					Clear();
 
 					// Get new ones
-					foreach (API.CartridgeSearchResult res in resp.Cartridges)
+					foreach (LiveAPI.CartridgeSearchResult res in resp.Cartridges)
 					{
 						Cartridge cart = new Cartridge();
 

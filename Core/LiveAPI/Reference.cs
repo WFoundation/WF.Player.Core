@@ -3055,10 +3055,10 @@ namespace WF.Player.Core.LiveAPI {
     public  class DownloadCartridgeResponse : WF.Player.Core.LiveAPI.APIResponse {
         
         
-        private byte CartridgeBytesField;
+        private byte[] CartridgeBytesField;
         
         
-        public byte CartridgeBytes {
+        public byte[] CartridgeBytes {
             get {
                 return this.CartridgeBytesField;
             }

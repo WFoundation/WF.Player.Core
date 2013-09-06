@@ -1,5 +1,4 @@
-﻿///
-/// WF.Player.Core - A Wherigo Player Core for different platforms.
+﻿/// WF.Player.Core - A Wherigo Player Core for different platforms.
 /// Copyright (C) 2012-2013  Dirk Weltz <web@weltz-online.de>
 ///
 /// This program is free software: you can redistribute it and/or modify
@@ -14,7 +13,6 @@
 /// 
 /// You should have received a copy of the GNU Lesser General Public License
 /// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-/// 
 
 using System;
 using System.Collections.Generic;
@@ -95,9 +93,6 @@ namespace WF.Player.Core
 			wiginternal["CartridgeEvent"] = luaState.RegisterFunction("CartridgeEvent", this, this.GetType().GetMethod("CartridgeEvent"));
 			wiginternal["CommandChangedEvent"] = luaState.RegisterFunction("CommandChangedEvent", this, this.GetType().GetMethod("CommandChangedEvent"));
 			wiginternal["AttributeChangedEvent"] = luaState.RegisterFunction("AttributeChangedEvent", this, this.GetType().GetMethod("AttributeChangedEvent"));
-
-			// Save WIGInternal, so that Wherigo.lua could use it
-//            luaState["WIGInternal"] = wiginternal;
 
             // Mark package WIGInternal as loaded
 			LuaTable package = (LuaTable)luaState["package"];

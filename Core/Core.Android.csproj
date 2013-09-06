@@ -39,35 +39,38 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="Mono.Android" />
-    <Reference Include="SharpZipLib.Android">
-      <HintPath>SharpZipLib.Android.dll</HintPath>
+    <Reference Include="ICSharpCode.SharpZipLib">
+      <HintPath>..\SharpZipLib\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Resources\Resource.designer.cs" />
-    <Compile Include="Cartridge.cs" />
-    <Compile Include="Character.cs" />
-    <Compile Include="Command.cs" />
-    <Compile Include="Distance.cs" />
-    <Compile Include="Engine.cs" />
-    <Compile Include="FileFormats.cs" />
-    <Compile Include="Input.cs" />
-    <Compile Include="Item.cs" />
-    <Compile Include="IUserInterface.cs" />
-    <Compile Include="Media.cs" />
-    <Compile Include="Table.cs" />
-    <Compile Include="Task.cs" />
-    <Compile Include="Thing.cs" />
-    <Compile Include="UIObject.cs" />
-    <Compile Include="Wherigo.cs" />
-    <Compile Include="Zone.cs" />
-    <Compile Include="ZonePoint.cs" />
-    <Compile Include="Cartridges.cs" />
-    <Compile Include="FileGWC.cs" />
-    <Compile Include="FileGWZ.cs" />
-    <Compile Include="FileWFC.cs" />
-    <Compile Include="FileWFZ.cs" />
-    <Compile Include="API\APIv1JSON.cs" />
+    <Compile Include="Engine\Engine.cs" />
+    <Compile Include="Engine\WIGInternalImpl.cs" />
+    <Compile Include="LiveAPI\Cartridges.cs" />
+    <Compile Include="LiveAPI\Reference.cs" />
+    <Compile Include="Loaders\FileGWC.cs" />
+    <Compile Include="Loaders\FileGWZ.cs" />
+    <Compile Include="Loaders\FileWFC.cs" />
+    <Compile Include="Loaders\FileWFZ.cs" />
+    <Compile Include="Loaders\FileFormats.cs" />
+    <Compile Include="Model\Cartridge.cs" />
+    <Compile Include="Model\Character.cs" />
+    <Compile Include="Model\Command.cs" />
+    <Compile Include="Model\Distance.cs" />
+    <Compile Include="Model\Enums.cs" />
+    <Compile Include="Model\Events.cs" />
+    <Compile Include="Model\Input.cs" />
+    <Compile Include="Model\Item.cs" />
+    <Compile Include="Model\Media.cs" />
+    <Compile Include="Model\MessageBox.cs" />
+    <Compile Include="Model\Table.cs" />
+    <Compile Include="Model\Task.cs" />
+    <Compile Include="Model\Thing.cs" />
+    <Compile Include="Model\Timer.cs" />
+    <Compile Include="Model\UIObject.cs" />
+    <Compile Include="Model\Zone.cs" />
+    <Compile Include="Model\ZonePoint.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
@@ -77,19 +80,16 @@
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="NLua\Core\NLua\NLua.Android.csproj">
+    <EmbeddedResource Include="Resources\Wherigo.luac" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NLua\Core\NLua\NLua.Android.csproj">
       <Project>{420205BB-ABE3-4FDD-B5D4-BE96611BF0D5}</Project>
       <Name>NLua.Android</Name>
     </ProjectReference>
-    <ProjectReference Include="Newtonsoft.Json\Newtonsoft.Json\Newtonsoft.Json.MonoDroid.csproj">
+    <ProjectReference Include="..\..\Newtonsoft.Json\Newtonsoft.Json\Newtonsoft.Json.MonoDroid.csproj">
       <Project>{E6C3413C-919B-486D-8B6C-225CBD921B98}</Project>
       <Name>Newtonsoft.Json.MonoDroid</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="API\" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\Wherigo.luac" />
   </ItemGroup>
 </Project>

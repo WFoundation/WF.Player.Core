@@ -36,10 +36,11 @@ namespace WF.Player.Core
 
 }
 #else
-using Ionic.Zip;
 using System;
 using System.IO;
 using System.Linq;
+using ICSharpCode.SharpZipLib.Core;
+using ICSharpCode.SharpZipLib.Zip;
 
 namespace WF.Player.Core
 {
@@ -76,19 +77,19 @@ namespace WF.Player.Core
 				return false;
 
 			ZipInputStream zipInputStream = new ZipInputStream(inputStream);
-			ZipEntry zipEntry = zipInputStream.GetNextEntry();
-			while (zipEntry != null)
+			ZipFile zf = new ZipFile(inputStream);
+			foreach(ZipEntry ze in zf)
 			{
-				String entryFileName = zipEntry.FileName;
+				String entryFileName = ze.Name;
+
 				if (Path.GetExtension(entryFileName).Equals("lua"))
 					// Lua file exists, so it should be a valid GWZ file
 					return true;
-				zipEntry = zipInputStream.GetNextEntry();
 			}
 
 			return false;
 		}
-
+		
 		/// <summary>
 		/// Load a whole GWZ file into a Cartridge object.
 		/// </summary>
