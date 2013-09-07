@@ -105,7 +105,7 @@ namespace WF.Player.Core
 		/// <value>The text.</value>
 		public string Text {
 			get {
-				return GetString ("Text");
+				return Engine.ReplaceMarkup(GetString ("Text"));
 			}
 		}
 

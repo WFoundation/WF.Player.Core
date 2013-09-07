@@ -24,7 +24,6 @@ using System.Text;
 using System.Threading;
 using NLua;
 
-
 namespace WF.Player.Core
 {
 
@@ -987,10 +986,10 @@ namespace WF.Player.Core
 			}
 
 			return s
-				.Replace("<BR>", Environment.NewLine)
-				.Replace("&nbsp;", " ")
-				.Replace("&lt;", "<")
-				.Replace("&gt;", ">");
+				.Replace("<BR>", Environment.NewLine, StringComparison.InvariantCultureIgnoreCase)
+				.Replace("&nbsp;", " ", StringComparison.InvariantCultureIgnoreCase)
+				.Replace("&lt;", "<", StringComparison.InvariantCultureIgnoreCase)
+				.Replace("&gt;", ">", StringComparison.InvariantCultureIgnoreCase);
 		}
 
         /// <summary>
