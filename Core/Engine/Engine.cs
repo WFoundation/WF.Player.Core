@@ -368,10 +368,7 @@ namespace WF.Player.Core
 				if (IsUIObject (obj))
 					((UIObject)obj).NotifyPropertyChanged (attribute);
 
-				// TODO: Why is this doing that?
-				// Because of the fact, that is zone getting active and should be handled by the RefreshLocation event.
-				// For example: you stay at a place, no new GPS correction, but a script activates a zone. In this case,
-				// if you are in the zone, we should fire an OnEnter event.
+				// Refreshes the zone in order to make it fire its events.
 				if (cartridge.WIGTable != null && ("Zone".Equals(classname) && "Active".Equals(attribute)))
 					RefreshLocation(lat, lon, alt, accuracy);
 
@@ -970,6 +967,31 @@ namespace WF.Player.Core
 		#endregion
 
         #region Helpers
+
+		/// <summary>
+		/// Cleans a string from specific markup by converting it to its equivalent
+		/// values in the environment.
+		/// </summary>
+		/// <param name="s"></param>
+		/// <returns></returns>
+		internal static string ReplaceMarkup(string s)
+		{
+			// <BR> -> new line
+			// &nbsp; -> space
+			// &lt; -> '<'
+			// &gt; -> '>'
+
+			if (s == null)
+			{
+				return null;
+			}
+
+			return s
+				.Replace("<BR>", Environment.NewLine)
+				.Replace("&nbsp;", " ")
+				.Replace("&lt;", "<")
+				.Replace("&gt;", ">");
+		}
 
         /// <summary>
         /// Call a Lua function in a new thread.

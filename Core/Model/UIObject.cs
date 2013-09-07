@@ -43,7 +43,7 @@ namespace WF.Player.Core
 		/// <value>The description.</value>
 		public string Description {
 			get {
-				return GetString ("Description");
+				return Engine.ReplaceMarkup(GetString ("Description"));
 			}
 		}
 
