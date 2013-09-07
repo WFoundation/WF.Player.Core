@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -77,29 +77,32 @@
     <CodesignProvision>Automatic:AppStore</CodesignProvision>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="IUserInterface.cs" />
-    <Compile Include="Engine.cs" />
-    <Compile Include="Media.cs" />
-    <Compile Include="Cartridge.cs" />
-    <Compile Include="Wherigo.cs" />
-    <Compile Include="Table.cs" />
-    <Compile Include="Item.cs" />
-    <Compile Include="ZonePoint.cs" />
-    <Compile Include="Distance.cs" />
-    <Compile Include="Command.cs" />
-    <Compile Include="Character.cs" />
-    <Compile Include="Task.cs" />
-    <Compile Include="Input.cs" />
-    <Compile Include="Zone.cs" />
-    <Compile Include="Thing.cs" />
-    <Compile Include="UIObject.cs" />
-    <Compile Include="Cartridges.cs" />
-    <Compile Include="FileFormats.cs" />
-    <Compile Include="FileGWC.cs" />
-    <Compile Include="FileGWZ.cs" />
-    <Compile Include="FileWFC.cs" />
-    <Compile Include="FileWFZ.cs" />
-    <Compile Include="API\Reference.cs" />
+    <Compile Include="Engine\Engine.cs" />
+    <Compile Include="Engine\WIGInternalImpl.cs" />
+    <Compile Include="LiveAPI\Cartridges.cs" />
+    <Compile Include="LiveAPI\Reference.cs" />
+    <Compile Include="Loaders\FileGWC.cs" />
+    <Compile Include="Loaders\FileGWZ.cs" />
+    <Compile Include="Loaders\FileWFC.cs" />
+    <Compile Include="Loaders\FileWFZ.cs" />
+    <Compile Include="Loaders\FileFormats.cs" />
+    <Compile Include="Model\Cartridge.cs" />
+    <Compile Include="Model\Character.cs" />
+    <Compile Include="Model\Command.cs" />
+    <Compile Include="Model\Distance.cs" />
+    <Compile Include="Model\Enums.cs" />
+    <Compile Include="Model\Events.cs" />
+    <Compile Include="Model\Input.cs" />
+    <Compile Include="Model\Item.cs" />
+    <Compile Include="Model\Media.cs" />
+    <Compile Include="Model\MessageBox.cs" />
+    <Compile Include="Model\Table.cs" />
+    <Compile Include="Model\Task.cs" />
+    <Compile Include="Model\Thing.cs" />
+    <Compile Include="Model\Timer.cs" />
+    <Compile Include="Model\UIObject.cs" />
+    <Compile Include="Model\Zone.cs" />
+    <Compile Include="Model\ZonePoint.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -109,8 +112,8 @@
     <Reference Include="Newtonsoft.Json.MonoTouch">
       <HintPath>Lib\Newtonsoft.Json.MonoTouch.dll</HintPath>
     </Reference>
-    <Reference Include="Ionic.Zip.iOS">
-      <HintPath>Lib\Ionic.Zip.iOS.dll</HintPath>
+    <Reference Include="SharpZipLib.iOS">
+      <HintPath>Lib\SharpZipLib.iOS.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
