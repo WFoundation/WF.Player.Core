@@ -123,9 +123,22 @@ namespace WF.Player.Core
 
 		#region Methods
 
+		/// <summary>
+		/// Gives a result answer to the input.
+		/// </summary>
+		/// <param name="result">The answer. If null, the input is considered to be cancelled.</param>
 		public void GiveResult(string result)
 		{
 			engine.Call (wigTable, "OnGetInput", new object[] { wigTable, result });
+		}
+
+		/// <summary>
+		/// Notifies the input that it has been dismissed before a result could be given.
+		/// </summary>
+		/// <remarks>Equivalent to <code>GiveResult(null)</code>.</remarks>
+		public void Cancel()
+		{
+			GiveResult(null);
 		}
 
 		#endregion

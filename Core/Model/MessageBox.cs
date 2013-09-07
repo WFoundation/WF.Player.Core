@@ -29,7 +29,7 @@ namespace WF.Player.Core
 		/// <summary>
 		/// Gets the media object associated to the message box.
 		/// </summary>
-		public Media MediaObject { get; private set; }
+		public Media Image { get; private set; }
 
 		/// <summary>
 		/// Gets the text of the first button label. If null, a default value should be provided.
@@ -60,7 +60,7 @@ namespace WF.Player.Core
 		public MessageBox(string text, Media mediaObj, string btn1label, string btn2label, Action<string> cb)
 		{
 			Text = text;
-			MediaObject = mediaObj;
+			Image = mediaObj;
 			FirstButtonLabel = String.IsNullOrEmpty(btn1label) ? null : btn1label;
 			SecondButtonLabel = String.IsNullOrEmpty(btn2label) ? null : btn2label;
 
@@ -73,9 +73,10 @@ namespace WF.Player.Core
 		/// <param name="result"></param>
 		public void GiveResult(MessageBoxResult result)
 		{
+			// Message boxes with no callbacks don't give result and silenty return.
 			if (callback == null)
 			{
-				throw new InvalidOperationException("No callback has been specified for this message box.");
+				return;
 			}
 
 			switch (result)
@@ -86,7 +87,7 @@ namespace WF.Player.Core
 						throw new InvalidOperationException("There is no first button on this message box.");
 					}
 
-					callback(FirstButtonLabel);
+					callback("Button1");
 
 					break;
 
@@ -97,13 +98,13 @@ namespace WF.Player.Core
 						throw new InvalidOperationException("There is no second button on this message box.");
 					}
 
-					callback(SecondButtonLabel);
+					callback("Button2");
 
 					break;
 
 				case MessageBoxResult.Cancel:
 
-					// TODO: Cancelled message boxes call the callback with a nil parameter.
+					// Cancelled message boxes call the callback with a nil parameter.
 					callback (null);
 
 					break;
