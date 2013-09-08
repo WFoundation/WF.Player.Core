@@ -100,12 +100,23 @@ namespace WF.Player.Core
 		}
 
 		/// <summary>
-		/// Gets a value indicating whether this <see cref="WF.Player.Core.Item"/> is visible.
+		/// Gets a value indicating whether this <see cref="WF.Player.Core.UIObject"/> is visible.
 		/// </summary>
 		/// <value><c>true</c> if visible; otherwise, <c>false</c>.</value>
 		public bool Visible {
 			get {
 				return GetBool ("Visible");
+			}
+		}
+
+		/// <summary>
+		/// Gets the location of the object.
+		/// </summary>
+		public ZonePoint ObjectLocation
+		{
+			get
+			{
+				return GetTable("ObjectLocation") as ZonePoint;
 			}
 		}
 

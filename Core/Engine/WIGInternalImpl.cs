@@ -72,8 +72,8 @@ namespace WF.Player.Core
             // Internal functions
 			wiginternal["IsPointInZone"] = luaState.RegisterFunction("IsPointInZone", this, this.GetType().GetMethod("IsPointInZone"));
             // TODO: Implement this functions in C# instead of Lua.
-			// wiginternal["VectorToZone"] = luaState.RegisterFunction("VectorToZone", this, this.GetType().GetMethod("VectorToZone"));
-			// wiginternal["VectorToSegment"] = luaState.RegisterFunction("VectorToSegment", this, this.GetType().GetMethod ("VectorToSegment"));
+			wiginternal["VectorToZone"] = luaState.RegisterFunction("VectorToZone", this, this.GetType().GetMethod("VectorToZone"));
+			wiginternal["VectorToSegment"] = luaState.RegisterFunction("VectorToSegment", this, this.GetType().GetMethod ("VectorToSegment"));
 			wiginternal["VectorToPoint"] = luaState.RegisterFunction("VectorToPoint", this, this.GetType().GetMethod("VectorToPoint"));
 			wiginternal["TranslatePoint"] = luaState.RegisterFunction("TranslatePoint", this, this.GetType().GetMethod("TranslatePoint"));
 
@@ -404,69 +404,112 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Calculat distance and bearing of ZonePoint to point of zone with shortest distance.  
+        /// Calculates the distance and bearing between a ZonePoint to the nearest point of a Zone.
         /// </summary>
-        /// <param name="param1">LuaTable for ZonePoint.</param>
-        /// <param name="param2">LuaTable with Zone, which Points are used for the check.</param>
+        /// <param name="pointObj">LuaTable for ZonePoint.</param>
+        /// <param name="zoneObj">LuaTable with Zone, which Points are used for the check.</param>
         /// <param name="bearing">Double value for bearing to calculated point on line.</param>
         /// <returns>LuaTable for distance to calculated nearest point of zone.</returns>
-        public object[] VectorToZone(object param1, object param2, out double bearing)
+        public LuaTable VectorToZone(object pointObj, object zoneObj, out double bearing)
         {
-            LuaTable zonePoint;
-            LuaTable zone;
+            if (!(pointObj is LuaTable))
+                throw new ArgumentException(String.Format("bad argument #1 to 'VectorToZone' (ZonePoint expected, got {0})", pointObj.GetType()));
 
-            bearing = 0;
+			LuaTable zonePoint = (LuaTable)pointObj;
 
-            if (param1 == null || param2 == null)
-                return new object[] { false };
+            if (!(zoneObj is LuaTable))
+                throw new ArgumentException(String.Format("bad argument #2 to 'VectorToZone' (Zone expected, got {0})", zoneObj.GetType()));
 
-            if (!(param1 is LuaTable))
-                throw new ArgumentException(String.Format("bad argument #1 to 'VectorToZone' (ZonePoint expected, got {0})", param1.GetType()));
+            LuaTable zone = (LuaTable)zoneObj;
 
-            zonePoint = (LuaTable)param1;
+            // If the point is in the zone, the distance and bearing are 0.
+			if (IsPointInZone(zonePoint, zone))
+			{
+				bearing = 0;
+				return (LuaTable)luaState.DoString("return Wherigo.Distance(0)")[0];
+			}
 
-            if (!(param2 is LuaTable))
-                throw new ArgumentException(String.Format("bad argument #2 to 'VectorToZone' (Zone expected, got {0})", param2.GetType()));
+			// If the zone doesn't have points, the distance and bearing are null.
+			if (zone["Points"] == null)
+			{
+				bearing = double.NaN;
+				return null;
+			}
 
-            zone = (LuaTable)param2;
+			// Performs the computation.
 
-            // TODO: Calculation
-            if (IsPointInZone(zonePoint, zone))
-                return luaState.DoString("return Wherigo.Distance(0), 0");
+			LuaTable points = (LuaTable)zone["Points"];
 
-            if (zone["Points"] == null)
-                return new object[] { null, null };
+			double b, tb, k;
+			LuaTable td, current = VectorToSegment(pointObj, points[points.Keys.Count], points[1], out b);
+			var pairs = points.GetEnumerator();
+			
+			while (pairs.MoveNext())
+			{
+				k = (double) pairs.Key;
+				if (k > 1)
+				{
+					td = VectorToSegment(pointObj, points[k - 1], points[k], out tb);
+					if ((double)td["value"] < (double)current["value"])
+					{
+						current = td;
+						b = tb % 360;
+					}
+				}
+			}
 
-            LuaTable points = (LuaTable)zone["Points"];
-
-            //							local current, b = VectorToSegment (point, points[ #points ], points[1])
-            //							for k,v in pairs (points) do
-            //							if k > 1 then
-            //								local td, tb = VectorToSegment (point, points[k - 1], points[k])
-            //									if td.value < current.value then
-            //										current = td
-            //											b = tb % 360
-            //											end
-            //											end
-            //											end
-            //											return current, b
-            //
-
-            return new object[] { true };
+			bearing = b;
+			return current;
         }
 
         /// <summary>
         /// Calculate distance and bearing of ZonePoint to line between two points with shortest distance.
         /// </summary>
-        /// <param name="param1">LuaTable for ZonePoint.</param>
-        /// <param name="param2">LuaTable for first ZonePoint of line.</param>
-        /// <param name="param3">LuaTable for second ZonePoint of line.</param>
+        /// <param name="pointObj">LuaTable for ZonePoint.</param>
+        /// <param name="firstLinePointObj">LuaTable for first ZonePoint of line.</param>
+        /// <param name="secondLinePointObj">LuaTable for second ZonePoint of line.</param>
         /// <param name="bearing">Double value for bearing to calculated point on line.</param>
         /// <returns>LuaTable for distance to calculated point on line.</returns>
-        public object[] VectorToSegment(object param1, object param2, object param3, out double bearing)
+        public LuaTable VectorToSegment(object pointObj, object firstLinePointObj, object secondLinePointObj, out double bearing)
         {
-            throw new NotImplementedException("function 'VectorToSegment' not implemented");
-        }
+			/*
+			 *   local d1, b1 = VectorToPoint (p1, point)
+				  local d1 = math.rad (d1('nauticalmiles') / 60.)
+				  local ds, bs = VectorToPoint (p1, p2)
+				  local dist = math.asin (math.sin (d1) * math.sin (math.rad (b1 - bs)))
+				  local dat = math.acos (math.cos (d1) / math.cos (dist))
+				  if dat <= 0 then
+					return VectorToPoint (point, p1)
+				  elseif dat >= math.rad (ds('nauticalmiles') / 60.) then
+					return VectorToPoint (point, p2) 
+				  end
+				  local intersect = TranslatePoint (p1, Distance (dat * 60, 'nauticalmiles'), bs)
+				  return VectorToPoint (point, intersect)
+			 * */
+
+			double b1, bs;
+
+			LuaTable d1 = VectorToPoint(firstLinePointObj, pointObj, out b1);
+			double dd1 = PI_180 * ((Distance)engine.GetTable(d1)).ValueAs(DistanceUnit.NauticalMiles) / 60;
+
+			LuaTable ds = VectorToPoint(firstLinePointObj, secondLinePointObj, out bs);
+			double dds = PI_180 * ((Distance)engine.GetTable(ds)).ValueAs(DistanceUnit.NauticalMiles) / 60;
+
+			var dist = Math.Asin(Math.Sin(dd1) * Math.Sin(PI_180 * (b1 - bs)));
+			var dat = Math.Acos(Math.Cos(dd1) / Math.Cos(dist));
+			if (dat <= 0)
+			{
+				return VectorToPoint(pointObj, firstLinePointObj, out bearing);
+			}
+			else if (dat >= PI_180 * dds)
+			{
+				return VectorToPoint(pointObj, secondLinePointObj, out bearing);
+			}
+
+			var intersect = TranslatePoint(firstLinePointObj, luaState.DoString(String.Format("return Wherigo.Distance({0}, 'nauticalmiles')", dat * 60))[0], bs);
+
+			return VectorToPoint(pointObj, intersect, out bearing);
+		}
 
         /// <summary>
         /// Calculate distance and bearing from one ZonePoint to another.

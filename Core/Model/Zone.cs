@@ -50,16 +50,6 @@ namespace WF.Player.Core
 		/// Gets the original point.
 		/// </summary>
 		/// <value>The original point as ZonePoint.</value>
-		public ZonePoint ObjectLocation {
-			get {
-				return OriginalPoint;
-			}
-		}
-
-		/// <summary>
-		/// Gets the original point.
-		/// </summary>
-		/// <value>The original point as ZonePoint.</value>
 		public ZonePoint OriginalPoint {
 			get {
                 if (wigTable["OriginalPoint"] is LuaTable)

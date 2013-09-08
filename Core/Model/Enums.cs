@@ -14,6 +14,7 @@
 /// You should have received a copy of the GNU Lesser General Public License
 /// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 namespace WF.Player.Core
 {
 	/// <summary>
@@ -95,5 +96,68 @@ namespace WF.Player.Core
 		FirstButton,
 		SecondButton,
 		Cancel
+	}
+
+	/// <summary>
+	/// Defines extensions for enums in the model.
+	/// </summary>
+	public static class EnumExtensions
+	{
+		/// <summary>
+		/// Gets the symbol of the unit, as defined in the international system of units.
+		/// </summary>
+		/// <param name="unit">Unit of distance to get the symbol of.</param>
+		/// <returns>The standard unit symbol or abreviation.</returns>
+		public static string ToSymbol(this DistanceUnit unit)
+		{
+			switch (unit)
+			{
+				case DistanceUnit.Meters:
+					return "m";
+					
+				case DistanceUnit.Kilometers:
+					return "km";
+				
+				case DistanceUnit.Miles:
+					return "mi";
+
+				case DistanceUnit.Feet:
+					return "ft";
+
+				case DistanceUnit.NauticalMiles:
+					return "nmi";
+
+				default:
+					throw new NotImplementedException(String.Format("Unexpected unit {0} is not supported."));
+			}
+		}
+
+		/// <summary>
+		/// Gets a factor representing how many of this distance unit fits in one meter.
+		/// </summary>
+		/// <returns>A conversion factor, used to convert from meters to this unit.</returns>
+		public static double GetConversionFactor(this DistanceUnit unit)
+		{
+			switch (unit)
+			{
+				case DistanceUnit.Meters:
+					return 1d;
+
+				case DistanceUnit.Kilometers:
+					return 1d / 1000;
+
+				case DistanceUnit.Miles:
+					return 1d / 1609.344;
+
+				case DistanceUnit.Feet:
+					return 3.2808399d;
+
+				case DistanceUnit.NauticalMiles:
+					return 1d / 1852.216;
+
+				default:
+					throw new NotImplementedException(String.Format("Unexpected unit {0} is not supported."));
+			}
+		}
 	}
 }

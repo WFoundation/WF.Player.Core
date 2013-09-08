@@ -72,6 +72,7 @@
     <Compile Include="Model\Events.cs" />
     <Compile Include="Model\Input.cs" />
     <Compile Include="Model\Item.cs" />
+    <Compile Include="Model\LocationVector.cs" />
     <Compile Include="Model\Media.cs" />
     <Compile Include="Model\MessageBox.cs" />
     <Compile Include="Model\Timer.cs" />

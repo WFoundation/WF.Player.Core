@@ -185,7 +185,7 @@ namespace WF.Player.Core
 	public class ZoneStateChangedEventArgs : EventArgs
 	{
 		/// <summary>
-		/// Gets the list of zones that changed.
+		/// Gets the list of active zones.
 		/// </summary>
 		public IList<Zone> Zones { get; private set; }
 

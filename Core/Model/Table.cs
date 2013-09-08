@@ -141,12 +141,37 @@ namespace WF.Player.Core
 			return obj is string ? (string)obj : "";
 		}
 
+		/// <summary>
+		/// Gets a Table object from a LuaTable.
+		/// </summary>
+		/// <param name="t"></param>
+		/// <returns></returns>
 		public Table GetTable(LuaTable t)
 		{
             if (t != null)
 			    return engine.GetTable (t);
             else
                 return null;
+		}
+
+		/// <summary>
+		/// Gets a Table object from a field in the table.
+		/// </summary>
+		/// <param name="t"></param>
+		/// <returns></returns>
+		public Table GetTable(string key)
+		{
+			return GetTable(wigTable[key] as LuaTable);
+		}
+
+		/// <summary>
+		/// Gets a Table object from a field in the table.
+		/// </summary>
+		/// <param name="t"></param>
+		/// <returns></returns>
+		public Table GetTable(double key)
+		{
+			return GetTable(wigTable[key] as LuaTable);
 		}
 
 		#endregion

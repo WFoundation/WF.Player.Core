@@ -71,6 +71,9 @@ namespace WF.Player.Core
 			}
 		}
 
+		/// <summary>
+		/// Gets a list of available commands.
+		/// </summary>
 		public List<Command> ActiveCommands {
 			get {
 				List<Command> result = new List<Command> ();
@@ -96,6 +99,17 @@ namespace WF.Player.Core
 					result.Add ((Thing)GetTable ((LuaTable)t.Value));
 
 				return result;
+			}
+		}
+
+		/// <summary>
+		/// Gets the distance and bearing between the player and this Thing.
+		/// </summary>
+		public LocationVector VectorFromPlayer
+		{
+			get
+			{
+				return engine.GetVectorFromPlayer(this);
 			}
 		}
 

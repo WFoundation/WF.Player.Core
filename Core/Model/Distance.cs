@@ -18,6 +18,7 @@
 
 using System;
 using NLua;
+using System.Globalization;
 
 namespace WF.Player.Core
 {
@@ -48,35 +49,63 @@ namespace WF.Player.Core
 		#region Methods
 
 		/// <summary>
-		/// Gets the value of the distance with given unit.
+		/// Gets the value of the distance with a given unit.
 		/// </summary>
-		/// <value>The value.</value>
+		/// <param name="unit">The unit to query for.</param>
+		/// <returns>The double value of the distance.</returns>
 		public double ValueAs(DistanceUnit unit)
 		{
-			double value = GetDouble ("value");
+			return Value * unit.GetConversionFactor();
+		}
 
-			switch (unit) {
-				case DistanceUnit.Kilometers:
-					value = value / 1000.0;
-					break;
+		/// <summary>
+		/// Gets the measure of the distance for a given unit. 
+		/// </summary>
+		/// <param name="unit">The unit to query for.</param>
+		/// <returns>The measure of the distance, i.e. is value and unit symbol.
+		/// The decimal precision of the value is using the default setting of the current culture.</returns>
+		public string MeasureAs(DistanceUnit unit)
+		{
+			return MeasureAs(unit, CultureInfo.CurrentCulture.NumberFormat.NumberDecimalDigits);
+		}
 
-				case DistanceUnit.Miles:
-					value = value / 1609.344;
-					break;
+		/// <summary>
+		/// Gets the measure of the distance for a given unit and a given precision.
+		/// </summary>
+		/// <param name="unit">The unit to query for.</param>
+		/// <param name="decimalDigits">How many digits should the measure have. Should be 0 or greater.</param>
+		/// <returns>The measure of the distance, i.e. is value and unit symbol.</returns>
+		public string MeasureAs(DistanceUnit unit, int decimalDigits)
+		{
+			return String.Format("{0:F"+ decimalDigits +"} {1}", ValueAs(unit), unit.ToSymbol());
+		}
 
-				case DistanceUnit.Feet:
-					value = value * 3.2808399;
-					break;
-
-				case DistanceUnit.NauticalMiles:
-					value = value / 1852.216;
-					break;
-
-				default:
-					break;
+		/// <summary>
+		/// Gets the most meaningful measure of the distance.
+		/// </summary>
+		/// <param name="smallestUnit">Smallest unit displayable in the measure.</param>
+		/// <returns>The measure of the distance, in <code>smallestUnit</code> or its supported
+		/// factors.</returns>
+		public string BestMeasureAs(DistanceUnit smallestUnit)
+		{
+			if (!smallestUnit.Equals(DistanceUnit.Meters) && !smallestUnit.Equals(DistanceUnit.Kilometers))
+			{
+				throw new NotImplementedException("smallestUnit must be Meters or Kilometers.");
 			}
 
-			return value;
+			double v = Value;
+			if (v > 1000d)
+			{
+				return MeasureAs(DistanceUnit.Kilometers, 2);
+			}
+			else if (v > 100d)
+			{
+				return MeasureAs(DistanceUnit.Meters, 1);
+			}
+			else
+			{
+				return MeasureAs(DistanceUnit.Meters, 0);
+			}
 		}
 
 		#endregion

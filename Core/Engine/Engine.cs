@@ -141,7 +141,7 @@ namespace WF.Player.Core
 
         #endregion
 
-        #region Property
+        #region Properties
 
         public double Altitude { get { return alt; } }
 
@@ -580,17 +580,24 @@ namespace WF.Player.Core
 				// Gets a zone from the table.
 				Zone zone = (Zone)GetTable ((LuaTable)z.Value);
 
-				// Notifies that its state has changed.
+				// Performs notifications.
 				if (zone != null)
-					((UIObject)zone).NotifyPropertyChanged ("State");
+				{
+					zone.NotifyPropertyChanged("State");
+					zone.NotifyPropertyChanged("VectorFromPlayer");
+				}
 
 				// Adds the zone to the list.
-				list.Add ((Zone)GetTable((LuaTable)z.Value));
+				list.Add (zone);
 			}
+
 
 			// The list of zones and objects has changed.
 			RaisePropertyChanged("ActiveVisibleZones");
 			RaisePropertyChanged("VisibleObjects");
+
+			// Notifies all visible objects that their distances have changed.
+			VisibleObjects.ForEach(t => t.NotifyPropertyChanged("VectorFromPlayer"));
 
 			// Raise the event.
 			RaiseZoneStateChanged(list);
@@ -787,54 +794,34 @@ namespace WF.Player.Core
 			return idx == -1 ? null : GetTable ((LuaTable)((LuaTable)cartridge.WIGTable["AllZObjects"])[idx]);
 		}
 
-        /// <summary>
-        /// Get bearing to object in meters.
-        /// </summary>
-        /// <param name="obj">Object for bearing calculation.</param>
-        /// <returns>Bearing in degrees.</returns>
-		public double GetBearingOf(Thing obj)
+		/// <summary>
+		/// Gets the distance and bearing vector from the player to a thing.
+		/// </summary>
+		/// <param name="thing"></param>
+		/// <returns></returns>
+		internal LocationVector GetVectorFromPlayer(Thing thing)
 		{
-			return (double)Call (obj.WIGTable,"GetCurrentBearing",new object[] { obj.WIGTable, 0 })[0];
-		}
-		
-        /// <summary>
-        /// Get bearing to object as text.
-        /// </summary>
-        /// <param name="obj">Object for bearing calculation.</param>
-        /// <returns>Text representing the bearing.</returns>
-		public string GetBearingTextOf(Thing obj)
-		{
-			return String.Format ("{0}°",GetBearingOf(obj));
-		}
+			object thingLoc = thing.WIGTable["ObjectLocation"];
+			bool isZone = thing is Zone;
 
-        /// <summary>
-        /// Get distance to object in meters.
-        /// </summary>
-        /// <param name="obj">Object for distance calculation.</param>
-        /// <returns>a distance object.</returns>
-		public Distance GetDistanceOf(Thing obj)
-		{
-			LuaTable dist = (LuaTable)Call (obj.WIGTable,"GetCurrentDistance",new object[] { obj.WIGTable, 0 })[0];
-			return (Distance) GetTable(dist);
-		}
-		
-        /// <summary>
-        /// Get distance to object in meters as text.
-        /// </summary>
-        /// <param name="obj">Object for distance calculation.</param>
-        /// <returns>Text representing the distance.</returns>
-		public string GetDistanceTextOf(Thing obj)
-		{
-			double dist = GetDistanceOf (obj).Value;
-			if (dist >= 1000.0)
-				return String.Format ("{0:0.0} km",dist/1000.0);
-			else if (dist >= 100)
-				return String.Format ("{0:0} m",dist);
+			// If the Thing is not a zone and has no location, consider it is close to the player.
+			if (!isZone && thingLoc == null)
+			{
+				return new LocationVector((Distance)GetTable((LuaTable)luaState.DoString("return Wherigo.Distance(0)")[0]), 0);
+			}
+
+			object[] ret;
+			if (isZone)
+			{
+				ret = luaState.GetFunction("WIGInternal.VectorToZone").Call(new object[] { player["ObjectLocation"], thing.WIGTable });
+			}
 			else
-				return String.Format ("{0:0} m",dist);
-		}
+			{
+				ret = luaState.GetFunction("WIGInternal.VectorToPoint").Call(new object[] { player["ObjectLocation"], thingLoc });
+			}
 
-		
+			return new LocationVector((Distance)GetTable((LuaTable)ret[0]), (double)ret[1]);
+		}
 
         #endregion
 
