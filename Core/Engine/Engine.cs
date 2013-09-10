@@ -965,10 +965,11 @@ namespace WF.Player.Core
 		/// <returns></returns>
 		internal static string ReplaceMarkup(string s)
 		{
-			// <BR> -> new line
-			// &nbsp; -> space
+			// <BR> and <BR>\n-> new line
+			// &nbsp; and &nbsp; + whitespace -> whitespace
 			// &lt; -> '<'
 			// &gt; -> '>'
+			// &amp; and &amp;&amp; and &amp;& -> &
 
 			if (s == null)
 			{
@@ -976,8 +977,9 @@ namespace WF.Player.Core
 			}
 
 			return s
-				.Replace("<BR>", Environment.NewLine, StringComparison.InvariantCultureIgnoreCase)
-				.Replace("&nbsp;", " ", StringComparison.InvariantCultureIgnoreCase)
+				.Replace("<BR>\n?", Environment.NewLine, System.Text.RegularExpressions.RegexOptions.IgnoreCase)
+				.Replace("&nbsp; ?", " ", System.Text.RegularExpressions.RegexOptions.IgnoreCase)
+				.Replace("(?:&amp;)+&*", "&", System.Text.RegularExpressions.RegexOptions.IgnoreCase)
 				.Replace("&lt;", "<", StringComparison.InvariantCultureIgnoreCase)
 				.Replace("&gt;", ">", StringComparison.InvariantCultureIgnoreCase);
 		}
