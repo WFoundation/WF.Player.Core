@@ -965,23 +965,29 @@ namespace WF.Player.Core
 		/// <returns></returns>
 		internal static string ReplaceMarkup(string s)
 		{
-			// <BR> and <BR>\n-> new line
-			// &nbsp; and &nbsp; + whitespace -> whitespace
+			// <BR> and <BR/> and <BR>\n -> new line
+			// &nbsp; and &nbsp; + space -> space
 			// &lt; -> '<'
 			// &gt; -> '>'
-			// &amp; and &amp;&amp; and &amp;& -> &
+			// &amp; and &amp;&amp; -> &
+			// \n -> Environment.NewLine
 
 			if (s == null)
 			{
 				return null;
 			}
 
+			// Defines the options for replacement: ignore case and culture invariant.
+			System.Text.RegularExpressions.RegexOptions ro = System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant;
+			StringComparison sc = StringComparison.InvariantCultureIgnoreCase;
+
 			return s
-				.Replace("<BR>\n?", Environment.NewLine, System.Text.RegularExpressions.RegexOptions.IgnoreCase)
-				.Replace("&nbsp; ?", " ", System.Text.RegularExpressions.RegexOptions.IgnoreCase)
-				.Replace("(?:&amp;)+&*", "&", System.Text.RegularExpressions.RegexOptions.IgnoreCase)
-				.Replace("&lt;", "<", StringComparison.InvariantCultureIgnoreCase)
-				.Replace("&gt;", ">", StringComparison.InvariantCultureIgnoreCase);
+				.Replace("<BR/?>\n?", "\n", ro)
+				.Replace("&nbsp; ?", " ", ro)
+				.Replace("&lt;", "<", sc)
+				.Replace("&gt;", ">", sc)
+				.Replace("(?:&amp;)+", "&", ro)
+				.Replace("\n", Environment.NewLine, sc);
 		}
 
         /// <summary>
