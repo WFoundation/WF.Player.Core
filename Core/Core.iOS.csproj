@@ -103,6 +103,8 @@
     <Compile Include="Model\UIObject.cs" />
     <Compile Include="Model\Zone.cs" />
     <Compile Include="Model\ZonePoint.cs" />
+    <Compile Include="Engine\Extensions.cs" />
+    <Compile Include="Model\LocationVector.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -110,10 +112,16 @@
     <Reference Include="System.Core" />
     <Reference Include="monotouch" />
     <Reference Include="Newtonsoft.Json.MonoTouch">
-      <HintPath>Lib\Newtonsoft.Json.MonoTouch.dll</HintPath>
+      <HintPath>..\Lib\Newtonsoft.Json.MonoTouch.dll</HintPath>
     </Reference>
     <Reference Include="SharpZipLib.iOS">
-      <HintPath>Lib\SharpZipLib.iOS.dll</HintPath>
+      <HintPath>..\Lib\SharpZipLib.iOS.dll</HintPath>
+    </Reference>
+    <Reference Include="KeraLua.iOS">
+      <HintPath>..\Lib\KeraLua.iOS.dll</HintPath>
+    </Reference>
+    <Reference Include="NLuaiOS">
+      <HintPath>..\Lib\NLua.iOS.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -126,15 +134,8 @@
   -->
   <ItemGroup>
     <Folder Include="Resources\" />
-    <Folder Include="API\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\Wherigo.luac" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="NLua\Core\NLua\NLua.iOS.csproj">
-      <Project>{7064B157-DD57-4828-94C5-CA149B25CB40}</Project>
-      <Name>NLua.iOS</Name>
-    </ProjectReference>
   </ItemGroup>
 </Project>
