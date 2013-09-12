@@ -82,6 +82,19 @@ namespace WF.Player.Core
 			}
 		}
 
+		/// <summary>
+		/// Gets the position state of the player for this zone.
+		/// </summary>
+		public PlayerZoneState State
+		{
+			get
+			{
+				string state = GetString("State");
+
+				return (PlayerZoneState)Enum.Parse(typeof(PlayerZoneState), state, true);
+			}
+		}
+
 		#endregion
 
 	}

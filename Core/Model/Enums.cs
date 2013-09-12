@@ -102,6 +102,17 @@ namespace WF.Player.Core
 	}
 
 	/// <summary>
+	/// A state of the player with respect to a Zone.
+	/// </summary>
+	public enum PlayerZoneState
+	{
+		Inside,
+		Proximity,
+		Distant,
+		NotInRange
+	}
+
+	/// <summary>
 	/// Defines extensions for enums in the model.
 	/// </summary>
 	public static class EnumExtensions
