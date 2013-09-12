@@ -695,8 +695,12 @@ namespace WF.Player.Core
         /// </summary>
         /// <param name="source">ObjIndex of the timer that released the tick.</param>
         private void WherigoTimerTickCore(object source)
-        {
-            int objIndex = (int)source;
+        {			
+			int objIndex = (int)source;
+
+			if (!timers.ContainsKey(objIndex))
+				return;
+		
 			System.Threading.Timer timer = timers[objIndex];
 
 			timer.Dispose();
