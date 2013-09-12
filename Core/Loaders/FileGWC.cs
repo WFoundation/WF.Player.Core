@@ -189,6 +189,7 @@ namespace WF.Player.Core
 						reader.BaseStream.Position = pos;
 						// ... and read resources
 						cart.Resources[i] = new Media();
+						cart.Resources[i].FileName = cart.Filename;
 						readMedia(cart.Resources[i], reader);
 					}
 				}
@@ -292,11 +293,11 @@ namespace WF.Player.Core
 
 			// Read poster
 			if (posterId > 0 && posterId < maxMediaFiles)
-				cart.Poster = loadGWCMedia(reader, objects[posterId], posterId, maxMediaFiles);
+				cart.Poster = loadGWCMedia(reader, cart.Filename, objects[posterId], posterId, maxMediaFiles);
 
 			// Read icon
 			if (iconId > 0 && iconId < maxMediaFiles)
-				cart.Icon = loadGWCMedia(reader, objects[iconId], iconId, maxMediaFiles);
+				cart.Icon = loadGWCMedia(reader, cart.Filename, objects[iconId], iconId, maxMediaFiles);
 
 			// Restores the reader position
 			reader.BaseStream.Position = oldReaderPosition;
@@ -310,9 +311,12 @@ namespace WF.Player.Core
 		/// <param name="id"></param>
 		/// <param name="maxMediaFiles"></param>
 		/// <returns></returns>
-		private static Media loadGWCMedia(BinaryReader reader, int position, int id, int maxMediaFiles)
+		private static Media loadGWCMedia(BinaryReader reader, string fileName, int position, int id, int maxMediaFiles)
 		{
 			Media media = new Media();
+
+			// Save filename for later use
+			media.FileName = fileName;
 
 			reader.BaseStream.Position = position;
 			readMedia(media, reader);
@@ -387,6 +391,8 @@ namespace WF.Player.Core
 				media.Type = (MediaType)Enum.ToObject (typeof(MediaType), input.ReadInt32());
 				// Read resources data
 				long fileSize = input.ReadInt32();
+				media.FileOffset = input.BaseStream.Position;
+				media.FileSize = fileSize;
 				media.Data = new byte[fileSize];
 				input.Read(media.Data, 0, media.Data.Length);
 			}

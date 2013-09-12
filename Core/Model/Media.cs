@@ -47,7 +47,22 @@ namespace WF.Player.Core
         /// </summary>
 		public byte[] Data { get; internal set; }
 
-        /// <summary>
+		/// <summary>
+		/// Name of the file, which is containing this media.
+		/// </summary>
+		public string FileName { get; internal set; }
+
+		/// <summary>
+		/// File position for media in the underlaying file.
+		/// </summary>
+		public long FileOffset { get; internal set; }
+
+		/// <summary>
+		/// File size for media in the underlaying file.
+		/// </summary>
+		public long FileSize { get; internal set; }
+
+		/// <summary>
         /// Id for media, which determins the position in gwc file.
         /// </summary>
 		public int MediaId { get; internal set; }

@@ -97,7 +97,6 @@ namespace WF.Player.Core
         public Engine()
         {
             this.luaState = new Lua();
-
             // Create Wherigo environment
             wherigo = new WIGInternalImpl(this, luaState);
 
@@ -141,6 +140,12 @@ namespace WF.Player.Core
             env["DeviceID"] = deviceId;
             env["Version"] = uiVersion + " (" + CorePlatform + " " + CoreVersion + ")";
         }
+
+		~Engine()
+		{
+			if (luaState != null)
+				luaState.Close();
+		}
 
         #endregion
 
@@ -199,6 +204,14 @@ namespace WF.Player.Core
 		#endregion
 
         #region Start/Stop/Load/Save
+
+		/// <summary>
+		/// Close this instance.
+		/// </summary>
+		public void Close()
+		{
+			luaState.Close ();
+		}
 
         /// <summary>
         /// Start engine.
@@ -629,7 +642,10 @@ namespace WF.Player.Core
             	timers.Add(objIndex, timer);
 
 			// Starts the timer, now that it is registered.
-			timer.Change(0, internalTimerDuration);
+			timer.Change(internalTimerDuration, internalTimerDuration);
+
+			// Call OnStart of this timer
+			Call (t,"Start",new object[] { t });
         }
 
         /// <summary>
@@ -645,6 +661,9 @@ namespace WF.Player.Core
 
             timer.Dispose();
             timers.Remove(objIndex);
+
+			// Call OnStop of this timer
+			Call (t,"Stop",new object[] { t });
         }
 
         /// <summary>
@@ -695,12 +714,12 @@ namespace WF.Player.Core
         /// </summary>
         /// <param name="source">ObjIndex of the timer that released the tick.</param>
         private void WherigoTimerTickCore(object source)
-        {			
-			int objIndex = (int)source;
+        {
+            int objIndex = (int)source;
 
-			if (!timers.ContainsKey(objIndex))
+			if (!timers.ContainsKey (objIndex))
 				return;
-		
+
 			System.Threading.Timer timer = timers[objIndex];
 
 			timer.Dispose();
@@ -708,6 +727,7 @@ namespace WF.Player.Core
 
 			LuaTable t = GetObject(objIndex).WIGTable;
 
+			// Call OnTick of this timer
 			Call (t,"Tick",new object[] { t });
 		}
 
