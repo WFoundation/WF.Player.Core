@@ -645,7 +645,7 @@ namespace WF.Player.Core
 			timer.Change(internalTimerDuration, internalTimerDuration);
 
 			// Call OnStart of this timer
-			Call (t,"Start",new object[] { t });
+			Call (t,"OnStart",new object[] { t });
         }
 
         /// <summary>
@@ -663,7 +663,7 @@ namespace WF.Player.Core
             timers.Remove(objIndex);
 
 			// Call OnStop of this timer
-			Call (t,"Stop",new object[] { t });
+			Call (t,"OnStop",new object[] { t });
         }
 
         /// <summary>
@@ -728,7 +728,7 @@ namespace WF.Player.Core
 			LuaTable t = GetObject(objIndex).WIGTable;
 
 			// Call OnTick of this timer
-			Call (t,"Tick",new object[] { t });
+			Call (t,"OnTick",new object[] { t });
 		}
 
         #endregion
