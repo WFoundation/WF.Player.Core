@@ -612,7 +612,7 @@ namespace WF.Player.Core
         #region Timer
 
         /// <summary>
-        /// Start timer.
+		/// Starts an OS timer corresponding to a Wherigo ZTimer.
         /// </summary>
         /// <param name="t">Timer to start.</param>
         internal void HandleTimerStarted(LuaTable t)
@@ -620,22 +620,27 @@ namespace WF.Player.Core
             // Gets the object index of the Timer that started.
 			int objIndex = Convert.ToInt32 ((double)t["ObjIndex"]);
 
-			// Starts a corresponding internal timer.
+			// Initializes a corresponding internal timer, but do not start it yet.
 			System.Threading.Timer timer = new System.Threading.Timer(InternalTimerTick, objIndex, Timeout.Infinite, internalTimerDuration);
 
 			// Keeps track of the timer.
 			// TODO: What happens if the timer is already in the dictionary?
 			if (!timers.ContainsKey(objIndex))
             	timers.Add(objIndex, timer);
+
+			// Starts the timer, now that it is registered.
+			timer.Change(0, internalTimerDuration);
         }
 
         /// <summary>
-        /// Stop timer.
+        /// Stops an OS timer corresponding to a Wherigo ZTimer.
         /// </summary>
         /// <param name="t">Timer to stop.</param>
         internal void HandleTimerStopped(LuaTable t)
         {
 			int objIndex = Convert.ToInt32 ((double)t["ObjIndex"]);
+
+			// TODO: What happens if the timer is not in the dictionary?
 			System.Threading.Timer timer = timers[objIndex];
 
             timer.Dispose();
@@ -662,7 +667,6 @@ namespace WF.Player.Core
 
 			double elapsed = (double)elapsedRaw * internalTimerDuration;
 			double remaining = (double)remainingRaw * internalTimerDuration;
-			string type = (string)t["Type"];
 
 			// Updates the ZTimer properties and considers if it should tick.
 			elapsed += internalTimerDuration;
