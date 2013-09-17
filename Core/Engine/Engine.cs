@@ -51,6 +51,7 @@ namespace WF.Player.Core
 		private string deviceId = "unknown";
 		private string uiVersion = "unknown";
         private Lua luaState;
+		private bool isRunning = false;
         private WIGInternalImpl wherigo;
         private LuaTable player;
 		private Dictionary<int, System.Threading.Timer> timers = new Dictionary<int, System.Threading.Timer>();
@@ -211,6 +212,7 @@ namespace WF.Player.Core
 		public void Close()
 		{
 			luaState.Close ();
+			isRunning = false;
 		}
 
         /// <summary>
@@ -218,6 +220,7 @@ namespace WF.Player.Core
         /// </summary>
         public void Start()
         {
+			isRunning = true;
 			Call (cartridge.WIGTable,"Start",new object[] { cartridge.WIGTable });
         }
 
@@ -231,6 +234,8 @@ namespace WF.Player.Core
 
 			HandleNotifyOS ("StopSound");
 
+			isRunning = false;
+
 			Call (cartridge.WIGTable,"Stop",new object[] { cartridge.WIGTable });
 		}
 
@@ -242,7 +247,9 @@ namespace WF.Player.Core
         {
 			LoadGWS(stream);
 
-			Call (cartridge.WIGTable,"Restore",new object[] { cartridge.WIGTable });
+			isRunning = true;
+
+			Call (cartridge.WIGTable,"OnRestore",new object[] { cartridge.WIGTable });
         }
 
         /// <summary>
@@ -259,7 +266,15 @@ namespace WF.Player.Core
 
 			FileFormats.Load(input, cartridge);
 
-            try
+			// Set player relevant data
+			player = (LuaTable)luaState["Wherigo.Player"];
+			player["CompletionCode"] = cartridge.CompletionCode;
+			player["Name"] = cartridge.Player;
+			player["ObjectLocation.latitude"] = lat;
+			player["ObjectLocation.longitude"] = lon;
+			player["ObjectLocation.altitude"] = alt;
+
+			try
             {
                 // Now start Lua binary chunk
                 byte[] luaBytes = cartridge.Resources[0].Data;
@@ -268,26 +283,7 @@ namespace WF.Player.Core
 
 				cartridge.WIGTable = (LuaTable)luaState.DoString(luaBytes,cartridge.Filename)[0];
 
-                // Set player relevant data
-                player = (LuaTable)luaState["Player"];
-                player["Cartridge"] = cartridge.WIGTable;
-                player["CompletionCode"] = cartridge.CompletionCode;
-                player["Name"] = cartridge.Player;
-
-                LuaTable startLocation = (LuaTable)cartridge.WIGTable["StartingLocation"];
-
-                // Check starting location
-                if ((double)startLocation["latitude"] == 360.0 && (double)startLocation["longitude"] == 360.0)
-                {
-                    // TODO: Wait, until we have a signal or the accuracy has the right level
-
-                    // This is a play anywhere cartridge, so set CartridgeStartingLocation to gps position
-                    LuaTable playerPosition = (LuaTable)player["ObjectLocation"];
-
-                    startLocation["latitude"] = playerPosition["latitude"];
-                    startLocation["longitude"] = playerPosition["longitude"];
-                    startLocation["altitude"] = playerPosition["altitude"];
-                }
+				player["Cartridge"] = cartridge.WIGTable;
             }
             catch (Exception e)
             {
@@ -339,10 +335,8 @@ namespace WF.Player.Core
 			this.alt = alt;
 			this.accuracy = accuracy;
 
-            // TODO: Remove
-			Console.WriteLine (String.Format ("{0}, {1}, {2}, {3}",lat,lon,alt,accuracy));
-
-			Call (player,"ProcessLocation",new object[] { player, lat, lon, alt, accuracy });
+			if (isRunning)
+				Call (player,"ProcessLocation",new object[] { player, lat, lon, alt, accuracy });
         }
 
         /// <summary>
@@ -657,10 +651,12 @@ namespace WF.Player.Core
 			int objIndex = Convert.ToInt32 ((double)t["ObjIndex"]);
 
 			// TODO: What happens if the timer is not in the dictionary?
-			System.Threading.Timer timer = timers[objIndex];
+			if (timers.ContainsKey (objIndex)) {
+				System.Threading.Timer timer = timers [objIndex];
 
-            timer.Dispose();
-            timers.Remove(objIndex);
+				timer.Dispose ();
+				timers.Remove (objIndex);
+			}
 
 			// Call OnStop of this timer
 			Call (t,"OnStop",new object[] { t });
@@ -717,18 +713,17 @@ namespace WF.Player.Core
         {
             int objIndex = (int)source;
 
-			if (!timers.ContainsKey (objIndex))
-				return;
+			if (timers.ContainsKey (objIndex)) {
+				System.Threading.Timer timer = timers [objIndex];
 
-			System.Threading.Timer timer = timers[objIndex];
-
-			timer.Dispose();
-			timers.Remove(objIndex);
+				timer.Dispose ();
+				timers.Remove (objIndex);
+			}
 
 			LuaTable t = GetObject(objIndex).WIGTable;
 
 			// Call OnTick of this timer
-			Call (t,"OnTick",new object[] { t });
+			Call (t,"Tick",new object[] { t });
 		}
 
         #endregion
