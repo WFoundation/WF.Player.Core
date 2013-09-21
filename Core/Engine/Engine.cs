@@ -981,6 +981,30 @@ namespace WF.Player.Core
         #region Helpers
 
 		/// <summary>
+		/// Replaces all "c" and ">" with &lt; and &gt;, to avoid JavaScript.
+		/// </summary>
+		/// <param name="s"></param>
+		/// <returns></returns>
+		internal static string ReplaceNoJavaScript(string s)
+		{
+			// '<' -> &lt; 
+			// '>' -> &gt;
+
+			if (s == null)
+			{
+				return null;
+			}
+
+			// Defines the options for replacement: ignore case and culture invariant.
+			System.Text.RegularExpressions.RegexOptions ro = System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant;
+			StringComparison sc = StringComparison.InvariantCultureIgnoreCase;
+
+			return s
+					.Replace ("<", "&lt;", sc)
+					.Replace (">", "&gt;", sc);
+		}
+
+		/// <summary>
 		/// Cleans a string from specific markup by converting it to its equivalent
 		/// values in the environment.
 		/// </summary>
@@ -1013,7 +1037,7 @@ namespace WF.Player.Core
 				.Replace("\n", Environment.NewLine, sc);
 		}
 
-        /// <summary>
+		/// <summary>
         /// Call a Lua function in a new thread.
         /// </summary>
         /// <param name="obj">Object, to which the Lua function belongs.</param>

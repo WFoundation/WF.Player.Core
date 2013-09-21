@@ -27,6 +27,7 @@ namespace WF.Player.Core
 
 	public class UIObject : Table, INotifyPropertyChanged
 	{
+		private string html;
 
 		#region Constructor
 
@@ -45,6 +46,20 @@ namespace WF.Player.Core
 		public string Description {
 			get {
 				return Engine.ReplaceMarkup(GetString ("Description"));
+			}
+		}
+
+		/// <summary>
+		/// Gets the description as Html.
+		/// </summary>
+		/// <value>The description.</value>
+		public string HTML {
+			get {
+				if (html == null) {
+					Markdown markdown = new Markdown ();
+					html = "<html><body><center>" + markdown.Transform (Engine.ReplaceNoJavaScript(Description)) + "</center></body></html>";
+				}
+				return html;
 			}
 		}
 
@@ -129,6 +144,9 @@ namespace WF.Player.Core
 
 		internal void NotifyPropertyChanged(String info)
 		{
+			if (info.Equals ("Description"))
+				html = null;
+
 			if (PropertyChanged != null)
 			{
 				PropertyChanged(this, new PropertyChangedEventArgs(info));

@@ -65,6 +65,17 @@ namespace WF.Player.Core
 		}
 
 		/// <summary>
+		/// Gets the text as Markdown converted to HTML.
+		/// </summary>
+		/// <value>The text.</value>
+		public string HTML {
+			get {
+				Markdown markdown = new Markdown ();
+				return "<html><body><center>" + markdown.Transform (Engine.ReplaceNoJavaScript(GetString ("Text"))) + "</center></body></html>";
+			}
+		}
+
+		/// <summary>
 		/// Gets the image.
 		/// </summary>
 		/// <value>The image.</value>

@@ -24,6 +24,18 @@ namespace WF.Player.Core
 	public class MessageBox
 	{
 		#region Properties
+
+		/// <summary>
+		/// Gets the text as Markdown converted to HTML.
+		/// </summary>
+		/// <value>The text.</value>
+		public string HTML {
+			get {
+				Markdown markdown = new Markdown ();
+				return "<html><body><center>" + markdown.Transform (Engine.ReplaceNoJavaScript(Text)) + "</center></body></html>";
+			}
+		}
+
 		/// <summary>
 		/// Gets the text of the message box to display.
 		/// </summary>

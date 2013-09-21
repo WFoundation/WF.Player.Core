@@ -353,6 +353,9 @@ namespace WF.Player.Core
         /// <summary>
         /// Checks, if the given ZonePoint is in Zone.
         /// </summary>
+		/// <remarks>
+		/// Found at http://alienryderflex.com/polygon/
+		/// </remarks>
         /// <param name="param1">LuaTable for ZonePoint to check.</param>
         /// <param name="param2">LuaTable with Zone, which Points are used for the check.</param>
         /// <returns></returns>
