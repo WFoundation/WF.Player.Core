@@ -389,7 +389,7 @@ namespace WF.Player.Core
 				}
 				else if (isAttributeVisibleOrActive && "Zone".Equals(classname))
 				{
-					RaisePropertyChanged("ActiveVisibleTasks");
+					RaisePropertyChanged("ActiveVisibleZones");
 				}
 
 				// Raises the AttributeChanged event.
