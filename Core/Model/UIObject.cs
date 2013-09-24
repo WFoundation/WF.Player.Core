@@ -40,6 +40,16 @@ namespace WF.Player.Core
 		#region Properties
 
 		/// <summary>
+		/// Gets the containe, which is holding this object.
+		/// </summary>
+		/// <value>The Container holding this object.</value>
+		public UIObject Container {
+			get {
+				return GetTable("Container") as UIObject;
+			}
+		}
+
+		/// <summary>
 		/// Gets the description.
 		/// </summary>
 		/// <value>The description.</value>

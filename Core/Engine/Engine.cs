@@ -389,7 +389,7 @@ namespace WF.Player.Core
 				}
 				else if (isAttributeVisibleOrActive && "Zone".Equals(classname))
 				{
-					RaisePropertyChanged("ActiveVisibleZones");
+					RaisePropertyChanged("ActiveVisibleTasks");
 				}
 
 				// Raises the AttributeChanged event.
@@ -1208,13 +1208,11 @@ namespace WF.Player.Core
 
 			BinaryReader input = new BinaryReader(stream);
 
-
-
 		    // Read signature and version
 		    byte[] signature = input.ReadBytes(7);
 
 			// Check, if signature is of GWS file
-			if (!signature.Equals (signatureGWS))
+			if (!signature.SequenceEqual(signatureGWS))
 				throw new Exception ("Try to load a none GWS file");
 
             int lengthOfHeader = input.ReadInt32();
