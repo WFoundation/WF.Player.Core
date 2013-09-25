@@ -663,13 +663,23 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Updates the ZTimer's attributes and checks if its Tick event should be called.
+        /// Calls the timer tick in the main thread.
         /// </summary>
         /// <param name="source">ObjIndex of the timer that released the tick.</param>
         private void InternalTimerTick(object source)
         {
-			int objIndex = (int)source;
+			// Call Tick syncronized with the GUI (for not thread save interfaces)
+			RaiseSynchronizeRequested(new Action(() => WherigoTimerTickCore(source)));
+        }
 
+        /// <summary>
+        /// Function for tick of a timer in source.
+		/// Updates the ZTimer's attributes and checks if its Tick event should be called.
+        /// </summary>
+        /// <param name="source">ObjIndex of the timer that released the tick.</param>
+        private void WherigoTimerTickCore(object source)
+        {
+			int objIndex = (int)source;
 			LuaTable t = GetObject(objIndex).WIGTable;
 
 			// Gets the ZTimer's properties.
@@ -700,30 +710,17 @@ namespace WF.Player.Core
 
 			// Call only, if timer still exists.
 			// It could be, that function is called from thread, even if the timer didn't exists anymore.
-			if (shoudTimerTick && timers.ContainsKey(objIndex))
-            	// Call Tick syncronized with the GUI (for not thread save interfaces)
-				RaiseSynchronizeRequested(new Action(() => WherigoTimerTickCore(source)));
-        }
+			if (shoudTimerTick && timers.ContainsKey(objIndex)) {
+				if (timers.ContainsKey (objIndex)) {
+					System.Threading.Timer timer = timers [objIndex];
+						
+					timer.Dispose ();
+					timers.Remove (objIndex);
+				}
 
-        /// <summary>
-        /// Function for tick of a timer in source.
-        /// </summary>
-        /// <param name="source">ObjIndex of the timer that released the tick.</param>
-        private void WherigoTimerTickCore(object source)
-        {
-            int objIndex = (int)source;
-
-			if (timers.ContainsKey (objIndex)) {
-				System.Threading.Timer timer = timers [objIndex];
-
-				timer.Dispose ();
-				timers.Remove (objIndex);
+				// Call OnTick of this timer
+				Call (t,"Tick",new object[] { t });
 			}
-
-			LuaTable t = GetObject(objIndex).WIGTable;
-
-			// Call OnTick of this timer
-			Call (t,"Tick",new object[] { t });
 		}
 
         #endregion
