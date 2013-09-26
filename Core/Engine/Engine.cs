@@ -229,12 +229,14 @@ namespace WF.Player.Core
         /// </summary>
         public void Stop()
         {
-			foreach(System.Threading.Timer t in timers.Values)
+			isRunning = false;
+
+			foreach (System.Threading.Timer t in timers.Values) {
+				t.Change(Timeout.Infinite, Timeout.Infinite);
 				t.Dispose ();
+			}
 
 			HandleNotifyOS ("StopSound");
-
-			isRunning = false;
 
 			Call (cartridge.WIGTable,"Stop",new object[] { cartridge.WIGTable });
 		}
@@ -250,6 +252,28 @@ namespace WF.Player.Core
 			isRunning = true;
 
 			Call (cartridge.WIGTable,"OnRestore",new object[] { cartridge.WIGTable });
+
+			// Now restart all timers
+			var t = ((LuaTable)((LuaTable)Call (player,"GetActiveTimers",new object[] { player })[0])).GetEnumerator();
+			while (t.MoveNext()) {
+				LuaTable obj = (LuaTable)t.Value;
+				bool restart = (bool)Call (obj, "Restart", new object[] { obj })[0];
+				if (restart) {
+					// Gets the object index of the Timer that should be started.
+					int objIndex = Convert.ToInt32 ((double)obj["ObjIndex"]);
+
+					// Initializes a corresponding internal timer, but do not start it yet.
+					System.Threading.Timer timer = new System.Threading.Timer(InternalTimerTick, objIndex, Timeout.Infinite, internalTimerDuration);
+
+					// Keeps track of the timer.
+					// TODO: What happens if the timer is already in the dictionary?
+					if (!timers.ContainsKey(objIndex))
+						timers.Add(objIndex, timer);
+
+					// Starts the timer, now that it is registered.
+					timer.Change(internalTimerDuration, internalTimerDuration);
+				}
+			}
         }
 
         /// <summary>
@@ -680,6 +704,10 @@ namespace WF.Player.Core
         private void WherigoTimerTickCore(object source)
         {
 			int objIndex = (int)source;
+
+			if (!isRunning || !timers.ContainsKey (objIndex))
+				return;
+
 			LuaTable t = GetObject(objIndex).WIGTable;
 
 			// Gets the ZTimer's properties.
