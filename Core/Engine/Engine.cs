@@ -36,7 +36,7 @@ namespace WF.Player.Core
     #if MONOTOUCH
 	    [MonoTouch.Foundation.Preserve(AllMembers=true)]
     #endif
-    public class Engine : INotifyPropertyChanged
+    public class Engine : IDisposable, INotifyPropertyChanged
     {
 
         #region Private variables
@@ -50,13 +50,14 @@ namespace WF.Player.Core
 		private string device = "unknown";
 		private string deviceId = "unknown";
 		private string uiVersion = "unknown";
+		private EngineGameState gameState;
         private Lua luaState;
-		private bool isRunning = false;
         private WIGInternalImpl wherigo;
         private LuaTable player;
 		private Dictionary<int, System.Threading.Timer> timers = new Dictionary<int, System.Threading.Timer>();
 		private Dictionary<int,UIObject> uiObjects = new Dictionary<int, UIObject> ();
 		private object[] threadResult;
+		private object syncRoot = new object();
 
         #endregion
 
@@ -93,7 +94,7 @@ namespace WF.Player.Core
 
 		#endregion
 
-        #region Constructor
+        #region Constructor and Destructors
 
         public Engine()
         {
@@ -140,12 +141,38 @@ namespace WF.Player.Core
             env["Device"] = device;
             env["DeviceID"] = deviceId;
             env["Version"] = uiVersion + " (" + CorePlatform + " " + CoreVersion + ")";
+
+			// Sets the game state.
+			GameState = EngineGameState.Uninitialized;
         }
 
 		~Engine()
 		{
+			Dispose();
+		}
+
+		public void Dispose()
+		{			
+			// Sets the state as disposed. Returns if it is already.
+			lock (syncRoot)
+			{
+				if (gameState == EngineGameState.Disposed)
+				{
+					return;
+				}
+
+				gameState = EngineGameState.Disposed;
+			}
+			
+			// Disposes the underlying objects.
 			if (luaState != null)
-				luaState.Close();
+			{
+				luaState.Dispose();
+				luaState = null;
+			}
+
+			// Requests the GC to not finalize this object (best practice).
+			GC.SuppressFinalize(this);			
 		}
 
         #endregion
@@ -159,10 +186,11 @@ namespace WF.Player.Core
         public Cartridge Cartridge { get { return cartridge; } }
 
 		public string Device {
-			get { 
+			get {
 				return device; 
 			} 
-			set { 
+			set {
+				CheckStateForLuaAccess();
 				if (device != value) {
 					device = value;
 					luaState.GetTable ("Env") ["Device"] = device;
@@ -171,10 +199,11 @@ namespace WF.Player.Core
 		}
 
 		public string DeviceId {
-			get { 
+			get {
 				return deviceId; 
 			} 
-			set { 
+			set {
+				CheckStateForLuaAccess();
 				if (deviceId != value) {
 					deviceId = value;
 					luaState.GetTable ("Env") ["DeviceId"] = deviceId;
@@ -186,7 +215,8 @@ namespace WF.Player.Core
 			get { 
 				return uiVersion; 
 			} 
-			set { 
+			set {
+				CheckStateForLuaAccess();
 				if (uiVersion != value) {
 					uiVersion = value;
 					luaState.GetTable ("Env") ["Version"] = uiVersion + " (" + CorePlatform + " " + CoreVersion + ")";
@@ -202,26 +232,65 @@ namespace WF.Player.Core
 
         public Character Player { get { return player == null ? null : (Character) GetTable(player); } }
 
+		public EngineGameState GameState
+		{
+			get
+			{
+				lock (syncRoot)
+				{
+					return gameState;
+				}
+			}
+
+			private set
+			{
+				lock (syncRoot)
+				{
+					if (gameState != value)
+					{
+						// Changes the game state.
+						gameState = value;
+						RaisePropertyChanged("GameState");
+						
+						// Checks if IsReady needs to be changed.
+						bool newIsReady = gameState != EngineGameState.Uninitialized
+							&& gameState != EngineGameState.Initializing
+							&& gameState != EngineGameState.Disposed;
+						if (newIsReady != IsReady)
+						{
+							// Changes IsReady.
+							IsReady = newIsReady;
+							RaisePropertyChanged("IsReady");
+						}
+					}
+
+					
+				}
+			}
+		}
+
+		public bool IsReady { get; private set; }
+
 		#endregion
 
         #region Start/Stop/Load/Save
-
-		/// <summary>
-		/// Close this instance.
-		/// </summary>
-		public void Close()
-		{
-			luaState.Close ();
-			isRunning = false;
-		}
 
         /// <summary>
         /// Start engine.
         /// </summary>
         public void Start()
         {
-			isRunning = true;
+			// Sanity checks.
+			CheckStateForLuaAccess();
+			CheckStateForConcurrentGameOperation();
+			CheckStateIsNot(EngineGameState.Playing, "The engine is aldreay playing.");
+			
+			GameState = EngineGameState.Starting;
+
+			// Starts the game.
 			Call (cartridge.WIGTable,"Start",new object[] { cartridge.WIGTable });
+
+			GameState = EngineGameState.Playing;
         }
 
         /// <summary>
@@ -229,14 +298,21 @@ namespace WF.Player.Core
         /// </summary>
         public void Stop()
         {
+			// Sanity checks.
+			CheckStateForLuaAccess();
+			CheckStateForConcurrentGameOperation();
+			CheckStateIsNot(EngineGameState.Initialized, "The engine is aldreay stopped.");
+			
+			GameState = EngineGameState.Stopping;
+
 			foreach(System.Threading.Timer t in timers.Values)
 				t.Dispose ();
 
 			HandleNotifyOS ("StopSound");
 
-			isRunning = false;
-
 			Call (cartridge.WIGTable,"Stop",new object[] { cartridge.WIGTable });
+
+			GameState = EngineGameState.Initialized;
 		}
 
         /// <summary>
@@ -245,11 +321,18 @@ namespace WF.Player.Core
         /// <param name="stream">Stream, where the cartridge load from.</param>
         public void Restore(Stream stream)
         {
+			// Sanity checks.
+			CheckStateForLuaAccess();
+			CheckStateForConcurrentGameOperation();
+			CheckStateIsNot(EngineGameState.Playing, "The engine is aldreay playing.");
+			
+			GameState = EngineGameState.Restoring;
+			
 			LoadGWS(stream);
 
-			isRunning = true;
-
 			Call (cartridge.WIGTable,"OnRestore",new object[] { cartridge.WIGTable });
+
+			GameState = EngineGameState.Playing;
         }
 
         /// <summary>
@@ -259,7 +342,12 @@ namespace WF.Player.Core
         /// <param name="cartridge">Cartridge object to load and init.</param>
         public void Init(Stream input, Cartridge cartridge)
         {
-            this.cartridge = cartridge;
+			// Sanity checks.
+			CheckStateIs(EngineGameState.Uninitialized, "The engine cannot be initialized in this state", true);
+			
+			GameState = EngineGameState.Initializing;
+			
+			this.cartridge = cartridge;
 			cartridge.Engine = this;
 
             luaState["Env.CartFilename"] = cartridge.Filename;
@@ -290,7 +378,11 @@ namespace WF.Player.Core
                 // TODO
                 // Rethrow exception
                 Console.WriteLine(e.Message);
+
+				GameState = EngineGameState.Uninitialized;
             }
+
+			GameState = EngineGameState.Initialized;
         }
 
         /// <summary>
@@ -299,23 +391,21 @@ namespace WF.Player.Core
         /// <param name="stream">Stream, where the cartridge is saved.</param>
         public void Save(Stream stream)
         {
+			// Sanity checks.
+			CheckStateIs(EngineGameState.Playing, "The engine is not playing.");
+
+			// State change.
+			GameState = EngineGameState.Saving;
+
+			// Informs the cartridge that saving starts.
 			Call (cartridge.WIGTable,"OnSync",new object[] { cartridge.WIGTable });
 
             // Serialize all objects
 			SaveGWS(stream);
+
+			// State change.
+			GameState = EngineGameState.Playing;
         }
-
-		/// <summary>
-		/// Sync the cartridge.
-		/// </summary>
-		/// <param name="stream">Stream, where the cartridge is synced.</param>
-		public void Sync(Stream stream)
-		{
-			Call (cartridge.WIGTable, "Sync", new object[] { cartridge.WIGTable });
-
-			// Serialize all objects
-			SaveGWS(stream);
-		}
 
 		#endregion
 
@@ -330,13 +420,15 @@ namespace WF.Player.Core
         /// <param name="accuracy">Accuracy</param>
         public void RefreshLocation(double lat, double lon, double alt, double accuracy)
         {
+			// Sanity checks.
+			CheckStateForLuaAccess();
+			
 			this.lat = lat;
 			this.lon = lon;
 			this.alt = alt;
 			this.accuracy = accuracy;
 
-			if (isRunning)
-				Call (player,"ProcessLocation",new object[] { player, lat, lon, alt, accuracy });
+			Call (player,"ProcessLocation",new object[] { player, lat, lon, alt, accuracy });
         }
 
         /// <summary>
@@ -346,6 +438,8 @@ namespace WF.Player.Core
 		public void RefreshHeading(double heading)
 		{
 			this.heading = heading;
+
+			// TODO: Give it out to the lua engine?
 		}
 
         #endregion
@@ -728,7 +822,7 @@ namespace WF.Player.Core
 
         #endregion
 
-		#region Properties
+		#region Properties backed by the Lua engine
 
 		/// <summary>
 		/// Gets the active visible tasks.
@@ -736,6 +830,10 @@ namespace WF.Player.Core
 		/// <value>The active visible tasks.</value>
 		public List<Task> ActiveVisibleTasks {
 			get {
+				// Sanity checks.
+				CheckStateForLuaAccess();
+				CheckStateIsNot(EngineGameState.Initializing, "The engine is initializing.");
+				
 				List<Task> result = new List<Task> ();
 
 				if (player == null)
@@ -755,6 +853,10 @@ namespace WF.Player.Core
 		/// <value>The active visible zones.</value>
 		public List<Zone> ActiveVisibleZones {
 			get {
+				// Sanity checks.
+				CheckStateForLuaAccess();
+				CheckStateIsNot(EngineGameState.Initializing, "The engine is initializing.");
+
 				List<Zone> result = new List<Zone> ();
 
 				if (player == null)
@@ -774,6 +876,10 @@ namespace WF.Player.Core
 		/// <value>The visible objects.</value>
 		public List<Thing> VisibleInventory {
 			get {
+				// Sanity checks.
+				CheckStateForLuaAccess();
+				CheckStateIsNot(EngineGameState.Initializing, "The engine is initializing.");
+				
 				List<Thing> result = new List<Thing> ();
 
 				if (player == null)
@@ -793,6 +899,10 @@ namespace WF.Player.Core
 		/// <value>The visible objects.</value>
 		public List<Thing> VisibleObjects {
 			get {
+				// Sanity checks.
+				CheckStateForLuaAccess();
+				CheckStateIsNot(EngineGameState.Initializing, "The engine is initializing.");
+				
 				List<Thing> result = new List<Thing> ();
 
 				if (player == null)
@@ -817,6 +927,9 @@ namespace WF.Player.Core
         /// <returns>LuaTable for ZObject.</returns>
 		public Table GetObject(int idx)
 		{
+			// Sanity checks
+			CheckStateForLuaAccess();
+
 			return idx == -1 ? null : GetTable ((LuaTable)((LuaTable)cartridge.WIGTable["AllZObjects"])[idx]);
 		}
 
@@ -827,6 +940,9 @@ namespace WF.Player.Core
 		/// <returns></returns>
 		internal LocationVector GetVectorFromPlayer(Thing thing)
 		{
+			// Sanity checks.
+			CheckStateForLuaAccess();
+			
 			object thingLoc = thing.WIGTable["ObjectLocation"];
 			bool isZone = thing is Zone;
 
@@ -1022,7 +1138,7 @@ namespace WF.Player.Core
         /// <returns></returns>
         internal object[] Call(LuaTable obj, string func, object[] parameter)
         {
-            if (obj[func] is LuaFunction)
+			if (obj[func] is LuaFunction)
             {
                 // Start function in a new thread
                 ThreadParams param = new ThreadParams(obj, func, parameter);
@@ -1777,10 +1893,105 @@ namespace WF.Player.Core
 		}
 
 		#endregion
+
+		#region GameState Checks
+
+		/// <summary>
+		/// Checks if this Engine's internal state is ready to provide access to its Lua resources.
+		/// </summary>
+		internal void CheckStateForLuaAccess()
+		{			
+			switch (GameState)
+			{
+				case EngineGameState.Uninitialized:
+					throw new InvalidOperationException("Uninitialized engine. Call Engine.Init() first.");
+
+				case EngineGameState.Initializing:
+					throw new InvalidOperationException("The engine is initializing.");
+
+				case EngineGameState.Disposed:
+					throw new ObjectDisposedException("Engine instance", "The engine has been disposed.");
+
+				default:
+					return;
+			}
+		}
+
+		/// <summary>
+		/// Checks if this Engine's internal state is ready to perform a state-changing game operation
+		/// such as Start, Stop or Resume.
+		/// </summary>
+		private void CheckStateForConcurrentGameOperation()
+		{
+			switch (GameState)
+			{
+				case EngineGameState.Starting:
+					throw new InvalidOperationException("The engine is busy starting a new game.");
+
+				case EngineGameState.Saving:
+					throw new InvalidOperationException("The engine is busy saving the game.");
+
+				case EngineGameState.Restoring:
+					throw new InvalidOperationException("The engine is busy restoring a game.");
+
+				case EngineGameState.Stopping:
+					throw new InvalidOperationException("The engine is busy stopping a game.");
+
+				default:
+					return;
+			}
+		}
+
+		/// <summary>
+		/// Checks if this Engine's internal state is equal to a target.
+		/// </summary>
+		/// <param name="target">Target state to compare.</param>
+		/// <param name="exMessage">Exception message in the case the two states are not equal.</param>
+		/// <param name="exShowsDetails">True to show details about the internal state in the exception.</param>
+		private void CheckStateIs(EngineGameState target, string exMessage, bool exShowsDetails = false)
+		{
+			EngineGameState gs = GameState;
+			
+			if (gs != target)
+			{
+				throw new InvalidOperationException(exMessage + (exShowsDetails ? String.Format(" Current {0} != Target {1}", gs, target) : ""));
+			}
+		}
+
+		/// <summary>
+		/// Checks if this Engine's internal state is not equal to a target.
+		/// </summary>
+		/// <param name="target">Target state to compare.</param>
+		/// <param name="exMessage">Exception message in the case the two states are equal.</param>
+		/// <param name="exShowsDetails">True to show details about the internal state in the exception.</param>
+		private void CheckStateIsNot(EngineGameState target, string exMessage, bool exShowsDetails = false)
+		{
+			if (GameState == target)
+			{
+				throw new InvalidOperationException(exMessage + (exShowsDetails ? String.Format(" Current == {0}", target) : ""));
+			}
+		}
+
+		#endregion
     }
 
 	#region Helper classes
 
+	/// <summary>
+	/// A state of the game that the engine can be in.
+	/// </summary>
+	public enum EngineGameState
+	{
+		Uninitialized,
+		Initializing,
+		Initialized,
+		Starting,
+		Restoring,
+		Saving,
+		Playing,
+		Stopping,
+		Disposed
+	}
 	
 	/// <summary>
 	/// Class for thread parameters.
