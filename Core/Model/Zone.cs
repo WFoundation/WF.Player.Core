@@ -89,9 +89,7 @@ namespace WF.Player.Core
 		{
 			get
 			{
-				string state = GetString("State");
-
-				return (PlayerZoneState)Enum.Parse(typeof(PlayerZoneState), state, true);
+				return GetEnum<PlayerZoneState>("State");
 			}
 		}
 

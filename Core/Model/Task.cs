@@ -61,9 +61,9 @@ namespace WF.Player.Core
 		/// Gets the CorrectState.
 		/// </summary>
 		/// <value>The CorrectState.</value>
-		public string CorrectState {
+		public TaskCorrectness CorrectState {
 			get {
-				return GetString ("CorrectState");
+				return GetEnum<TaskCorrectness> ("CorrectState", TaskCorrectness.None);
 			}
 		}
 

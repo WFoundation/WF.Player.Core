@@ -42,7 +42,7 @@ namespace WF.Player.Core
 		{
 			get
 			{
-				return (TimerType)Enum.Parse(typeof(TimerType), GetString("Type"), true);
+				return GetEnum<TimerType>("Type");
 			}
 		}
 

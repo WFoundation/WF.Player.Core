@@ -55,12 +55,7 @@ namespace WF.Player.Core
 		public InputType InputType {
 			get 
 			{
-				string type = GetString("InputType");
-					
-				if (String.IsNullOrWhiteSpace(type))
-					return InputType.Unknown;
-
-				return (InputType) Enum.Parse(typeof(InputType), type, true);
+				return GetEnum<InputType>("InputType", Core.InputType.Unknown);
 			}
 		}
 

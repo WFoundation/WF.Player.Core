@@ -40,10 +40,6 @@ namespace WF.Player.Core
 		/// <value>The LuaTable.</value>
 		public LuaTable WIGTable { get { return wigTable; } }
 
-		#region Special methods
-
-		#endregion
-
 		#region Standard methods
 
 		/// <summary>
@@ -51,7 +47,7 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <returns>The boolean.</returns>
 		/// <param name="key">Key as string for the entry.</param>
-		public bool GetBool(string key)
+		protected bool GetBool(string key)
 		{
 			object value = wigTable [key];
 
@@ -63,7 +59,7 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <returns>The boolean.</returns>
 		/// <param name="key">Key as number for the entry.</param>
-		public bool GetBool(double key)
+		protected bool GetBool(double key)
 		{
 			object value = wigTable [key];
 
@@ -75,7 +71,7 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <returns>The double.</returns>
 		/// <param name="key">Key as string for the entry.</param>
-		public double GetDouble(string key)
+		protected double GetDouble(string key)
 		{
 			object num = wigTable [key];
 
@@ -87,7 +83,7 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <returns>The double.</returns>
 		/// <param name="key">Key as number for the entry.</param>
-		public double GetDouble(double key)
+		protected double GetDouble(double key)
 		{
 			object num = wigTable [key];
 
@@ -99,7 +95,7 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <returns>The integer.</returns>
 		/// <param name="key">Key as string for the entry.</param>
-		public int GetInt(string key)
+		protected int GetInt(string key)
 		{
 			object num = wigTable [key];
 
@@ -111,7 +107,7 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <returns>The integer.</returns>
 		/// <param name="key">Key as number for the entry.</param>
-		public int GetInt(double key)
+		protected int GetInt(double key)
 		{
 			object num = wigTable [key];
 
@@ -123,7 +119,7 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <returns>The string.</returns>
 		/// <param name="key">Key as string for the entry.</param>
-		public string GetString(string key)
+		protected string GetString(string key)
 		{
 			object obj = wigTable [key];
 
@@ -135,7 +131,7 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <returns>The string.</returns>
 		/// <param name="key">Key as number for the entry.</param>
-		public string GetString(double key)
+		protected string GetString(double key)
 		{
 			object obj = wigTable [key];
 
@@ -147,7 +143,7 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <param name="t"></param>
 		/// <returns></returns>
-		public Table GetTable(LuaTable t)
+		protected Table GetTable(LuaTable t)
 		{
             if (t != null)
 			    return engine.GetTable (t);
@@ -160,7 +156,7 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <param name="t"></param>
 		/// <returns></returns>
-		public Table GetTable(string key)
+		protected Table GetTable(string key)
 		{
 			return GetTable(wigTable[key] as LuaTable);
 		}
@@ -170,9 +166,22 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <param name="t"></param>
 		/// <returns></returns>
-		public Table GetTable(double key)
+		protected Table GetTable(double key)
 		{
 			return GetTable(wigTable[key] as LuaTable);
+		}
+
+		/// <summary>
+		/// Gets an Enum object from a field in the table.
+		/// </summary>
+		/// <typeparam name="T">Type of the enum to get.</typeparam>
+		/// <param name="key">Key of the string name of the value in the table.</param>
+		/// <param name="defaultValue">The default value for the enum. If null, an
+		/// exception is thrown if no such value of the enum exists.</param>
+		/// <returns></returns>
+		protected T GetEnum<T>(string key, T? defaultValue = null) where T : struct, IConvertible
+		{
+			return EnumUtils.ParseEnum<T>(GetString(key), defaultValue);
 		}
 
 		#endregion
