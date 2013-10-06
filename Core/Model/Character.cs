@@ -37,24 +37,6 @@ namespace WF.Player.Core
 
 		#region Properties
 
-		/// <summary>
-		/// Gets the object location.
-		/// </summary>
-		/// <value>The object location as ZonePoint.</value>
-		public ZonePoint ObjectLocation {
-			get {
-                if (wigTable["ObjectLocation"] is LuaTable)
-                {
-                    var zp = GetTable((LuaTable)wigTable["ObjectLocation"]);
-                    if (zp == null)
-                        return null;
-                    else
-                        return (ZonePoint)zp;
-                }
-                else
-                    return null;
-			}
-		}
 
 		#endregion
 

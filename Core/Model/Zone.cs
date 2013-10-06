@@ -42,7 +42,8 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <value><c>true</c> if active; otherwise, <c>false</c>.</value>
 		public bool Active {
-			get {
+			get 
+			{
 				return GetBool ("Active");
 			}
 		}
@@ -52,17 +53,9 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <value>The original point as ZonePoint.</value>
 		public ZonePoint OriginalPoint {
-			get {
-                if (wigTable["OriginalPoint"] is LuaTable)
-                {
-                    var zp = GetTable((LuaTable)wigTable["OriginalPoint"]);
-                    if (zp == null)
-                        return null;
-                    else
-                        return (ZonePoint)zp;
-                }
-                else
-                    return null;
+			get 
+			{
+				return GetTable("OriginalPoint") as ZonePoint;
 			}
 		}
 
@@ -71,14 +64,9 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <value>The inventory.</value>
 		public List<ZonePoint> Points {
-			get {
-				List<ZonePoint> result = new List<ZonePoint> ();
-
-				var zp = ((LuaTable)wigTable ["Points"]).GetEnumerator ();
-				while (zp.MoveNext())
-					result.Add ((ZonePoint)GetTable ((LuaTable)zp.Value));
-
-				return result;
+			get 
+			{
+				return GetTableList<ZonePoint>("Points");
 			}
 		}
 

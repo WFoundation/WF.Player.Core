@@ -54,7 +54,9 @@
     <Reference Include="mscorlib.extensions" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Engine\Extensions.cs" />
+    <Compile Include="Utils\Utils.cs" />
+    <Compile Include="Utils\Extensions.cs" />
+    <Compile Include="Engine\LuaExecutionQueue.cs" />
     <Compile Include="LiveAPI\Reference.cs">
       <SubType>Code</SubType>
     </Compile>

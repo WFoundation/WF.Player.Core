@@ -19,6 +19,7 @@
 
 using System;
 using NLua;
+using System.Collections.Generic;
 
 namespace WF.Player.Core
 {
@@ -49,9 +50,7 @@ namespace WF.Player.Core
 		/// <param name="key">Key as string for the entry.</param>
 		protected bool GetBool(string key)
 		{
-			object value = wigTable [key];
-
-			return (value is bool && value != null) ? (bool)value : false;
+			return engine.SafeGetField<bool>(wigTable, key);
 		}
 
 		/// <summary>
@@ -61,9 +60,7 @@ namespace WF.Player.Core
 		/// <param name="key">Key as number for the entry.</param>
 		protected bool GetBool(double key)
 		{
-			object value = wigTable [key];
-
-            return (value is bool && value != null) ? (bool)value : false;
+			return engine.SafeGetField<bool>(wigTable, key);
         }
 
 		/// <summary>
@@ -73,9 +70,7 @@ namespace WF.Player.Core
 		/// <param name="key">Key as string for the entry.</param>
 		protected double GetDouble(string key)
 		{
-			object num = wigTable [key];
-
-			return (num is double && num != null) ? (double)num : 0;
+			return engine.SafeGetField<double>(wigTable, key);
 		}
 
 		/// <summary>
@@ -85,9 +80,7 @@ namespace WF.Player.Core
 		/// <param name="key">Key as number for the entry.</param>
 		protected double GetDouble(double key)
 		{
-			object num = wigTable [key];
-
-            return (num is double && num != null) ? (double)num : 0;
+			return engine.SafeGetField<double>(wigTable, key);
         }
 
 		/// <summary>
@@ -97,9 +90,7 @@ namespace WF.Player.Core
 		/// <param name="key">Key as string for the entry.</param>
 		protected int GetInt(string key)
 		{
-			object num = wigTable [key];
-
-			return (num is double && num != null) ? Convert.ToInt32 ((double)num) : 0;
+			return Convert.ToInt32(engine.SafeGetField<double>(wigTable, key));
 		}
 
 		/// <summary>
@@ -109,9 +100,7 @@ namespace WF.Player.Core
 		/// <param name="key">Key as number for the entry.</param>
 		protected int GetInt(double key)
 		{
-			object num = wigTable [key];
-
-            return (num is double && num != null) ? Convert.ToInt32((double)num) : 0;
+			return Convert.ToInt32(engine.SafeGetField<double>(wigTable, key));
         }
 
 		/// <summary>
@@ -121,9 +110,7 @@ namespace WF.Player.Core
 		/// <param name="key">Key as string for the entry.</param>
 		protected string GetString(string key)
 		{
-			object obj = wigTable [key];
-
-			return obj is string ? (string)obj : "";
+			return engine.SafeGetField<string>(wigTable, key);
 		}
 
 		/// <summary>
@@ -133,9 +120,7 @@ namespace WF.Player.Core
 		/// <param name="key">Key as number for the entry.</param>
 		protected string GetString(double key)
 		{
-			object obj = wigTable [key];
-
-			return obj is string ? (string)obj : "";
+			return engine.SafeGetField<string>(wigTable, key);
 		}
 
 		/// <summary>
@@ -145,10 +130,7 @@ namespace WF.Player.Core
 		/// <returns></returns>
 		protected Table GetTable(LuaTable t)
 		{
-            if (t != null)
-			    return engine.GetTable (t);
-            else
-                return null;
+			return t != null ? engine.GetTable(t) : null;
 		}
 
 		/// <summary>
@@ -158,7 +140,7 @@ namespace WF.Player.Core
 		/// <returns></returns>
 		protected Table GetTable(string key)
 		{
-			return GetTable(wigTable[key] as LuaTable);
+			return GetTable(GetLuaTable(key));
 		}
 
 		/// <summary>
@@ -168,7 +150,27 @@ namespace WF.Player.Core
 		/// <returns></returns>
 		protected Table GetTable(double key)
 		{
-			return GetTable(wigTable[key] as LuaTable);
+			return GetTable(GetLuaTable(key));
+		}
+
+		/// <summary>
+		/// Gets a LuaTable object from a field in the table.
+		/// </summary>
+		/// <param name="key"></param>
+		/// <returns></returns>
+		protected LuaTable GetLuaTable(string key)
+		{
+			return engine.SafeGetField<LuaTable>(wigTable, key);
+		}
+
+		/// <summary>
+		/// Gets a LuaTable object from a field in the table.
+		/// </summary>
+		/// <param name="key"></param>
+		/// <returns></returns>
+		protected LuaTable GetLuaTable(double key)
+		{
+			return engine.SafeGetField<LuaTable>(wigTable, key);
 		}
 
 		/// <summary>
@@ -181,7 +183,106 @@ namespace WF.Player.Core
 		/// <returns></returns>
 		protected T GetEnum<T>(string key, T? defaultValue = null) where T : struct, IConvertible
 		{
-			return EnumUtils.ParseEnum<T>(GetString(key), defaultValue);
+			return Utils.ParseEnum<T>(GetString(key), defaultValue);
+		}
+
+		/// <summary>
+		/// Gets a list of primitive objects from a field in the table that contains a table.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="key"></param>
+		/// <returns></returns>
+		protected List<T> GetList<T>(string key)
+		{
+			return engine.GetListFromLuaTable<T>(GetLuaTable(key));
+		}
+
+		/// <summary>
+		/// Gets a list of primitive objects from a field in the table that contains a table.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="key"></param>
+		/// <returns></returns>
+		protected List<T> GetList<T>(double key)
+		{
+			return engine.GetListFromLuaTable<T>(GetLuaTable(key));
+		}
+
+		/// <summary>
+		/// Gets a list of Table entities from a field in the table that contains itself
+		/// a LuaTable.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="key"></param>
+		/// <returns>A list of all entries of the table that could convert to 
+		/// <paramref name="T"/>.</returns>
+		protected List<T> GetTableList<T>(string key) where T : Table
+		{
+			return engine.GetTableListFromLuaTable<T>(GetLuaTable(key));
+		}
+
+		/// <summary>
+		/// Gets a list of Table entities from a field in the table that contains itself
+		/// a LuaTable.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="key"></param>
+		/// <returns>A list of all entries of the table that could convert to 
+		/// <paramref name="T"/>.</returns>
+		protected List<T> GetTableList<T>(double key) where T : Table
+		{
+			return engine.GetTableListFromLuaTable<T>(GetLuaTable(key));
+		}
+
+		/// <summary>
+		/// Gets a list of Table entities from a field in the table that contains a
+		/// function that returns itself a LuaTable.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="key"></param>
+		/// <returns>A list of all entries of the table that could convert to 
+		/// <paramref name="T"/>.</returns>
+		protected List<T> GetTableFuncList<T>(string key, params object[] parameters) where T : Table
+		{
+			return engine.GetTableListFromLuaTable<T>(engine.SafeCallSelf(wigTable, key, parameters));
+		}
+
+		/// <summary>
+		/// Gets a Media from a field in the table that contains a table.
+		/// </summary>
+		/// <param name="key"></param>
+		/// <returns></returns>
+		protected Media GetMedia(string key)
+		{
+			LuaTable media = GetLuaTable("Media");
+
+			if (media == null)
+			{
+				return null;
+			}
+
+			int objIndex = Convert.ToInt32((double)engine.SafeGetField<object>(media, "ObjIndex"));
+
+			return engine.GetMedia(objIndex);
+		}
+
+		/// <summary>
+		/// Gets a Media from a field in the table that contains a table.
+		/// </summary>
+		/// <param name="key"></param>
+		/// <returns></returns>
+		protected Media GetMedia(double key)
+		{
+			LuaTable media = GetLuaTable("Media");
+
+			if (media == null)
+			{
+				return null;
+			}
+
+			int objIndex = Convert.ToInt32((double)engine.SafeGetField<object>(media, "ObjIndex"));
+
+			return engine.GetMedia(objIndex);
 		}
 
 		#endregion

@@ -74,19 +74,13 @@ namespace WF.Player.Core
 		public Thing Owner {
 			get 
             {
-                if (wigTable["Owner"] is LuaTable)
-                {
-                    var zp = GetTable((LuaTable)wigTable["Owner"]);
-                    if (zp == null)
-                        return null;
-                    else
-                        return (Thing)zp;
-                }
-                else
-                    return null;
+				return GetTable("Owner") as Thing;
             }
 		}
 
+		/// <summary>
+		/// Gets a list if objects that this command can use as targets.
+		/// </summary>
 		public List<Thing> TargetObjects {
 			get {
 				List<Thing> result = new List<Thing> ();
@@ -94,10 +88,7 @@ namespace WF.Player.Core
 				// Works this command with targets?
 				if (CmdWith)
 				{
-					// Get all tables, active and inactive
-					var t = ((LuaTable)((LuaFunction)wigTable["CalcTargetObjects"]).Call(new object[] { wigTable, engine.Cartridge.WIGTable, engine.Player.WIGTable })[0]).GetEnumerator();
-					while (t.MoveNext())
-						result.Add((Thing)GetTable((LuaTable)t.Value));
+					result.AddRange(GetTableFuncList<Thing>("CalcTargetObjects", engine.Cartridge.WIGTable, engine.Player.WIGTable));
 				} 
 
 				return result;
@@ -115,7 +106,7 @@ namespace WF.Player.Core
 		}
 
 		/// <summary>
-		/// Gets the works with list objects for this commands, independent if active or inactive.
+		/// Gets the works with list objects for this commands, regardless if active or inactive.
 		/// </summary>
 		/// <value>The works with list objects.</value>
 		public List<Thing> WorksWithList
@@ -127,10 +118,7 @@ namespace WF.Player.Core
 				// Works this command with targets?
 				if (CmdWith)
 				{
-					// Get all tables, active and inactive
-					var t = ((LuaTable)wigTable["WorksWithList"]).GetEnumerator();
-					while (t.MoveNext())
-						result.Add((Thing)GetTable((LuaTable)t.Value));
+					result.AddRange(GetTableFuncList<Thing>("WorksWithList"));
 				}
 
 				return result;
@@ -144,9 +132,9 @@ namespace WF.Player.Core
 		public void Execute(Thing t = null)
 		{
 			if (t == null)
-				((LuaFunction)wigTable["exec"]).Call (new object[] { wigTable });
+				engine.LuaExecQueue.BeginCallSelf(this, "exec");
 			else
-				((LuaFunction)wigTable["exec"]).Call (new object[] { wigTable, t.WIGTable });
+				engine.LuaExecQueue.BeginCallSelf(this, "exec", t.WIGTable);
 		}
 
 		#endregion

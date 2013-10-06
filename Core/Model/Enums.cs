@@ -18,7 +18,7 @@
 ///
 
 using System;
-using System.Reflection;
+
 namespace WF.Player.Core
 {
 	/// <summary>
@@ -183,60 +183,6 @@ namespace WF.Player.Core
 				default:
 					throw new NotImplementedException(String.Format("Unexpected unit {0} is not supported."));
 			}
-		}
-	}
-
-	/// <summary>
-	/// Defines utility methods for enums.
-	/// </summary>
-	public static class EnumUtils
-	{
-		/// <summary>
-		/// Parses an Enum of a particular type and value.
-		/// </summary>
-		/// <typeparam name="T">Type of the Enum to get.</typeparam>
-		/// <param name="fieldName">The string name of the enum value.</param>
-		/// <param name="defaultValue">Default value for the enum if the field is not found. If null,
-		/// an exception is thrown in place of returning the default value.</param>
-		/// <returns></returns>
-		public static T ParseEnum<T>(string fieldName, T? defaultValue) where T : struct, IConvertible
-		{
-			if (!typeof(T).IsEnum) 
-				throw new ArgumentException("T must be an enumerated type.");
-
-			if (string.IsNullOrEmpty(fieldName))
-			{
-				if (!defaultValue.HasValue)
-				{
-					throw new ArgumentException("No such value for this enum.");
-				}
-
-				return defaultValue.Value;
-			}
-
-#if SILVERLIGHT
-			foreach (FieldInfo fi in typeof(T).GetFields(BindingFlags.Static | BindingFlags.Public))
-			{
-				string name = fi.Name;
-				T item = (T)Enum.Parse(typeof(T), name, false);
-#else
-			foreach (T item in Enum.GetValues(typeof(T)))
-			{
-				string name = item.ToString();
-#endif
-
-				if (String.Equals(name, fieldName.Trim(), StringComparison.InvariantCultureIgnoreCase))
-				{
-					return item;
-				}
-			}
-
-			if (!defaultValue.HasValue)
-			{
-				throw new ArgumentException("No such value for this enum.");
-			}
-
-			return defaultValue.Value;
 		}
 	}
 }

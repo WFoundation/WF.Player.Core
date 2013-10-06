@@ -59,7 +59,15 @@ namespace WF.Player.Core
 
         #region Constructor
 
-        public WIGInternalImpl( Engine engine, Lua luaState)
+		/// <summary>
+		/// Constructs a new instance of WIGInternalImpl.
+		/// </summary>
+		/// <remarks>
+		/// This method is not thread-safe.
+		/// </remarks>
+		/// <param name="engine"></param>
+		/// <param name="luaState"></param>
+        internal WIGInternalImpl( Engine engine, Lua luaState)
         {
 			this.engine = engine;
             this.luaState = luaState;
@@ -172,7 +180,15 @@ namespace WF.Player.Core
             string btn2Label = param4 == null ? "" : (string)param4;
             LuaFunction wrapper = (LuaFunction)param5;
 
-			engine.HandleShowMessage(text, engine.GetMedia(idxMediaObj), btn1Label, btn2Label, (retValue) => wrapper.Call (new object[] { retValue }));
+			engine.HandleShowMessage(
+				text, 
+				engine.GetMedia(idxMediaObj), 
+				btn1Label, 
+				btn2Label,
+ 
+				// The callback will run in the engine's execution queue.
+				(retValue) => engine.LuaExecQueue.BeginCall(wrapper, retValue)
+			);
         }
 
         /// <summary>
@@ -193,7 +209,12 @@ namespace WF.Player.Core
 		public void MediaEvent(object param1, object param2)
         {
             int type = param1 == null ? 0 : Convert.ToInt32 (param1);
-			Media mediaObj = param2 == null ? null : engine.Cartridge.Resources[Convert.ToInt32 ((double)((LuaTable)param2)["ObjIndex"])];
+			double oi;
+			lock (luaState)
+			{
+				oi = (double)((LuaTable)param2)["ObjIndex"];
+			}
+			Media mediaObj = param2 == null ? null : engine.Cartridge.Resources[Convert.ToInt32 (oi)];
 
             engine.HandlePlayMedia(type, mediaObj);
         }
@@ -338,7 +359,11 @@ namespace WF.Player.Core
 		/// <param name="param1">LuaTable with zones, that changed their state.</param>
 		public object[] ZoneStateChangedEvent(object param1)
 		{
-			LuaTable zones = param1 == null ? (LuaTable)luaState.DoString ("return {}")[0] : (LuaTable)param1;
+			LuaTable zones;
+			lock (luaState)
+			{
+				zones = param1 == null ? luaState.EmptyTable() : (LuaTable)param1; 
+			}
 
 			if (OnZoneStateChanged != null)
 				OnZoneStateChanged(zones);
@@ -374,11 +399,17 @@ namespace WF.Player.Core
 
             zone = (LuaTable)param2;
 
-            double lat = (double)zonePoint["latitude"];
-            double lon = (double)zonePoint["longitude"];
+            double lat, lon;
+			LuaTable points;
+			int count;
 
-            LuaTable points = (LuaTable)zone["Points"];
-            int count = points.Keys.Count;
+			lock (luaState)
+			{
+				lat = (double)zonePoint["latitude"];
+				lon = (double)zonePoint["longitude"];
+				points = (LuaTable)zone["Points"];
+				count = points.Keys.Count;
+			}
 
             double[] lats = new double[count];
             double[] lons = new double[count];
@@ -387,8 +418,11 @@ namespace WF.Player.Core
 
             for (i = 0; i < count; i++)
             {
-                lats[i] = (double)((LuaTable)points[i + 1])["latitude"];
-                lons[i] = (double)((LuaTable)points[i + 1])["longitude"];
+				lock (luaState)
+				{
+					lats[i] = (double)((LuaTable)points[i + 1])["latitude"];
+					lons[i] = (double)((LuaTable)points[i + 1])["longitude"]; 
+				}
             }
 
             int j = count - 1;
@@ -429,11 +463,19 @@ namespace WF.Player.Core
 			if (IsPointInZone(zonePoint, zone))
 			{
 				bearing = 0;
-				return (LuaTable)luaState.DoString("return Wherigo.Distance(0)")[0];
+				lock (luaState)
+				{
+					return (LuaTable)luaState.DoString("return Wherigo.Distance(0)")[0]; 
+				}
 			}
 
 			// If the zone doesn't have points, the distance and bearing are null.
-			if (zone["Points"] == null)
+			LuaTable points;
+			lock (luaState)
+			{
+				points = zone["Points"] as LuaTable;
+			}
+			if (points == null)
 			{
 				bearing = double.NaN;
 				return null;
@@ -441,24 +483,27 @@ namespace WF.Player.Core
 
 			// Performs the computation.
 
-			LuaTable points = (LuaTable)zone["Points"];
-
 			double b, tb, k;
-			LuaTable td, current = VectorToSegment(pointObj, points[points.Keys.Count], points[1], out b);
-			var pairs = points.GetEnumerator();
-			
-			while (pairs.MoveNext())
+			LuaTable td, current;
+
+			lock (luaState)
 			{
-				k = (double) pairs.Key;
-				if (k > 1)
+				current = VectorToSegment(pointObj, points[points.Keys.Count], points[1], out b);
+				var pairs = points.GetEnumerator();
+
+				while (pairs.MoveNext())
 				{
-					td = VectorToSegment(pointObj, points[k - 1], points[k], out tb);
-					if ((double)td["value"] < (double)current["value"])
+					k = (double)pairs.Key;
+					if (k > 1)
 					{
-						current = td;
-						b = tb % 360;
+						td = VectorToSegment(pointObj, points[k - 1], points[k], out tb);
+						if ((double)td["value"] < (double)current["value"])
+						{
+							current = td;
+							b = tb % 360;
+						}
 					}
-				}
+				} 
 			}
 
 			bearing = b;
@@ -475,21 +520,6 @@ namespace WF.Player.Core
         /// <returns>LuaTable for distance to calculated point on line.</returns>
         public LuaTable VectorToSegment(object pointObj, object firstLinePointObj, object secondLinePointObj, out double bearing)
         {
-			/*
-			 *   local d1, b1 = VectorToPoint (p1, point)
-				  local d1 = math.rad (d1('nauticalmiles') / 60.)
-				  local ds, bs = VectorToPoint (p1, p2)
-				  local dist = math.asin (math.sin (d1) * math.sin (math.rad (b1 - bs)))
-				  local dat = math.acos (math.cos (d1) / math.cos (dist))
-				  if dat <= 0 then
-					return VectorToPoint (point, p1)
-				  elseif dat >= math.rad (ds('nauticalmiles') / 60.) then
-					return VectorToPoint (point, p2) 
-				  end
-				  local intersect = TranslatePoint (p1, Distance (dat * 60, 'nauticalmiles'), bs)
-				  return VectorToPoint (point, intersect)
-			 * */
-
 			double b1, bs;
 
 			LuaTable d1 = VectorToPoint(firstLinePointObj, pointObj, out b1);
@@ -509,7 +539,12 @@ namespace WF.Player.Core
 				return VectorToPoint(pointObj, secondLinePointObj, out bearing);
 			}
 
-			var intersect = TranslatePoint(firstLinePointObj, luaState.DoString(String.Format("return Wherigo.Distance({0}, 'nauticalmiles')", dat * 60))[0], bs);
+			LuaTable intersect;
+
+			lock (luaState)
+			{
+				intersect = TranslatePoint(firstLinePointObj, luaState.DoString(String.Format("return Wherigo.Distance({0}, 'nauticalmiles')", dat * 60))[0], bs); 
+			}
 
 			return VectorToPoint(pointObj, intersect, out bearing);
 		}
@@ -526,10 +561,14 @@ namespace WF.Player.Core
             LuaTable zonePoint1 = (LuaTable)param1;
             LuaTable zonePoint2 = (LuaTable)param2;
 
-            double lat1 = (double)zonePoint1["latitude"];
-            double lon1 = (double)zonePoint1["longitude"];
-            double lat2 = (double)zonePoint2["latitude"];
-            double lon2 = (double)zonePoint2["longitude"];
+			double lat1, lon1, lat2, lon2;
+			lock (luaState)
+			{
+				lat1 = (double)zonePoint1["latitude"];
+				lon1 = (double)zonePoint1["longitude"];
+				lat2 = (double)zonePoint2["latitude"];
+				lon2 = (double)zonePoint2["longitude"]; 
+			}
 
             double distance;
 
@@ -540,7 +579,10 @@ namespace WF.Player.Core
 
             bearing = (Math.Atan2(CoreLat2M(lat2 - lat1), CoreLon2M(lat2, lon2 - lon1)) + Math.PI / 2) * (180.0 / Math.PI);
 
-            return (LuaTable)luaState.DoString(String.Format("return Wherigo.Distance({0},'m')", distance.ToString(nfi)))[0];
+			lock (luaState)
+			{
+				return (LuaTable)luaState.DoString(String.Format("return Wherigo.Distance({0},'m')", distance.ToString(nfi)))[0]; 
+			}
         }
 
         /// <summary>
@@ -556,16 +598,23 @@ namespace WF.Player.Core
             LuaTable distance = (LuaTable)param2;
             double bearing = (double)param3;
 
-            double lat = (double)zonePoint["latitude"];
-            double lon = (double)zonePoint["longitude"];
-            double alt = (double)zonePoint["altitude.value"];
-            double dist = (double)distance["value"];
+			double lat, lon, alt, dist;
+			lock (luaState)
+			{
+				lat = (double)zonePoint["latitude"];
+				lon = (double)zonePoint["longitude"];
+				alt = (double)zonePoint["altitude.value"];
+				dist = (double)distance["value"]; 
+			}
 
             double rad = CoreAzimuth2Angle(bearing);
             double x = CoreM2Lat(dist * Math.Sin(rad));
             double y = CoreM2Lon(lat, dist * Math.Cos(rad));
 
-            return (LuaTable)luaState.DoString(String.Format("return Wherigo.ZonePoint({0},{1},{2})", (lat + x).ToString(nfi), (lon + y).ToString(nfi), alt.ToString(nfi)))[0];
+			lock (luaState)
+			{
+				return (LuaTable)luaState.DoString(String.Format("return Wherigo.ZonePoint({0},{1},{2})", (lat + x).ToString(nfi), (lon + y).ToString(nfi), alt.ToString(nfi)))[0]; 
+			}
         }
 
         #endregion

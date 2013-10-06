@@ -26,6 +26,8 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using NLua;
+using System.Windows;
+using System.Collections;
 
 namespace WF.Player.Core
 {
@@ -50,13 +52,18 @@ namespace WF.Player.Core
 		private string device = "unknown";
 		private string deviceId = "unknown";
 		private string uiVersion = "unknown";
+		private List<Thing> visibleInventory;
+		private List<Thing> visibleObjects;
+		private List<Zone> activeVisibleZones;
+		private List<Task> activeVisibleTasks;
 		private EngineGameState gameState;
+		private bool isReady;
         private Lua luaState;
+		private LuaExecutionQueue luaExecQueue;
         private WIGInternalImpl wherigo;
         private LuaTable player;
 		private Dictionary<int, System.Threading.Timer> timers = new Dictionary<int, System.Threading.Timer>();
 		private Dictionary<int,UIObject> uiObjects = new Dictionary<int, UIObject> ();
-		private object[] threadResult;
 		private object syncRoot = new object();
 
         #endregion
@@ -97,8 +104,9 @@ namespace WF.Player.Core
         #region Constructor and Destructors
 
         public Engine()
-        {
-            this.luaState = new Lua();
+        {			
+			luaState = new Lua();
+
             // Create Wherigo environment
             wherigo = new WIGInternalImpl(this, luaState);
 
@@ -142,6 +150,9 @@ namespace WF.Player.Core
             env["DeviceID"] = deviceId;
             env["Version"] = uiVersion + " (" + CorePlatform + " " + CoreVersion + ")";
 
+			// Creates an execution queue that runs in another thread.
+			luaExecQueue = new LuaExecutionQueue(luaState);
+
 			// Sets the game state.
 			GameState = EngineGameState.Uninitialized;
         }
@@ -163,11 +174,21 @@ namespace WF.Player.Core
 
 				gameState = EngineGameState.Disposed;
 			}
+
+			// Bye bye threads.
+			if (luaExecQueue != null)
+			{
+				luaExecQueue.Dispose();
+				luaExecQueue = null;
+			}
 			
 			// Disposes the underlying objects.
 			if (luaState != null)
 			{
-				luaState.Dispose();
+				lock (luaState)
+				{
+					luaState.Dispose(); 
+				}
 				luaState = null;
 			}
 
@@ -179,58 +200,291 @@ namespace WF.Player.Core
 
         #region Properties
 
-        public double Altitude { get { return alt; } }
-
-        public double Accuracy { get { return accuracy; } }
-
-        public Cartridge Cartridge { get { return cartridge; } }
-
-		public string Device {
-			get {
-				return device; 
-			} 
-			set {
-				CheckStateForLuaAccess();
-				if (device != value) {
-					device = value;
-					luaState.GetTable ("Env") ["Device"] = device;
+		#region Public
+		public double Altitude 
+		{ 
+			get 
+			{
+				lock (syncRoot)
+				{
+					return alt;
 				}
 			}
 		}
 
-		public string DeviceId {
-			get {
-				return deviceId; 
+		public double Accuracy 
+		{ 
+			get 
+			{
+				lock (syncRoot)
+				{
+					return accuracy;
+				}
 			} 
-			set {
+		}
+
+		public Cartridge Cartridge 
+		{ 
+			get 
+			{
+				lock (syncRoot)
+				{
+					return cartridge;
+				}
+			} 
+		}
+
+		public string Device
+		{
+			get
+			{
+				lock (syncRoot)
+				{
+					return device;
+				}
+			}
+			set
+			{
 				CheckStateForLuaAccess();
-				if (deviceId != value) {
-					deviceId = value;
-					luaState.GetTable ("Env") ["DeviceId"] = deviceId;
+
+				if (device != value)
+				{
+					lock (syncRoot)
+					{
+						device = value; 
+					}
+					lock (luaState)
+					{
+						luaState.GetTable("Env")["Device"] = device;
+					}
 				}
 			}
 		}
 
-		public string UIVersion {
-			get { 
-				return uiVersion; 
-			} 
-			set {
+		public string DeviceId
+		{
+			get
+			{
+				lock (syncRoot)
+				{
+					return deviceId; 
+				}
+			}
+			set
+			{
 				CheckStateForLuaAccess();
-				if (uiVersion != value) {
-					uiVersion = value;
-					luaState.GetTable ("Env") ["Version"] = uiVersion + " (" + CorePlatform + " " + CoreVersion + ")";
+
+				if (deviceId != value)
+				{
+					lock (syncRoot)
+					{
+						deviceId = value;
+					}
+					lock (luaState)
+					{
+						luaState.GetTable("Env")["DeviceId"] = deviceId; 
+					}
 				}
 			}
 		}
 
-        public double Heading { get { return heading; } }
+		public string UIVersion
+		{
+			get
+			{
+				lock (syncRoot)
+				{
+					return uiVersion; 
+				}
+			}
+			set
+			{
+				CheckStateForLuaAccess();
+				if (uiVersion != value)
+				{
+					lock (syncRoot)
+					{
+						uiVersion = value; 
+					}
+					lock (luaState)
+					{
+						luaState.GetTable("Env")["Version"] = uiVersion + " (" + CorePlatform + " " + CoreVersion + ")"; 
+					}
+				}
+			}
+		}
 
-        public double Latitude { get { return lat; } }
-		
-		public double Longitude { get { return lon; } }
+		public double Heading
+		{ 
+			get 
+			{
+				lock (syncRoot)
+				{
+					return heading;  
+				}
+			} 
+		}
 
-        public Character Player { get { return player == null ? null : (Character) GetTable(player); } }
+		public double Latitude
+		{ 
+			get 
+			{
+				lock (syncRoot)
+				{
+					return lat;  
+				}
+			} 
+		}
+
+		public double Longitude
+		{ 
+			get 
+			{
+				lock (syncRoot)
+				{
+					return lon;
+				}
+			} 
+		}
+
+		public Character Player 
+		{ 
+			get 
+			{
+				LuaTable p;
+				lock (syncRoot)
+				{
+					p = player;
+				}
+
+				if (p == null)
+				{
+					return null;
+				}
+
+				return (Character)GetTable(player); 
+			} 
+		}
+
+		public List<Task> ActiveVisibleTasks
+		{
+			get
+			{
+				lock (syncRoot)
+				{
+					return activeVisibleTasks ?? new List<Task>();
+				}
+			}
+
+			private set
+			{
+				bool valueChanged = false;
+
+				// Thread-safely sets the value.
+				lock (syncRoot)
+				{
+					if (activeVisibleTasks != value)
+					{
+						activeVisibleTasks = value;
+						valueChanged = true;
+					}
+				}
+
+				// Raises the property changed event.
+				if (valueChanged)
+					RaisePropertyChanged("ActiveVisibleTasks");
+			}
+		}
+
+		public List<Zone> ActiveVisibleZones
+		{
+			get
+			{
+				lock (syncRoot)
+				{
+					return activeVisibleZones ?? new List<Zone>();
+				}
+			}
+
+			private set
+			{
+				bool valueChanged = false;
+
+				// Thread-safely sets the value.
+				lock (syncRoot)
+				{
+					if (activeVisibleZones != value)
+					{
+						activeVisibleZones = value;
+						valueChanged = true;
+					}
+				}
+
+				// Raises the property changed event.
+				if (valueChanged)
+					RaisePropertyChanged("ActiveVisibleZones");
+			}
+		}
+
+		public List<Thing> VisibleInventory
+		{
+			get
+			{
+				lock (syncRoot)
+				{
+					return visibleInventory ?? new List<Thing>();
+				}
+			}
+
+			private set
+			{
+				bool valueChanged = false;
+
+				// Thread-safely sets the value.
+				lock (syncRoot)
+				{
+					if (visibleInventory != value)
+					{
+						visibleInventory = value;
+						valueChanged = true;
+					}
+				}
+
+				// Raises the property changed event.
+				if (valueChanged)
+					RaisePropertyChanged("VisibleInventory");
+			}
+		}
+
+		public List<Thing> VisibleObjects
+		{
+			get
+			{
+				lock (syncRoot)
+				{
+					return visibleObjects ?? new List<Thing>();
+				}
+			}
+
+			private set
+			{
+				bool valueChanged = false;
+
+				// Thread-safely sets the value.
+				lock (syncRoot)
+				{
+					if (visibleObjects != value)
+					{
+						visibleObjects = value;
+						valueChanged = true;
+					}
+				}
+
+				// Raises the property changed event.
+				if (valueChanged)
+					RaisePropertyChanged("VisibleObjects");
+			}
+		}
 
 		public EngineGameState GameState
 		{
@@ -244,32 +498,70 @@ namespace WF.Player.Core
 
 			private set
 			{
+				EngineGameState gs;
 				lock (syncRoot)
 				{
-					if (gameState != value)
-					{
-						// Changes the game state.
-						gameState = value;
-						RaisePropertyChanged("GameState");
-						
-						// Checks if IsReady needs to be changed.
-						bool newIsReady = gameState != EngineGameState.Uninitialized
-							&& gameState != EngineGameState.Initializing
-							&& gameState != EngineGameState.Disposed;
-						if (newIsReady != IsReady)
-						{
-							// Changes IsReady.
-							IsReady = newIsReady;
-							RaisePropertyChanged("IsReady");
-						}
-					}
+					gs = gameState;
+				}
 
-					
+				if (gs != value)
+				{
+					// Changes the game state.
+					lock (syncRoot)
+					{
+						gameState = value; 
+					}
+					RaisePropertyChanged("GameState");
+
+					// Checks if IsReady needs to be changed.
+					bool newIsReady = value != EngineGameState.Uninitialized
+						&& value != EngineGameState.Initializing
+						&& value != EngineGameState.Disposed;
+					if (newIsReady != IsReady)
+					{
+						// Changes IsReady.
+						IsReady = newIsReady; 
+					}
 				}
 			}
 		}
 
-		public bool IsReady { get; private set; }
+		public bool IsReady
+		{
+			get
+			{
+				lock (syncRoot)
+				{
+					return isReady;
+				}
+			}
+
+			private set
+			{
+				bool ir;
+				lock (syncRoot)
+				{
+					ir = isReady;
+				}
+
+				if (ir != value)
+				{
+					lock (syncRoot)
+					{
+						isReady = value;
+					}
+					RaisePropertyChanged("IsReady");
+				}
+			}
+		}
+
+		#endregion
+
+		#region Internal
+
+		internal LuaExecutionQueue LuaExecQueue { get { return luaExecQueue; } }
+
+		#endregion
 
 		#endregion
 
@@ -283,12 +575,19 @@ namespace WF.Player.Core
 			// Sanity checks.
 			CheckStateForLuaAccess();
 			CheckStateForConcurrentGameOperation();
-			CheckStateIsNot(EngineGameState.Playing, "The engine is aldreay playing.");
+			CheckStateIsNot(EngineGameState.Playing, "The engine is already playing.");
 			
 			GameState = EngineGameState.Starting;
 
 			// Starts the game.
-			Call (cartridge.WIGTable,"Start",new object[] { cartridge.WIGTable });
+			LuaExecQueue.BeginCallSelf(cartridge.WIGTable, "Start");
+			LuaExecQueue.WaitEmpty();
+
+			// Refreshes the values.
+			RefreshActiveVisibleTasksAsync();
+			RefreshActiveVisibleZonesAsync();
+			RefreshVisibleInventoryAsync();
+			RefreshVisibleObjectsAsync();
 
 			GameState = EngineGameState.Playing;
         }
@@ -310,7 +609,8 @@ namespace WF.Player.Core
 
 			HandleNotifyOS ("StopSound");
 
-			Call (cartridge.WIGTable,"Stop",new object[] { cartridge.WIGTable });
+			LuaExecQueue.BeginCallSelf(cartridge.WIGTable, "Stop");
+			LuaExecQueue.WaitEmpty();
 
 			GameState = EngineGameState.Initialized;
 		}
@@ -330,7 +630,8 @@ namespace WF.Player.Core
 			
 			LoadGWS(stream);
 
-			Call (cartridge.WIGTable,"OnRestore",new object[] { cartridge.WIGTable });
+			LuaExecQueue.BeginCallSelf(cartridge.WIGTable, "OnRestore");
+			LuaExecQueue.WaitEmpty();
 
 			GameState = EngineGameState.Playing;
         }
@@ -367,11 +668,12 @@ namespace WF.Player.Core
                 // Now start Lua binary chunk
                 byte[] luaBytes = cartridge.Resources[0].Data;
 
-//				string s = (string)luaState.DoString ("s = \"\\66\\106\\195\\182\\114\\110\"; print(s); return s")[0];
-
-				cartridge.WIGTable = (LuaTable)luaState.DoString(luaBytes,cartridge.Filename)[0];
-
+				// TODO: Asynchronize this!
+				cartridge.WIGTable = (LuaTable)luaState.DoString(luaBytes, cartridge.Filename)[0];
 				player["Cartridge"] = cartridge.WIGTable;
+
+				GameState = EngineGameState.Initialized;
+
             }
             catch (Exception e)
             {
@@ -382,7 +684,6 @@ namespace WF.Player.Core
 				GameState = EngineGameState.Uninitialized;
             }
 
-			GameState = EngineGameState.Initialized;
         }
 
         /// <summary>
@@ -398,7 +699,8 @@ namespace WF.Player.Core
 			GameState = EngineGameState.Saving;
 
 			// Informs the cartridge that saving starts.
-			Call (cartridge.WIGTable,"OnSync",new object[] { cartridge.WIGTable });
+			LuaExecQueue.BeginCallSelf(cartridge.WIGTable, "OnSync");
+			LuaExecQueue.WaitEmpty();
 
             // Serialize all objects
 			SaveGWS(stream);
@@ -409,7 +711,7 @@ namespace WF.Player.Core
 
 		#endregion
 
-        #region Refresh values
+        #region User Input (Refresh)
 
         /// <summary>
         /// Refresh location, altitude and accuracy with new values.
@@ -428,7 +730,7 @@ namespace WF.Player.Core
 			this.alt = alt;
 			this.accuracy = accuracy;
 
-			Call (player,"ProcessLocation",new object[] { player, lat, lon, alt, accuracy });
+			LuaExecQueue.BeginCallSelf(player, "ProcessLocation", lat, lon, alt, accuracy);
         }
 
         /// <summary>
@@ -448,12 +750,119 @@ namespace WF.Player.Core
 
 		public string CreateLogMessage(string message)
 		{
-			return String.Format ("{0:yyyyMMddhhmmss}|{1:+0.00000}|{2:+0.00000}|{3:+0.00000}|{4:+0.00000}|{5}", DateTime.Now.ToLocalTime (), lat, lon, alt, accuracy, message);
+			lock (syncRoot)
+			{
+				return String.Format("{0:yyyyMMddhhmmss}|{1:+0.00000}|{2:+0.00000}|{3:+0.00000}|{4:+0.00000}|{5}", DateTime.Now.ToLocalTime(), lat, lon, alt, accuracy, message); 
+			}
 		}
 
 		#endregion
 
-		#region Wherigo Events
+		#region Property getters backed by the Lua engine
+
+		private void RefreshActiveVisibleTasksAsync()
+		{
+			// Sanity checks.
+			if (!IsReady)
+			{
+				return;
+			}
+
+			// If we're not in the lua exec thread, be in it!
+			if (!LuaExecQueue.IsSameThread)
+			{
+				LuaExecQueue.BeginAction(RefreshActiveVisibleTasksAsync);
+				return;
+			}
+
+			if (player == null)
+				ActiveVisibleTasks = null;
+
+			// This executes in the lua exec thread, so it's fine to block.
+			lock (luaState)
+			{
+				ActiveVisibleTasks = GetTableListFromLuaTable<Task>(player.CallSelf("GetActiveVisibleTasks")); 
+			}
+		}
+
+		private void RefreshActiveVisibleZonesAsync()
+		{
+			// Sanity checks.
+			if (!IsReady)
+			{
+				return;
+			}
+
+			// If we're not in the lua exec thread, be in it!
+			if (!LuaExecQueue.IsSameThread)
+			{
+				LuaExecQueue.BeginAction(RefreshActiveVisibleZonesAsync);
+				return;
+			}
+
+			if (player == null)
+				ActiveVisibleZones = null;
+
+			// This executes in the lua exec thread, so it's fine to block.
+			lock (luaState)
+			{
+				ActiveVisibleZones = GetTableListFromLuaTable<Zone>(player.CallSelf("GetActiveVisibleZones")); 
+			}
+		}
+
+		private void RefreshVisibleInventoryAsync()
+		{
+			// Sanity checks.
+			if (!IsReady)
+			{
+				return;
+			}
+
+			// If we're not in the lua exec thread, be in it!
+			if (!LuaExecQueue.IsSameThread)
+			{
+				LuaExecQueue.BeginAction(RefreshVisibleInventoryAsync);
+				return;
+			}
+
+			if (player == null)
+				VisibleInventory = null;
+
+			// This executes in the lua exec thread, so it's fine to block.
+			lock (luaState)
+			{
+				VisibleInventory = GetTableListFromLuaTable<Thing>(player.CallSelf("GetVisibleInventory")); 
+			}
+		}
+
+		private void RefreshVisibleObjectsAsync()
+		{
+			// Sanity checks.
+			if (!IsReady)
+			{
+				return;
+			}
+
+			// If we're not in the lua exec thread, be in it!
+			if (!LuaExecQueue.IsSameThread)
+			{
+				LuaExecQueue.BeginAction(RefreshVisibleObjectsAsync);
+				return;
+			}
+
+			if (player == null)
+				VisibleObjects = null;
+
+			// This executes in the lua exec thread, so it's fine to block.
+			lock (luaState)
+			{
+				VisibleObjects = GetTableListFromLuaTable<Thing>(player.CallSelf("GetVisibleObjects")); 
+			}
+		}
+
+		#endregion
+
+		#region WIGInternal Events Handlers
 
 		/// <summary>
         /// Event, which is called, if the attribute of an object has changed.
@@ -463,27 +872,36 @@ namespace WF.Player.Core
 		internal void HandleAttributeChanged(LuaTable t, string attribute)
 		{
 			Table obj = GetTable(t);
-			string classname = (string)t["ClassName"];
+			string classname;
+			lock (luaState)
+			{
+				classname = (string)t["ClassName"]; 
+			}
 
 			if (obj != null) {
 				
 				// Raises the NotifyPropertyChanged event if this is a UIObject.
-				if (IsUIObject (obj))
-					((UIObject)obj).NotifyPropertyChanged (attribute);
+				if (IsUIObject(obj))
+					RaisePropertyChangedInObject((UIObject)obj, attribute);
 
 				// Refreshes the zone in order to make it fire its events.
 				if (cartridge.WIGTable != null && ("Zone".Equals(classname) && "Active".Equals(attribute)))
-					RefreshLocation(lat, lon, alt, accuracy);
+					lock (luaState)
+					{
+						player.CallSelf("ProcessLocation", lat, lon, alt, accuracy); 
+					}
 
 				// Checks if an engine property has changed.
 				bool isAttributeVisibleOrActive = "Active".Equals(attribute) || "Visible".Equals(attribute);
 				if (isAttributeVisibleOrActive && "ZTask".Equals(classname))
 				{
-					RaisePropertyChanged("ActiveVisibleTasks");
+					// Recomputes active visible tasks and raises the property changed event.
+					RefreshActiveVisibleTasksAsync();
 				}
 				else if (isAttributeVisibleOrActive && "Zone".Equals(classname))
 				{
-					RaisePropertyChanged("ActiveVisibleZones");
+					// Recomputes active visible zones and raises the property changed event.
+					RefreshActiveVisibleZonesAsync();
 				}
 
 				// Raises the AttributeChanged event.
@@ -492,9 +910,8 @@ namespace WF.Player.Core
 			} else {
 
 				// Raises the NotifyPropertyChanged event if this is a Cartridge.
-				if ("ZCartridge".Equals(classname)) {
-					cartridge.NotifyPropertyChanged (attribute);
-				}
+				if ("ZCartridge".Equals(classname))
+					RaisePropertyChangedInObject(cartridge, attribute);
 
 			}
 		}
@@ -533,7 +950,7 @@ namespace WF.Player.Core
 
 			// Raises PropertyChanged on the command's owner.
 			if (c.Owner != null && IsUIObject (c.Owner))
-				((UIObject)c.Owner).NotifyPropertyChanged ("Commands");
+				RaisePropertyChangedInObject((UIObject)(c.Owner), "Commands");
 
 			// TODO: Reciprocal commands need to raise PropertyChanged on the targets too.
 
@@ -566,24 +983,24 @@ namespace WF.Player.Core
 
 			// Raises the PropertyChanged events on the objects.
 			if (obj != null)
-				((UIObject)obj).NotifyPropertyChanged ("Container");
+				RaisePropertyChangedInObject((UIObject)obj, "Container");
 			if (from != null)
-				((UIObject)from).NotifyPropertyChanged ("Inventory");
+				RaisePropertyChangedInObject((UIObject)from, "Inventory");
 			if (to != null)
-				((UIObject)to).NotifyPropertyChanged ("Inventory");
+				RaisePropertyChangedInObject((UIObject)to, "Inventory");
 
 			// Check for player inventory changes.
 			if (player.Equals(ltTo) || player.Equals(ltFrom))
 			{
-				// The player visible inventory has changed.
-				RaisePropertyChanged("VisibleInventory");
+				// Recomputes the visible inventory and raises the property changed event.
+				RefreshVisibleInventoryAsync();
 			}
 
 			// Check for visible objects changes.
 			if (IsZone(from) || IsZone(ltTo))
 			{
-				// Make a guess.
-				RaisePropertyChanged("VisibleObjects");
+				// Recomputes the visible objects and raises the property changed event.
+				RefreshVisibleObjectsAsync();
 			}
 
 			// Raises the event.
@@ -675,42 +1092,53 @@ namespace WF.Player.Core
 		/// <param name="z">LuaTable for zone object.</param>
 		internal void HandleZoneStateChanged(LuaTable zones)
 		{
-			List<Zone> list = new List<Zone> ();
+			List<Zone> list = new List<Zone>();
 
 			// Generates the list of zones.
-			var z = zones.GetEnumerator ();
-			while(z.MoveNext())
+			IDictionaryEnumerator z;
+			bool run = true;
+			lock (luaState)
+			{
+				z = zones.GetEnumerator();
+				run = z.MoveNext();
+			}
+			while (run)
 			{
 				// Gets a zone from the table.
-				Zone zone = (Zone)GetTable ((LuaTable)z.Value);
+				Zone zone = (Zone)GetTable((LuaTable)z.Value);
 
 				// Performs notifications.
 				if (zone != null)
 				{
-					zone.NotifyPropertyChanged("State");
-					zone.NotifyPropertyChanged("VectorFromPlayer");
+					RaisePropertyChangedInObject((UIObject)zone, "State");
+					RaisePropertyChangedInObject((UIObject)zone, "VectorFromPlayer");
 				}
 
 				// Adds the zone to the list.
-				list.Add (zone);
+				list.Add(zone);
+
+				// Keep on running?
+				lock (luaState)
+				{
+					run = z.MoveNext();
+				}
 			}
 
 
 			// The list of zones and objects has changed.
-			RaisePropertyChanged("ActiveVisibleZones");
-			RaisePropertyChanged("VisibleObjects");
+			RefreshActiveVisibleZonesAsync();
+			RefreshVisibleObjectsAsync();
 
 			// Notifies all visible objects that their distances have changed.
-			VisibleObjects.ForEach(t => t.NotifyPropertyChanged("VectorFromPlayer"));
+			VisibleObjects.ForEach(t => RaisePropertyChangedInObject(t, "VectorFromPlayer"));
 
 			// Raise the event.
 			RaiseZoneStateChanged(list);
 		}
 
-
         #endregion
 
-        #region Timer
+        #region Timers
 
         /// <summary>
 		/// Starts an OS timer corresponding to a Wherigo ZTimer.
@@ -719,21 +1147,31 @@ namespace WF.Player.Core
         internal void HandleTimerStarted(LuaTable t)
         {
             // Gets the object index of the Timer that started.
-			int objIndex = Convert.ToInt32 ((double)t["ObjIndex"]);
+			int objIndex;
+			lock (luaState)
+			{
+				objIndex = Convert.ToInt32((double)t["ObjIndex"]); 
+			}
 
 			// Initializes a corresponding internal timer, but do not start it yet.
 			System.Threading.Timer timer = new System.Threading.Timer(InternalTimerTick, objIndex, Timeout.Infinite, internalTimerDuration);
 
 			// Keeps track of the timer.
 			// TODO: What happens if the timer is already in the dictionary?
-			if (!timers.ContainsKey(objIndex))
-            	timers.Add(objIndex, timer);
+			lock (syncRoot)
+			{
+				if (!timers.ContainsKey(objIndex))
+					timers.Add(objIndex, timer); 
+			}
 
 			// Starts the timer, now that it is registered.
 			timer.Change(internalTimerDuration, internalTimerDuration);
 
 			// Call OnStart of this timer
-			Call (t,"OnStart",new object[] { t });
+			lock (luaState)
+			{
+				t.CallSelf("Start"); 
+			}
         }
 
         /// <summary>
@@ -742,18 +1180,30 @@ namespace WF.Player.Core
         /// <param name="t">Timer to stop.</param>
         internal void HandleTimerStopped(LuaTable t)
         {
-			int objIndex = Convert.ToInt32 ((double)t["ObjIndex"]);
+			int objIndex;
+			lock (luaState)
+			{
+				objIndex = Convert.ToInt32((double)t["ObjIndex"]); 
+			}
 
 			// TODO: What happens if the timer is not in the dictionary?
-			if (timers.ContainsKey (objIndex)) {
+			bool shouldRemove = false;
+			lock (syncRoot)
+			{
+				shouldRemove = timers.ContainsKey (objIndex);
+			}
+			if (shouldRemove) {
 				System.Threading.Timer timer = timers [objIndex];
 
 				timer.Dispose ();
-				timers.Remove (objIndex);
+				lock (syncRoot)
+				{
+					timers.Remove(objIndex); 
+				}
 			}
 
 			// Call OnStop of this timer
-			Call (t,"OnStop",new object[] { t });
+			t.CallSelf("Stop");
         }
 
         /// <summary>
@@ -767,12 +1217,20 @@ namespace WF.Player.Core
 			LuaTable t = GetObject(objIndex).WIGTable;
 
 			// Gets the ZTimer's properties.
-			object elapsedRaw = t["Elapsed"];
-			object remainingRaw = t["Remaining"];
+			object elapsedRaw;
+			object remainingRaw; 
+			lock (luaState)
+			{
+				elapsedRaw = t["Elapsed"];
+				remainingRaw = t["Remaining"]; 
+			}
 			if (elapsedRaw == null)
 				elapsedRaw = 0.0d;
 			if (remainingRaw == null)
-				remainingRaw = t["Duration"];
+				lock (luaState)
+				{
+					remainingRaw = t["Duration"]; 
+				}
 
 			double elapsed = (double)elapsedRaw * internalTimerDuration;
 			double remaining = (double)remainingRaw * internalTimerDuration;
@@ -789,12 +1247,20 @@ namespace WF.Player.Core
 				shoudTimerTick = true;
 			}
 
-			t["Elapsed"] = elapsed / internalTimerDuration;
-			t["Remaining"] = remaining / internalTimerDuration;
+			lock (luaState)
+			{
+				t["Elapsed"] = elapsed / internalTimerDuration;
+				t["Remaining"] = remaining / internalTimerDuration; 
+			}
 
 			// Call only, if timer still exists.
 			// It could be, that function is called from thread, even if the timer didn't exists anymore.
-			if (shoudTimerTick && timers.ContainsKey(objIndex))
+			bool timerExists = false;
+			lock (syncRoot)
+			{
+				timerExists = timers.ContainsKey(objIndex);
+			}
+			if (shoudTimerTick && timerExists)
             	// Call Tick syncronized with the GUI (for not thread save interfaces)
 				RaiseSynchronizeRequested(new Action(() => WherigoTimerTickCore(source)));
         }
@@ -807,116 +1273,28 @@ namespace WF.Player.Core
         {
             int objIndex = (int)source;
 
-			if (timers.ContainsKey (objIndex)) {
+			bool timerExists = false;
+			lock (syncRoot)
+			{
+				timerExists = timers.ContainsKey (objIndex);
+			}
+			if (timerExists) {
 				System.Threading.Timer timer = timers [objIndex];
 
 				timer.Dispose ();
-				timers.Remove (objIndex);
+				lock (syncRoot)
+				{
+					timers.Remove(objIndex); 
+				}
 			}
 
 			LuaTable t = GetObject(objIndex).WIGTable;
 
 			// Call OnTick of this timer
-			Call (t,"Tick",new object[] { t });
+			LuaExecQueue.BeginCallSelf(t, "Tick");
 		}
 
         #endregion
-
-		#region Properties backed by the Lua engine
-
-		/// <summary>
-		/// Gets the active visible tasks.
-		/// </summary>
-		/// <value>The active visible tasks.</value>
-		public List<Task> ActiveVisibleTasks {
-			get {
-				// Sanity checks.
-				CheckStateForLuaAccess();
-				CheckStateIsNot(EngineGameState.Initializing, "The engine is initializing.");
-				
-				List<Task> result = new List<Task> ();
-
-				if (player == null)
-					return result;
-
-				var t = ((LuaTable)((LuaTable)Call(player,"GetActiveVisibleTasks",new object[] { player })[0])).GetEnumerator();
-				while (t.MoveNext())
-					result.Add ((Task)GetTable((LuaTable)t.Value));
-
-				return result;
-			}
-		}
-
-		/// <summary>
-		/// Gets the active visible zones.
-		/// </summary>
-		/// <value>The active visible zones.</value>
-		public List<Zone> ActiveVisibleZones {
-			get {
-				// Sanity checks.
-				CheckStateForLuaAccess();
-				CheckStateIsNot(EngineGameState.Initializing, "The engine is initializing.");
-
-				List<Zone> result = new List<Zone> ();
-
-				if (player == null)
-					return result;
-
-				var z = ((LuaTable)((LuaTable)Call (player,"GetActiveVisibleZones",new object[] { player })[0])).GetEnumerator();
-				while (z.MoveNext())
-					result.Add ((Zone)GetTable((LuaTable)z.Value));
-
-				return result;
-			}
-		}
-
-		/// <summary>
-		/// Gets the visible inventory.
-		/// </summary>
-		/// <value>The visible objects.</value>
-		public List<Thing> VisibleInventory {
-			get {
-				// Sanity checks.
-				CheckStateForLuaAccess();
-				CheckStateIsNot(EngineGameState.Initializing, "The engine is initializing.");
-				
-				List<Thing> result = new List<Thing> ();
-
-				if (player == null)
-					return result;
-
-				var t = ((LuaTable)((LuaTable)Call (player,"GetVisibleInventory",new object[] { player })[0])).GetEnumerator();
-				while (t.MoveNext())
-					result.Add ((Thing)GetTable((LuaTable)t.Value));
-
-				return result;
-			}
-		}
-
-		/// <summary>
-		/// Gets the visible objects.
-		/// </summary>
-		/// <value>The visible objects.</value>
-		public List<Thing> VisibleObjects {
-			get {
-				// Sanity checks.
-				CheckStateForLuaAccess();
-				CheckStateIsNot(EngineGameState.Initializing, "The engine is initializing.");
-				
-				List<Thing> result = new List<Thing> ();
-
-				if (player == null)
-					return result;
-
-				var t = ((LuaTable)((LuaTable)Call (player,"GetVisibleObjects",new object[] { player })[0])).GetEnumerator();
-				while(t.MoveNext())
-					result.Add ((Thing)GetTable((LuaTable)t.Value));
-
-				return result;
-			}
-		}
-
-		#endregion
 
         #region Retrive data from cartridge
 
@@ -930,7 +1308,13 @@ namespace WF.Player.Core
 			// Sanity checks
 			CheckStateForLuaAccess();
 
-			return idx == -1 ? null : GetTable ((LuaTable)((LuaTable)cartridge.WIGTable["AllZObjects"])[idx]);
+			LuaTable lt;
+			lock (luaState)
+			{
+				lt = (LuaTable)((LuaTable)cartridge.WIGTable["AllZObjects"])[idx]; 
+			}
+
+			return idx == -1 ? null : GetTable (lt);
 		}
 
 		/// <summary>
@@ -943,23 +1327,38 @@ namespace WF.Player.Core
 			// Sanity checks.
 			CheckStateForLuaAccess();
 			
-			object thingLoc = thing.WIGTable["ObjectLocation"];
+			object thingLoc;
+			lock (luaState)
+			{
+				thingLoc = thing.WIGTable["ObjectLocation"]; 
+			}
 			bool isZone = thing is Zone;
 
 			// If the Thing is not a zone and has no location, consider it is close to the player.
 			if (!isZone && thingLoc == null)
 			{
-				return new LocationVector((Distance)GetTable((LuaTable)luaState.DoString("return Wherigo.Distance(0)")[0]), 0);
+				LuaTable lt;
+				lock (luaState)
+				{
+					lt = (LuaTable)luaState.DoString("return Wherigo.Distance(0)")[0];
+				}
+				return new LocationVector((Distance)GetTable(lt), 0);
 			}
 
 			object[] ret;
 			if (isZone)
 			{
-				ret = luaState.GetFunction("WIGInternal.VectorToZone").Call(new object[] { player["ObjectLocation"], thing.WIGTable });
+				lock (luaState)
+				{
+					ret = luaState.GetFunction("WIGInternal.VectorToZone").Call(new object[] { player["ObjectLocation"], thing.WIGTable }); 
+				}
 			}
 			else
 			{
-				ret = luaState.GetFunction("WIGInternal.VectorToPoint").Call(new object[] { player["ObjectLocation"], thingLoc });
+				lock (luaState)
+				{
+					ret = luaState.GetFunction("WIGInternal.VectorToPoint").Call(new object[] { player["ObjectLocation"], thingLoc }); 
+				}
 			}
 
 			return new LocationVector((Distance)GetTable((LuaTable)ret[0]), (double)ret[1]);
@@ -1084,7 +1483,11 @@ namespace WF.Player.Core
 		private bool IsLuaTableWithClassName(object obj, IEnumerable<string> classnames)
 		{
 			LuaTable lt = obj as LuaTable;
-			string cn = lt != null ? lt["ClassName"] as string : null;
+			string cn;
+			lock (luaState)
+			{
+				cn = lt != null ? lt["ClassName"] as string : null; 
+			}
 
 			foreach (string classname in classnames)
 				if (String.Equals(cn, classname))
@@ -1097,80 +1500,90 @@ namespace WF.Player.Core
         #region Helpers
 
 		/// <summary>
-		/// Cleans a string from specific markup by converting it to its equivalent
-		/// values in the environment.
+		/// Gets a list of Table entities from a LuaTable.
 		/// </summary>
-		/// <param name="s"></param>
-		/// <returns></returns>
-		internal static string ReplaceMarkup(string s)
+		/// <typeparam name="T">Type of entities.</typeparam>
+		/// <param name="table">LuaTable to convert.</param>
+		/// <returns>A list of Table entities that corresponds to all entries of the input
+		/// table that could convert to <typeparamref name="T"/>.</returns>
+		internal List<T> GetTableListFromLuaTable<T>(LuaTable table) where T : Table
 		{
-			// <BR> and <BR/> and <BR>\n -> new line
-			// &nbsp; and &nbsp; + space -> space
-			// &lt; -> '<'
-			// &gt; -> '>'
-			// &amp; and &amp;&amp; -> &
-			// \n -> Environment.NewLine
-
-			if (s == null)
-			{
+			if (table == null)
 				return null;
+
+			List<T> result = new List<T>();
+
+			lock (luaState)
+			{
+				var t = table.GetEnumerator();
+
+				while (t.MoveNext())
+				{
+					T val = GetTable((LuaTable)t.Value) as T;
+					if (val != null)
+						result.Add(val);
+				}
 			}
 
-			// Defines the options for replacement: ignore case and culture invariant.
-			System.Text.RegularExpressions.RegexOptions ro = System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant;
-			StringComparison sc = StringComparison.InvariantCultureIgnoreCase;
-
-			return s
-				.Replace("<BR/?>\n?", "\n", ro)
-				.Replace("&nbsp; ?", " ", ro)
-				.Replace("&lt;", "<", sc)
-				.Replace("&gt;", ">", sc)
-				.Replace("(?:&amp;)+", "&", ro)
-				.Replace("\n", Environment.NewLine, sc);
+			return result;
 		}
 
-        /// <summary>
-        /// Call a Lua function in a new thread.
-        /// </summary>
-        /// <param name="obj">Object, to which the Lua function belongs.</param>
-        /// <param name="func">Name of the function to call.</param>
-        /// <param name="parameter">Parameters for the function call.</param>
-        /// <returns></returns>
-        internal object[] Call(LuaTable obj, string func, object[] parameter)
-        {
-			if (obj[func] is LuaFunction)
-            {
-                // Start function in a new thread
-                ThreadParams param = new ThreadParams(obj, func, parameter);
-                threadResult = null;
-                callFunc(param);
-                return threadResult;
-            }
-            else
-            {
-                return new object[] { };
-            }
-        }
-
-        /// <summary>
-        /// Function, which calls the Lua function in the new thread.
-        /// </summary>
-        /// <param name="arg">ThreadParams object for the function call.</param>
-        private void callFunc(object arg)
-        {
-            ThreadParams param = (ThreadParams)arg;
-            param.Running = true;
-            threadResult = ((LuaFunction)param.Obj[param.Func]).Call(param.Parameter);
-            param.Running = false;
-        }
-
 		/// <summary>
-		/// Create an empty table.
+		/// Gets a list of Table entities from a LuaTable.
 		/// </summary>
-		/// <returns>New table.</returns>
-		internal LuaTable EmptyTable()
+		/// <typeparam name="T">Type of entities.</typeparam>
+		/// <param name="table">LuaTable to convert.</param>
+		/// <returns>A list of Table entities that corresponds to all entries of the input
+		/// table that could convert to <typeparamref name="T"/>.</returns>
+		internal List<T> GetListFromLuaTable<T>(LuaTable table)
 		{
-			return (LuaTable)luaState.DoString("return {}")[0];
+			if (table == null)
+				return null;
+
+			List<T> result = new List<T>();
+
+			lock (luaState)
+			{
+				var t = table.GetEnumerator();
+
+				while (t.MoveNext())
+				{
+					if (t.Value != null && t.Value is T)
+						result.Add((T)t.Value);
+				}
+			}
+
+			return result;
+		}
+
+		internal T SafeGetField<T>(LuaTable table, string key)
+		{
+			object o;
+			lock (luaState)
+			{
+				o = table[key];
+			}
+
+			return (o != null && o is T) ? (T)o : default(T);
+		}
+
+		internal T SafeGetField<T>(LuaTable table, double key)
+		{
+			object o;
+			lock (luaState)
+			{
+				o = table[key];
+			}
+
+			return (o != null && o is T) ? (T)o : default(T);
+		}
+
+		internal LuaTable SafeCallSelf(LuaTable table, string func, params object[] parameters)
+		{
+			lock (luaState)
+			{
+				return table.CallSelf(func, parameters);
+			}
 		}
 
 		/// <summary>
@@ -1193,14 +1606,32 @@ namespace WF.Player.Core
 			if (t == null)
 				return null;
 
-			string className = (string)t ["ClassName"];
+			string className;
+			lock (luaState)
+			{
+				className = (string)t["ClassName"]; 
+			}
 
 			// Check if object is a AllZObject
-			if (t["ObjIndex"] != null) 
+			object oi;
+			lock (luaState)
 			{
-				int objIndex = Convert.ToInt32 ((double)t["ObjIndex"]);
-				if (uiObjects.ContainsKey (objIndex))
-					return uiObjects[objIndex];
+				oi = t["ObjIndex"];
+			}
+			if (oi != null) 
+			{
+				int objIndex = Convert.ToInt32 ((double)oi);
+
+				bool uiObjectKnown;
+				lock (syncRoot)
+				{
+					uiObjectKnown = uiObjects.ContainsKey (objIndex);
+				}
+				if (uiObjectKnown)
+					lock (syncRoot)
+					{
+						return uiObjects[objIndex]; 
+					}
 				else {
 					Table tab = null;
 					// Check for objects, that have a ObjIndex, but didn't derived from UIObject
@@ -1219,7 +1650,10 @@ namespace WF.Player.Core
 						tab = new Zone (this, t);
 					// Save UIObject for later use
 					if (tab != null)
-						uiObjects.Add (objIndex, (UIObject)tab);
+						lock (syncRoot)
+						{
+							uiObjects.Add(objIndex, (UIObject)tab); 
+						}
 					return tab;
 				}
 			}
@@ -1227,8 +1661,8 @@ namespace WF.Player.Core
 				//TODO: Delete
 				if (className.Equals ("ZonePoint"))
 					return new ZonePoint (this, t);
-				if (className.Equals ("ZCommand")) {
-					return new Command (this, t); }
+				if (className.Equals ("ZCommand"))
+					return new Command (this, t);
 				if (className.Equals ("ZReciprocalCommand"))
 					return new Command (this, t);
 				if (className.Equals("Distance"))
@@ -1240,6 +1674,9 @@ namespace WF.Player.Core
         #endregion
 
         #region Serialization
+
+		// TODO: Move into other class, write multithreading safeties.
+
 
         ///
         /// Save File Data Format Emulator (GWS File)
@@ -1367,7 +1804,7 @@ namespace WF.Player.Core
                 {
                     obj = (LuaTable)((LuaTable)cartridge.WIGTable["AllZObjects"])[i];
                     readTable(input, obj);
-                    Call(obj, "deserialize", new object[] { obj });
+					LuaExecQueue.BeginCallSelf(obj, "deserialize");
                 }
             }
 
@@ -1444,7 +1881,7 @@ namespace WF.Player.Core
 							obj[key] = (LuaFunction)luaState.LoadString(chunk, key.ToString());
                         break;
                     case 5:
-						tab = EmptyTable();
+						tab = luaState.EmptyTable();
 						if (className != null)
 							rawset.Call (new object[] { obj, key, tab } );
 						else
@@ -1524,7 +1961,7 @@ namespace WF.Player.Core
 			className = Encoding.UTF8.GetBytes((string)obj["ClassName"]);
 			output.Write(className.Length);
 			output.Write(className);
-			LuaTable data = (LuaTable)Call(obj, "serialize", new object[] { obj })[0];
+			LuaTable data = obj.CallSelf("serialize");
             writeTable(output, data);
 
             for (int i = 0; i < numAllZObjects; i++)
@@ -1533,7 +1970,7 @@ namespace WF.Player.Core
                 output.Write(className.Length);
                 output.Write(className);
                 obj = (LuaTable)((LuaTable)cartridge.WIGTable["AllZObjects"])[i];
-				data = (LuaTable)Call(obj,"serialize",new object[] { obj })[0];
+				data = obj.CallSelf("serialize");
                 writeTable(output,data);
             }
 
@@ -1613,7 +2050,7 @@ namespace WF.Player.Core
                         byte[] array = Encoding.UTF8.GetBytes(className);
                         output.Write(array.Length);
                         output.Write(array);
-						LuaTable data = (LuaTable)Call((LuaTable)entry.Value, "serialize", new object[] { (LuaTable)entry.Value })[0];
+						LuaTable data = ((LuaTable)entry.Value).CallSelf("serialize");
 						writeTable (output, data);
 					}
 					else if (className != null && (className.Equals ("ZCartridge") || className.Equals ("ZCharacter") || className.Equals ("ZInput") || className.Equals ("ZItem") || 
@@ -1626,7 +2063,7 @@ namespace WF.Player.Core
 					{
 						LuaTable data = (LuaTable)entry.Value;
 						if (((LuaTable)entry.Value)["serialize"] is LuaFunction)
-							data = (LuaTable)Call((LuaTable)entry.Value, "serialize", new object[] { (LuaTable)entry.Value })[0];
+							data = ((LuaTable)entry.Value).CallSelf("serialize");
 						writeTable(output, data); 
                     }
                 }
@@ -1717,179 +2154,254 @@ namespace WF.Player.Core
 
 		#region Event Raisers
 
+		/// <summary>
+		/// Asynchronously invokes an action to be run in the UI thread.
+		/// </summary>
+		/// <param name="action"></param>
+		private void BeginInvokeOnUIDispatcher(Action action)
+		{
+#if SILVERLIGHT
+			// Silverlight and Windows Phone's way.
+			Deployment.Current.Dispatcher.BeginInvoke(
+#else
+			// WPF's way.
+			Application.Current.Dispatcher.BeginInvoke(
+#endif
+				action
+			);
+		}
+
+		private void RaisePropertyChangedInObject(UIObject obj, string propName)
+		{
+			BeginInvokeOnUIDispatcher(() =>
+			{
+				obj.NotifyPropertyChanged(propName);
+			});
+		}
+
+		private void RaisePropertyChangedInObject(Cartridge obj, string propName)
+		{
+			BeginInvokeOnUIDispatcher(() =>
+			{
+				obj.NotifyPropertyChanged(propName);
+			});
+		}
+
 		private void RaisePropertyChanged(string propName)
 		{
-			if (PropertyChanged != null)
+			BeginInvokeOnUIDispatcher(() =>
 			{
-				PropertyChanged(this, new PropertyChangedEventArgs(propName));
-			}
+				if (PropertyChanged != null)
+				{
+					PropertyChanged(this, new PropertyChangedEventArgs(propName));
+				}
+			});
 		}
 
 		private void RaiseLogMessageRequested(LogLevel level, string message)
 		{
-			if (LogMessageRequested != null)
+			BeginInvokeOnUIDispatcher(() =>
 			{
-				LogMessageRequested(this, new LogMessageEventArgs(level, message));
-			}
+				if (LogMessageRequested != null)
+				{
+					LogMessageRequested(this, new LogMessageEventArgs(level, message));
+				}
+			});
 		}
 
 		private void RaiseInputRequested(Input input, bool throwIfNoHandler = true)
 		{
-			if (InputRequested == null)
+			BeginInvokeOnUIDispatcher(() =>
 			{
-				if (throwIfNoHandler)
+				if (InputRequested == null)
 				{
-					throw new InvalidOperationException("No InputRequested handler has been found.");
+					if (throwIfNoHandler)
+					{
+						throw new InvalidOperationException("No InputRequested handler has been found.");
+					}
+					else
+					{
+						return;
+					}
 				}
-				else
-				{
-					return;
-				}
-			}
 
-			InputRequested(this, new ObjectEventArgs<Input>(input));
+				InputRequested(this, new ObjectEventArgs<Input>(input));
+			});
 		}
 
 		private void RaiseMessageBoxRequested(MessageBox mb, bool throwIfNoHandler = true)
 		{
-			if (ShowMessageBoxRequested == null)
+			BeginInvokeOnUIDispatcher(() =>
 			{
-				if (throwIfNoHandler)
+				if (ShowMessageBoxRequested == null)
 				{
-					throw new InvalidOperationException("No MessageBoxRequested handler has been found.");
+					if (throwIfNoHandler)
+					{
+						throw new InvalidOperationException("No MessageBoxRequested handler has been found.");
+					}
+					else
+					{
+						return;
+					}
 				}
-				else
-				{
-					return;
-				}
-			}
 
-			ShowMessageBoxRequested(this, new MessageBoxEventArgs(mb));
+				ShowMessageBoxRequested(this, new MessageBoxEventArgs(mb));
+			});
 		}
 
 		private void RaisePlayMediaRequested(Media media, bool throwIfNoHandler = true)
 		{
-			if (PlayMediaRequested == null)
+			BeginInvokeOnUIDispatcher(() =>
 			{
-				if (throwIfNoHandler)
+				if (PlayMediaRequested == null)
 				{
-					throw new InvalidOperationException("No PlayMediaRequested handler has been found.");
+					if (throwIfNoHandler)
+					{
+						throw new InvalidOperationException("No PlayMediaRequested handler has been found.");
+					}
+					else
+					{
+						return;
+					}
 				}
-				else
-				{
-					return;
-				}
-			}
 
-			PlayMediaRequested(this, new ObjectEventArgs<Media>(media));
+				PlayMediaRequested(this, new ObjectEventArgs<Media>(media));
+			});
 		}
 
 		private void RaiseScreenRequested(ScreenType kind, UIObject obj, bool throwIfNoHandler = true)
 		{
-			if (ShowScreenRequested == null)
+			BeginInvokeOnUIDispatcher(() =>
 			{
-				if (throwIfNoHandler)
+				if (ShowScreenRequested == null)
 				{
-					throw new InvalidOperationException("No ScreenRequested handler has been found.");
+					if (throwIfNoHandler)
+					{
+						throw new InvalidOperationException("No ScreenRequested handler has been found.");
+					}
+					else
+					{
+						return;
+					}
 				}
-				else
-				{
-					return;
-				}
-			}
 
-			ShowScreenRequested(this, new ScreenEventArgs(kind, obj));
+				ShowScreenRequested(this, new ScreenEventArgs(kind, obj));
+			});
 		}
 
 		private void RaiseInventoryChanged(Thing obj, Thing fromContainer, Thing toContainer)
 		{
-			if (InventoryChanged != null)
+			BeginInvokeOnUIDispatcher(() =>
 			{
-				InventoryChanged(this, new InventoryChangedEventArgs(obj, fromContainer, toContainer));
-			}
+				if (InventoryChanged != null)
+				{
+					InventoryChanged(this, new InventoryChangedEventArgs(obj, fromContainer, toContainer));
+				}
+			});
 		}
 
 		private void RaiseAttributeChanged(Table obj, string propName)
 		{
-			if (AttributeChanged != null)
+			BeginInvokeOnUIDispatcher(() =>
 			{
-				AttributeChanged(this, new AttributeChangedEventArgs(obj, propName));
-			}
+				if (AttributeChanged != null)
+				{
+					AttributeChanged(this, new AttributeChangedEventArgs(obj, propName));
+				}
+			});
 		}
 
 		private void RaiseCommandChanged(Command command)
 		{
-			if (CommandChanged != null)
+			BeginInvokeOnUIDispatcher(() =>
 			{
-				CommandChanged(this, new ObjectEventArgs<Command>(command));
-			}
+				if (CommandChanged != null)
+				{
+					CommandChanged(this, new ObjectEventArgs<Command>(command));
+				}
+			});
 		}
 
 		private void RaiseCartridgeCompleted(Cartridge cartridge)
 		{
-			if (CartridgeCompleted != null)
+			BeginInvokeOnUIDispatcher(() =>
 			{
-				CartridgeCompleted(this, new CartridgeEventArgs(cartridge));
-			}
+				if (CartridgeCompleted != null)
+				{
+					CartridgeCompleted(this, new CartridgeEventArgs(cartridge));
+				}
+			});
 		}
 
 		private void RaiseSaveRequested(Cartridge cartridge, bool throwIfNoHandler = true)
 		{
-			if (SaveRequested == null)
+			BeginInvokeOnUIDispatcher(() =>
 			{
-				if (throwIfNoHandler)
+				if (SaveRequested == null)
 				{
-					throw new InvalidOperationException("No SaveRequested handler has been found.");
+					if (throwIfNoHandler)
+					{
+						throw new InvalidOperationException("No SaveRequested handler has been found.");
+					}
+					else
+					{
+						return;
+					}
 				}
-				else
-				{
-					return;
-				}
-			}
-			
-			SaveRequested(this, new CartridgeEventArgs(cartridge));
+
+				SaveRequested(this, new CartridgeEventArgs(cartridge));
+			});
 		}
 
 		private void RaiseZoneStateChanged(List<Zone> list)
 		{
-			if (ZoneStateChanged != null)
+			BeginInvokeOnUIDispatcher(() =>
 			{
-				ZoneStateChanged(this, new ZoneStateChangedEventArgs(list));
-			}
+				if (ZoneStateChanged != null)
+				{
+					ZoneStateChanged(this, new ZoneStateChangedEventArgs(list));
+				}
+			});
 		}
 
 		private void RaiseShowStatusTextRequested(string text, bool throwIfNoHandler = true)
 		{
-			if (ShowStatusTextRequested == null)
+			BeginInvokeOnUIDispatcher(() =>
 			{
-				if (throwIfNoHandler)
+				if (ShowStatusTextRequested == null)
 				{
-					throw new InvalidOperationException("No ShowStatusTextRequested handler has been found.");
+					if (throwIfNoHandler)
+					{
+						throw new InvalidOperationException("No ShowStatusTextRequested handler has been found.");
+					}
+					else
+					{
+						return;
+					}
 				}
-				else
-				{
-					return;
-				}
-			}
-			
-			ShowStatusTextRequested(this, new StatusTextEventArgs(text));
+
+				ShowStatusTextRequested(this, new StatusTextEventArgs(text));
+			});
 		}
 
 		private void RaiseSynchronizeRequested(Action tick, bool throwIfNoHandler = true)
 		{
-			if (SynchronizeRequested == null)
+			BeginInvokeOnUIDispatcher(() =>
 			{
-				if (throwIfNoHandler)
+				if (SynchronizeRequested == null)
 				{
-					throw new InvalidOperationException("No SynchronizeRequested handler has been found.");
+					if (throwIfNoHandler)
+					{
+						throw new InvalidOperationException("No SynchronizeRequested handler has been found.");
+					}
+					else
+					{
+						return;
+					}
 				}
-				else
-				{
-					return;
-				}
-			}
 
-			SynchronizeRequested(this, new SynchronizeEventArgs(tick));
+				SynchronizeRequested(this, new SynchronizeEventArgs(tick));
+			});
 		}
 
 		#endregion
@@ -1975,7 +2487,7 @@ namespace WF.Player.Core
 		#endregion
     }
 
-	#region Helper classes
+	#region Classes and Enums
 
 	/// <summary>
 	/// A state of the game that the engine can be in.
@@ -1991,25 +2503,6 @@ namespace WF.Player.Core
 		Playing,
 		Stopping,
 		Disposed
-	}
-	
-	/// <summary>
-	/// Class for thread parameters.
-	/// </summary>
-	public class ThreadParams
-	{
-		public LuaTable Obj;
-		public string Func;
-		public object[] Parameter;
-		public bool Running;
-
-		internal ThreadParams(LuaTable obj,string func,object[] parameter)
-		{
-			Obj = obj;
-			Func = func;
-			Parameter = parameter;
-		}
-
 	}
 
 	#endregion

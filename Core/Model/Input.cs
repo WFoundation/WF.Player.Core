@@ -36,15 +36,14 @@ namespace WF.Player.Core
 
 		#region Properties
 
-		public List<string> Choices {
-			get {
-				List<string> result = new List<string> (); 
-
-				var s = ((LuaTable)wigTable ["Choices"]).GetEnumerator ();
-				while (s.MoveNext())
-					result.Add ((string)s.Value);
-
-				return result;
+		/// <summary>
+		/// Gets a list of possible choices for the answer.
+		/// </summary>
+		public List<string> Choices 
+		{
+			get 
+			{
+				return GetList<string>("Choices");
 			}
 		}
 
@@ -64,14 +63,9 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <value>The image.</value>
 		public Media Image {
-			get {
-                var media = wigTable["Media"];
-
-				if (media is LuaTable)
-				    return engine.GetMedia (Convert.ToInt32 ((double)((LuaTable)media)["ObjIndex"]));
-                else
-					return null;
-
+			get 
+			{
+				return GetMedia("Media");
 			}
 		}
 
@@ -101,7 +95,7 @@ namespace WF.Player.Core
 		/// <value>The text.</value>
 		public string Text {
 			get {
-				return Engine.ReplaceMarkup(GetString ("Text"));
+				return GetString ("Text").ReplaceMarkup();
 			}
 		}
 
@@ -125,7 +119,7 @@ namespace WF.Player.Core
 		/// <param name="result">The answer. If null, the input is considered to be cancelled.</param>
 		public void GiveResult(string result)
 		{
-			engine.Call (wigTable, "OnGetInput", new object[] { wigTable, result });
+			engine.LuaExecQueue.BeginCallSelf(this, "OnGetInput", result);
 		}
 
 		/// <summary>

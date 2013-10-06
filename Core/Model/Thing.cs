@@ -42,14 +42,9 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <value>The list of commands.</value>
 		public List<Command> Commands {
-			get {
-				List<Command> result = new List<Command> ();
-
-				var c = ((LuaTable)wigTable ["Commands"]).GetEnumerator ();
-				while(c.MoveNext())
-					result.Add ((Command)GetTable ((LuaTable)c.Value));
-
-				return result;
+			get 
+			{
+				return GetTableList<Command>("Commands");
 			}
 		}
 
@@ -58,17 +53,9 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <value>The container.</value>
 		public Thing Container {
-			get {
-                if (wigTable["Container"] is LuaTable)
-                {
-                    var c = GetTable((LuaTable)wigTable["Container"]);
-                    if (c == null)
-                        return null;
-                    else
-                        return (Thing)c;
-                }
-                else
-                    return null;
+			get 
+			{
+				return GetTable("Container") as Thing;
 			}
 		}
 
@@ -76,14 +63,9 @@ namespace WF.Player.Core
 		/// Gets a list of available commands.
 		/// </summary>
 		public List<Command> ActiveCommands {
-			get {
-				List<Command> result = new List<Command> ();
-
-				var c = ((LuaTable)((LuaFunction)wigTable["GetActiveCommands"]).Call (new object[] { wigTable })[0]).GetEnumerator ();
-				while(c.MoveNext())
-					result.Add ((Command)GetTable ((LuaTable)c.Value));
-
-				return result;
+			get 
+			{
+				return GetTableFuncList<Command>("GetActiveCommands");
 			}
 		}
 
@@ -92,14 +74,9 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <value>The inventory.</value>
 		public List<Thing> Inventory {
-			get {
-				List<Thing> result = new List<Thing> ();
-
-				var t = ((LuaTable)wigTable ["Inventory"]).GetEnumerator ();
-				while (t.MoveNext())
-					result.Add ((Thing)GetTable ((LuaTable)t.Value));
-
-				return result;
+			get 
+			{
+				return GetTableList<Thing>("Inventory");
 			}
 		}
 
@@ -113,10 +90,6 @@ namespace WF.Player.Core
 				return engine.GetVectorFromPlayer(this);
 			}
 		}
-
-		#endregion
-
-		#region Methods
 
 		#endregion
 

@@ -36,6 +36,8 @@ namespace WF.Player.Core
     #if MONOTOUCH
 	    [MonoTouch.Foundation.Preserve(AllMembers=true)]
     #endif
+	// TODO: Make inherit Table and change generation strategy from Engine.
+	// TODO: Multithreading safety.
 	public class Cartridge : INotifyPropertyChanged
     {
 

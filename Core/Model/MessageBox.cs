@@ -62,7 +62,7 @@ namespace WF.Player.Core
 		/// <param name="callback">Function to call once the message box has gotten a result.</param>
 		public MessageBox(string text, Media mediaObj, string btn1label, string btn2label, Action<string> cb)
 		{
-			Text = Engine.ReplaceMarkup(text);
+			Text = text.ReplaceMarkup();
 			Image = mediaObj;
 			FirstButtonLabel = String.IsNullOrEmpty(btn1label) ? null : btn1label;
 			SecondButtonLabel = String.IsNullOrEmpty(btn2label) ? null : btn2label;

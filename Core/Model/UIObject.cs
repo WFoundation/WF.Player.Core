@@ -44,7 +44,7 @@ namespace WF.Player.Core
 		/// <value>The description.</value>
 		public string Description {
 			get {
-				return Engine.ReplaceMarkup(GetString ("Description"));
+				return GetString ("Description").ReplaceMarkup();
 			}
 		}
 
@@ -53,14 +53,9 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <value>The icon.</value>
 		public Media Icon {
-			get {
-                if (wigTable["Icon"] is LuaTable)
-                {
-                    LuaTable media = (LuaTable)wigTable["Icon"];
-                    return engine.GetMedia(Convert.ToInt32((double)media["ObjIndex"]));
-                }
-                else
-                    return null;
+			get 
+			{
+                return GetMedia("Icon");
 			}
 		}
 
@@ -69,14 +64,9 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <value>The image as Media object.</value>
 		public Media Image {
-			get {
-                if (wigTable["Media"] is LuaTable)
-                {
-					LuaTable media = (LuaTable)wigTable ["Media"];
-					return engine.GetMedia(Convert.ToInt32((double)media ["ObjIndex"]));
-                }
-                else
-                    return null;
+			get 
+			{
+				return GetMedia("Media");
 			}
 		}
 
@@ -85,7 +75,8 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <value>The name.</value>
 		public string Name {
-			get {
+			get 
+			{
 				return GetString ("Name");
 			}
 		}
@@ -95,7 +86,8 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <value>The index of the object.</value>
 		public int ObjIndex {
-			get {
+			get 
+			{
 				return GetInt ("ObjIndex");
 			}
 		}
@@ -105,7 +97,8 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <value><c>true</c> if visible; otherwise, <c>false</c>.</value>
 		public bool Visible {
-			get {
+			get 
+			{
 				return GetBool ("Visible");
 			}
 		}

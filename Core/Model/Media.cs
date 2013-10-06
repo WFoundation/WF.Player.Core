@@ -40,7 +40,7 @@ namespace WF.Player.Core
 
         #endregion
 
-        #region C# Property
+        #region Properties
 
         /// <summary>
         /// Bytes for the media.

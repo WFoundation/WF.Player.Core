@@ -42,7 +42,8 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <value><c>true</c> if locked; otherwise, <c>false</c>.</value>
 		public bool Locked {
-			get {
+			get 
+			{
 				return GetBool ("Locked");
 			}
 		}
@@ -52,17 +53,9 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <value>The object location as ZonePoint.</value>
 		public ZonePoint ObjectLocation {
-			get {
-                if (wigTable["ObjectLocation"] is LuaTable)
-                {
-                    var zp = GetTable((LuaTable)wigTable["ObjectLocation"]);
-                    if (zp == null)
-                        return null;
-                    else
-                        return (ZonePoint)zp;
-                }
-                else
-                    return null;
+			get 
+			{
+				return GetTable("ObjectLocation") as ZonePoint;
 			}
 		}
 
@@ -71,7 +64,8 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <value><c>true</c> if opened; otherwise, <c>false</c>.</value>
 		public bool Opened {
-			get {
+			get 
+			{
 				return GetBool ("Opened");
 			}
 		}
