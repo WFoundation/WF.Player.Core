@@ -183,18 +183,18 @@ namespace WF.Player.Core
 	}
 
 	/// <summary>
-	/// Event arguments for a UI synchronisation.
+	/// Event arguments for an action dispatch on the UI thread.
 	/// </summary>
-	public class SynchronizeEventArgs : EventArgs
+	public class UIDispatchEventArgs : EventArgs
 	{
 		/// <summary>
 		/// Gets the action to execute in the UI thread.
 		/// </summary>
-		public Action Tick { get; private set; }
+		public Action Action { get; private set; }
 
-		internal SynchronizeEventArgs(Action tick)
+		internal UIDispatchEventArgs(Action action)
 		{
-			Tick = tick;
+			Action = action;
 		}
 	}
 

@@ -24,7 +24,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using NLua;
-
+using WF.Player.Core.Utils;
 
 namespace WF.Player.Core
 {

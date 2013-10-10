@@ -18,49 +18,38 @@
 ///
 
 using System;
-using System.Collections.Generic;
-using NLua;
+using System.IO;
 
-namespace WF.Player.Core
+namespace WF.Player.Core.Formats
 {
-
-	public class Item : Thing
+	public class FileWFZ
 	{
-
-		#region Constructor
-
-		public Item (Engine e, LuaTable t) : base (e, t)
+		/// <summary>
+		/// Determines, if stream contains a valid WFC file.
+		/// </summary>
+		/// <returns><c>true</c> if is valid WFZ file; otherwise, <c>false</c>.</returns>
+		/// <param name="inputStream">Stream with cartridge file.</param>
+		public static bool IsValidFile(Stream inputStream)
 		{
-		}
-
-		#endregion
-
-		#region Properties
-
-		/// <summary>
-		/// Gets a value indicating whether this <see cref="WF.Player.Core.Item"/> is locked.
-		/// </summary>
-		/// <value><c>true</c> if locked; otherwise, <c>false</c>.</value>
-		public bool Locked {
-			get 
-			{
-				return GetBool ("Locked");
-			}
+			return false;
 		}
 
 		/// <summary>
-		/// Gets a value indicating whether this <see cref="WF.Player.Core.Item"/> is opened.
+		/// Load a whole WFZ file into a Cartridge object.
 		/// </summary>
-		/// <value><c>true</c> if opened; otherwise, <c>false</c>.</value>
-		public bool Opened {
-			get 
-			{
-				return GetBool ("Opened");
-			}
+		/// <param name="cart">Cartridge object to file with data.</param>
+		public static void Load(Stream inputStream, Cartridge cart)
+		{
+			throw new NotImplementedException(@"FileWFZ.Load is not implemented yet.");
 		}
 
-		#endregion
-
+		/// <summary>
+		/// Load only header data of a WFZ file into a Cartridge object.
+		/// </summary>
+		/// <param name="cart">Cartridge object to file with data.</param>
+		public static void LoadHeader(Stream inputStream, Cartridge cart)
+		{
+			throw new NotImplementedException(@"FileWFZ.LoadHeader is not implemented yet.");
+		}
 	}
-
 }

@@ -20,6 +20,7 @@
 using System;
 using System.Collections.Generic;
 using NLua;
+using WF.Player.Core.Utils;
 
 namespace WF.Player.Core
 {

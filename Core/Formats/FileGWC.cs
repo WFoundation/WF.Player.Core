@@ -112,7 +112,7 @@ using System.Reflection;
 ///		ASCIIZ = zero-terminated string ("hello world!", 0x00)
 ///
 /// </summary>
-namespace WF.Player.Core
+namespace WF.Player.Core.Formats
 {
 
 	public class FileGWC
@@ -270,8 +270,8 @@ namespace WF.Player.Core
 			int enumLength = Enum.GetValues(cart.ActivityType.GetType()).Length;
 			#endif
 			for (int i = 0; i < enumLength; i++)
-				if (((LiveAPI.WherigoCartridge.ActivityTypes)i).ToString().Equals(activity))
-					cart.ActivityType = (LiveAPI.WherigoCartridge.ActivityTypes)i;
+				if (((Live.WherigoCartridge.ActivityTypes)i).ToString().Equals(activity))
+					cart.ActivityType = (Live.WherigoCartridge.ActivityTypes)i;
 
 			// Read name of player
 			cart.Player = readCString(reader);

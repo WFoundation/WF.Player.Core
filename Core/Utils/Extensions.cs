@@ -22,7 +22,7 @@ using System;
 using System.Text.RegularExpressions;
 using NLua;
 
-namespace WF.Player.Core
+namespace WF.Player.Core.Utils
 {
 	public static class Extensions
 	{
@@ -128,7 +128,7 @@ namespace WF.Player.Core
 		}
 
 		/// <summary>
-		/// Create an empty table.
+		/// Create an empty table. Not thread-safe.
 		/// </summary>
 		/// <returns>A new empty LuaTable object.</returns>
 		internal static LuaTable EmptyTable(this Lua luaState)
@@ -137,7 +137,7 @@ namespace WF.Player.Core
 		}
 
 		/// <summary>
-		/// Calls a lua function contained by a LuaTable.
+		/// Calls a lua function contained by a LuaTable. Not thread-safe.
 		/// </summary>
 		/// <param name="table">Table to query.</param>
 		/// <param name="funcName">Function name that belongs to the LuaTable.</param>
@@ -164,7 +164,7 @@ namespace WF.Player.Core
 
 		/// <summary>
 		/// Calls a lua method contained by a LuaTable, and which takes as first parameter
-		/// the LuaTable itself.
+		/// the LuaTable itself. Not thread-safe.
 		/// </summary>
 		/// <param name="table">Table to query.</param>
 		/// <param name="funcName">Function name that belongs to the LuaTable.</param>
@@ -186,5 +186,6 @@ namespace WF.Player.Core
 			object[] ret = ((LuaFunction)table[funcName]).Call(parameters);
 			return ret != null ? (LuaTable)ret[0] : null;
 		}
+
 	}
 }

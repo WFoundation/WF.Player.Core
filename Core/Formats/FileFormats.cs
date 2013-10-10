@@ -27,7 +27,7 @@ using System.Text;
 using System.Reflection;
 #endif
 
-namespace WF.Player.Core
+namespace WF.Player.Core.Formats
 {
 	public enum CartridgeFileTypes 
 	{ 

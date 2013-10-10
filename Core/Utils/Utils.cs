@@ -20,7 +20,7 @@
 using System;
 using System.Reflection;
 
-namespace WF.Player.Core
+namespace WF.Player.Core.Utils
 {
 	/// <summary>
 	/// Defines utility methods.

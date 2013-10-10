@@ -27,7 +27,7 @@ using System.Net;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace WF.Player.Core
+namespace WF.Player.Core.Live
 {
     public class Cartridges : ObservableCollection<Cartridge>
     {
@@ -103,11 +103,11 @@ namespace WF.Player.Core
 			if (!checkConnection())
 				throw new InvalidOperationException("Invalid connection to the API.");
 
-			LiveAPI.SearchCartridgesRequest search = new LiveAPI.SearchCartridgesRequest()
+			Live.SearchCartridgesRequest search = new Live.SearchCartridgesRequest()
 			{
 				PageNumber = 1,
 				ResultsPerPage = 50,
-				SearchArguments = new LiveAPI.CartridgeSearchArguments()
+				SearchArguments = new Live.CartridgeSearchArguments()
 				{
 					Latitude = lat,
 					Longitude = lon,
@@ -127,14 +127,14 @@ namespace WF.Player.Core
             if (!checkConnection())
 				throw new InvalidOperationException("Invalid connection to the API.");
 
-			LiveAPI.SearchCartridgesRequest search = new LiveAPI.SearchCartridgesRequest()
+			Live.SearchCartridgesRequest search = new Live.SearchCartridgesRequest()
 			{
 				PageNumber = 1,
 				ResultsPerPage = 50,
-				SearchArguments = new LiveAPI.CartridgeSearchArguments()
+				SearchArguments = new Live.CartridgeSearchArguments()
 				{
 					CartridgeName = name.Trim(),
-					OrderSearchBy = LiveAPI.CartridgeSearchArguments.OrderBy.Distance
+					OrderSearchBy = Live.CartridgeSearchArguments.OrderBy.Distance
 				}
 			};
 
@@ -149,13 +149,13 @@ namespace WF.Player.Core
             if (!checkConnection())
 				throw new InvalidOperationException("Invalid connection to the API.");
 
-			LiveAPI.SearchCartridgesRequest search = new LiveAPI.SearchCartridgesRequest()
+			Live.SearchCartridgesRequest search = new Live.SearchCartridgesRequest()
 			{
 				PageNumber = 1,
 				ResultsPerPage = 50,
-				SearchArguments = new LiveAPI.CartridgeSearchArguments()
+				SearchArguments = new Live.CartridgeSearchArguments()
 				{
-					OrderSearchBy = LiveAPI.CartridgeSearchArguments.OrderBy.PublishDate,
+					OrderSearchBy = Live.CartridgeSearchArguments.OrderBy.PublishDate,
 					IsPlayAnywhere = true
 				}
 			};
@@ -165,14 +165,14 @@ namespace WF.Player.Core
 
 		public void DownloadCartridge (Cartridge cart, string path, Stream output)
 		{
-			LiveAPI.DownloadCartridgeRequest downloadRequest = new LiveAPI.DownloadCartridgeRequest ();
+			Live.DownloadCartridgeRequest downloadRequest = new Live.DownloadCartridgeRequest ();
 
 			downloadRequest.WGCode = cart.WGCode;
 			downloadRequest.UserToken = userToken;
 
 			string result = callAPI ("DownloadCartridge",downloadRequest);
 
-			LiveAPI.DownloadCartridgeResponse resp = JsonConvert.DeserializeObject<LiveAPI.DownloadCartridgeResponse> (result);
+			Live.DownloadCartridgeResponse resp = JsonConvert.DeserializeObject<Live.DownloadCartridgeResponse> (result);
 
 			if (resp != null && resp.CartridgeBytes != null)
 			{
@@ -218,7 +218,7 @@ namespace WF.Player.Core
         /// Search cartridges via web client.
         /// </summary>
         /// <param name="search">Search parameters</param>
-        private void beginGetCartridges(LiveAPI.SearchCartridgesRequest search)
+        private void beginGetCartridges(Live.SearchCartridgesRequest search)
         {
 			// Starts the asynchronous search operation.
 			// The result happens in the event handler onSearchCartridgesCompleted.
@@ -226,7 +226,7 @@ namespace WF.Player.Core
 				search.UserToken = userToken;
 			string result = callAPI("SearchCartridges", search);
 
-			LiveAPI.SearchCartridgesResponse resp = JsonConvert.DeserializeObject<LiveAPI.SearchCartridgesResponse>(result);
+			Live.SearchCartridgesResponse resp = JsonConvert.DeserializeObject<Live.SearchCartridgesResponse>(result);
 
 			status = resp.Status.StatusCode;
 
@@ -238,7 +238,7 @@ namespace WF.Player.Core
 					Clear();
 
 					// Get new ones
-					foreach (LiveAPI.CartridgeSearchResult res in resp.Cartridges)
+					foreach (Live.CartridgeSearchResult res in resp.Cartridges)
 					{
 						Cartridge cart = new Cartridge();
 

@@ -16,41 +16,40 @@
 /// You should have received a copy of the GNU Lesser General Public License
 /// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ///
-/// 
 
 using System;
 using System.IO;
-
-namespace WF.Player.Core
+namespace WF.Player.Core.Formats
 {
-	public class FileWFC
+	public class FileGWZ
 	{
 		/// <summary>
-		/// Determines, if stream contains a valid WFC file.
+		/// Determines, if stream contains a valid GWZ file.
 		/// </summary>
-		/// <returns><c>true</c> if is valid WFC file; otherwise, <c>false</c>.</returns>
+		/// <returns><c>true</c> if is valid GWZ file; otherwise, <c>false</c>.</returns>
 		/// <param name="inputStream">Stream with cartridge file.</param>
 		public static bool IsValidFile(Stream inputStream)
 		{
-			return false;
+			throw new NotImplementedException(@"FileGWZ.IsValidFile is not implemented yet.");
 		}
 
 		/// <summary>
-		/// Load a whole WFC file into a Cartridge object.
+		/// Load a whole GWZ file into a Cartridge object.
 		/// </summary>
 		/// <param name="cart">Cartridge object to file with data.</param>
 		public static void Load(Stream inputStream, Cartridge cart)
 		{
-			throw new NotImplementedException(@"FileWFC.Load is not implemented yet.");
+			throw new NotImplementedException(@"FileGWZ.Load is not implemented yet.");
 		}
 
 		/// <summary>
-		/// Load only header data of a WFC file into a Cartridge object.
+		/// Load only header data of a GWZ file into a Cartridge object.
 		/// </summary>
 		/// <param name="cart">Cartridge object to file with data.</param>
 		public static void LoadHeader(Stream inputStream, Cartridge cart)
 		{
-			throw new NotImplementedException(@"FileWFC.LoadHeader is not implemented yet.");
+			throw new NotImplementedException(@"FileGWZ.LoadHeader is not implemented yet.");
 		}
 	}
+
 }

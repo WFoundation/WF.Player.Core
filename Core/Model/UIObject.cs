@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using NLua;
+using WF.Player.Core.Utils;
 
 namespace WF.Player.Core
 {

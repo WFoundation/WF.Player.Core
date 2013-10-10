@@ -54,10 +54,14 @@
     <Reference Include="mscorlib.extensions" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Utils\Threading\ActionPump.cs" />
+    <Compile Include="Utils\Threading\JobQueue.cs" />
+    <Compile Include="Utils\SafeLua.cs" />
+    <Compile Include="Formats\FileGWS.cs" />
     <Compile Include="Utils\Utils.cs" />
     <Compile Include="Utils\Extensions.cs" />
-    <Compile Include="Engine\LuaExecutionQueue.cs" />
-    <Compile Include="LiveAPI\Reference.cs">
+    <Compile Include="Utils\Threading\LuaExecutionQueue.cs" />
+    <Compile Include="Live\Reference.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\Cartridge.cs" />
@@ -65,11 +69,11 @@
     <Compile Include="Model\Command.cs" />
     <Compile Include="Model\Distance.cs" />
     <Compile Include="Engine\Engine.cs" />
-    <Compile Include="Loaders\FileFormats.cs" />
-    <Compile Include="Loaders\FileGWC.cs" />
-    <Compile Include="Loaders\FileGWZ.cs" />
-    <Compile Include="Loaders\FileWFC.cs" />
-    <Compile Include="Loaders\FileWFZ.cs" />
+    <Compile Include="Formats\FileFormats.cs" />
+    <Compile Include="Formats\FileGWC.cs" />
+    <Compile Include="Formats\FileGWZ.cs" />
+    <Compile Include="Formats\FileWFC.cs" />
+    <Compile Include="Formats\FileWFZ.cs" />
     <Compile Include="Model\Enums.cs" />
     <Compile Include="Model\Events.cs" />
     <Compile Include="Model\Input.cs" />

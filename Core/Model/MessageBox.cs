@@ -18,6 +18,7 @@
 ///
 
 using System;
+using WF.Player.Core.Utils;
 
 namespace WF.Player.Core
 {

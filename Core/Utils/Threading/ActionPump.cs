@@ -1,4 +1,4 @@
-///
+﻿///
 /// WF.Player.Core - A Wherigo Player Core for different platforms.
 /// Copyright (C) 2012-2013  Dirk Weltz <web@weltz-online.de>
 /// Copyright (C) 2012-2013  Brice Clocher <contact@cybisoft.net>
@@ -18,38 +18,60 @@
 ///
 
 using System;
-using System.IO;
 
-namespace WF.Player.Core
+namespace WF.Player.Core.Utils.Threading
 {
-	public class FileWFZ
-	{
-		/// <summary>
-		/// Determines, if stream contains a valid WFC file.
-		/// </summary>
-		/// <returns><c>true</c> if is valid WFZ file; otherwise, <c>false</c>.</returns>
-		/// <param name="inputStream">Stream with cartridge file.</param>
-		public static bool IsValidFile(Stream inputStream)
-		{
-			return false;
-		}
+	/// <summary>
+	/// A thread-safe queue of actions to be defered and executed on a trigger.
+	/// </summary>
+	internal class ActionPump : JobQueue
+	{			
+		#region Properties
 
 		/// <summary>
-		/// Load a whole WFZ file into a Cartridge object.
+		/// Gets or sets if this ActionPump is executing its job queue.
 		/// </summary>
-		/// <param name="cart">Cartridge object to file with data.</param>
-		public static void Load(Stream inputStream, Cartridge cart)
+		public bool IsPumping
 		{
-			throw new NotImplementedException(@"FileWFZ.Load is not implemented yet.");
+			get
+			{
+				return IsActive;
+			}
+
+			set
+			{
+				IsActive = value;
+			}
 		}
 
+		#endregion
+
+		#region Constructors and Destructors
+
 		/// <summary>
-		/// Load only header data of a WFZ file into a Cartridge object.
+		/// Creates an ActionPump that is initially not pumping.
 		/// </summary>
-		/// <param name="cart">Cartridge object to file with data.</param>
-		public static void LoadHeader(Stream inputStream, Cartridge cart)
+		public ActionPump()
 		{
-			throw new NotImplementedException(@"FileWFZ.LoadHeader is not implemented yet.");
+			// JobQueue configuration.
+			ContinuesOnCompletion = true;
+			IsActive = false;
+			DelayBetweenJobs = TimeSpan.FromMilliseconds(10);
 		}
+
+		#endregion
+
+		#region Public Methods
+
+		/// <summary>
+		/// Adds an action on the queue without activating the pump up.
+		/// </summary>
+		/// <param name="action"></param>
+		public void AcceptAction(Action action)
+		{
+			AcceptJob(action, IsPumping);
+		}
+
+		#endregion
 	}
 }
