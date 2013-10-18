@@ -26,22 +26,22 @@ using System.Text;
 using NLua;
 using System.Net;
 using Newtonsoft.Json;
+using WF.Player.Core.Engines;
 
 namespace WF.Player.Core
 {
-
-    /// <summary>
-	/// Class for objects to store informations for cartridges.
-    /// </summary>
     #if MONOTOUCH
 	    [MonoTouch.Foundation.Preserve(AllMembers=true)]
     #endif
-	// TODO: Make inherit Table and change generation strategy from Engine.
 	// TODO: Multithreading safety.
-	public class Cartridge : INotifyPropertyChanged
+
+	/// <summary>
+	/// A particular game of Wherigo.
+	/// </summary>
+	public class Cartridge : Table, INotifyPropertyChanged
     {
 
-        #region Private variables
+        #region Members
 
         private Live.WherigoCartridge.ActivityTypes activityType;
         private string authorCompany;
@@ -56,7 +56,6 @@ namespace WF.Player.Core
         private DateTime? dateLastPlayed;
         private DateTime? dateLastUpdated;
         private string device;
-        private Engine engine;
         private string guid;
         private Media icon;
         private string iconFileURL;
@@ -84,14 +83,12 @@ namespace WF.Player.Core
         private int uniqueDownloads;
         private bool userHasPartiallyPlayed;
         private string version;
-		private string wgCode;
-		private LuaTable wigTable;
 
         #endregion
 
         #region Constructor
 
-        public Cartridge ( string filename = null )
+        public Cartridge ( string filename = null ) : base(null, null)
 		{
             // Save filename of the gwc file for later use.
             // If filename starts with WG, than filename is an online cartridge
@@ -101,10 +98,10 @@ namespace WF.Player.Core
 
         #endregion
 
-        #region C# Properties
+        #region Properties
 
         /// <summary>
-        /// Type of activity this cartridge has (like "Geocaching" or "Puzzle").
+        /// Gets the type of activity this cartridge provides the player with.
         /// </summary>
         public Live.WherigoCartridge.ActivityTypes ActivityType
         {
@@ -112,7 +109,8 @@ namespace WF.Player.Core
             {
                 return activityType;
             }
-            set
+
+            internal set
             {
                 if (activityType != value)
                 {
@@ -123,7 +121,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Company the author belongs to.
+        /// Gets the company the author belongs to.
         /// </summary>
         public string AuthorCompany
         {
@@ -131,7 +129,8 @@ namespace WF.Player.Core
             {
                 return authorCompany;
             }
-            set
+
+            internal set
             {
                 if (authorCompany != value)
                 {
@@ -142,7 +141,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Name of the author of this cartridge.
+        /// Gets the name of the author of this cartridge.
         /// </summary>
         public string AuthorName
         {
@@ -150,7 +149,8 @@ namespace WF.Player.Core
             {
                 return authorName;
             }
-            set
+
+            internal set
             {
                 if (authorName != value)
                 {
@@ -161,7 +161,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Date of creation of this cartridge.
+        /// Gets the date of creation of this cartridge.
         /// </summary>
         public DateTime CreateDate
         {
@@ -169,7 +169,8 @@ namespace WF.Player.Core
             {
                 return createDate;
             }
-            set
+
+            internal set
             {
                 if (createDate != value)
                 {
@@ -180,7 +181,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Gets/sets the cartridge completion state.
+        /// Gets if the cartridge has been completed by the player.
         /// </summary>
         /// <value><c>true</c> if the cartridge is complete; otherwise, <c>false</c>.</value>
         public bool Complete
@@ -189,7 +190,8 @@ namespace WF.Player.Core
             {
                 return complete;
             }
-            set
+
+            internal set
             {
                 if (complete != value)
                 {
@@ -202,7 +204,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// CompletionCode for this cartridge.
+        /// Gets the completion code for this cartridge.
         /// </summary>
         public string CompletionCode
         {
@@ -210,7 +212,8 @@ namespace WF.Player.Core
             {
                 return completionCode;
             }
-            set
+
+            internal set
             {
                 if (completionCode != value)
                 {
@@ -221,7 +224,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Gets/sets the cartridge completed time.
+        /// Gets the time when the cartridge was completed.
         /// </summary>
         /// <value>DateTime when the cartridge was completed.</value>
         public DateTime CompletedTime
@@ -233,7 +236,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Time to be needed to play throught the cartridge.
+        /// Gets an estimation of the time needed to complete the cartridge.
         /// </summary>
         public Live.WherigoCartridge.CompletionTimes CompletionTime
         {
@@ -241,7 +244,8 @@ namespace WF.Player.Core
             {
                 return completionTime;
             }
-            set
+
+            internal set
             {
                 if (completionTime != value)
                 {
@@ -252,7 +256,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// CountryID for this cartridge.
+        /// Gets the country ID for this cartridge.
         /// </summary>
         public int CountryID
         {
@@ -260,7 +264,8 @@ namespace WF.Player.Core
             {
                 return countryID;
             }
-            set
+
+            internal set
             {
                 if (countryID != value)
                 {
@@ -271,7 +276,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Date of adding this cartridge to the server.
+        /// Gets the date when this cartridge was added to the website.
         /// </summary>
         public DateTime? DateAdded
         {
@@ -279,7 +284,8 @@ namespace WF.Player.Core
             {
                 return dateAdded;
             }
-            set
+            
+			internal set
             {
                 if (dateAdded != value)
                 {
@@ -290,7 +296,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Date, when this cartridge is last played.
+        /// Gets the date when this cartridge was played for the last time.
         /// </summary>
         public DateTime? DateLastPlayed
         {
@@ -298,7 +304,8 @@ namespace WF.Player.Core
             {
                 return dateLastPlayed;
             }
-            set
+            
+			internal set
             {
                 if (dateLastPlayed != value)
                 {
@@ -309,7 +316,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Date, when the source of the cartridge is last updated.
+		/// Gets the date when this cartridge was updated for the last time.
         /// </summary>
         public DateTime? DateLastUpdated
         {
@@ -317,7 +324,8 @@ namespace WF.Player.Core
             {
                 return dateLastUpdated;
             }
-            set
+
+            internal set
             {
                 if (dateLastUpdated != value)
                 {
@@ -328,7 +336,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Device, for which this cartridge is created.
+        /// Gets the device for which this cartridge has been created.
         /// </summary>
         public string Device
         {
@@ -336,7 +344,8 @@ namespace WF.Player.Core
             {
                 return device;
             }
-            set
+            
+			internal set
             {
                 if (device != value)
                 {
@@ -353,8 +362,8 @@ namespace WF.Player.Core
         public string EmptyInventoryListText
         {
             get
-            {
-                return GetString("EmptyInventoryListText");
+            {				
+				return IsBound ? GetString("EmptyInventoryListText") : null;
             }
         }
 
@@ -366,7 +375,7 @@ namespace WF.Player.Core
         {
             get
             {
-                return GetString("EmptyTasksListText");
+                return IsBound ? GetString("EmptyTasksListText") : null;
             }
         }
 
@@ -378,7 +387,7 @@ namespace WF.Player.Core
         {
             get
             {
-                return GetString("EmptyYouSeeListText");
+                return IsBound ? GetString("EmptyYouSeeListText") : null;
             }
         }
 
@@ -390,33 +399,21 @@ namespace WF.Player.Core
         {
             get
             {
-                return GetString("EmptyZonesListText");
-            }
-        }
-
-        /// <summary>
-        /// Sets the engine to which this cartridge belongs.
-        /// </summary>
-        /// <value>The engine.</value>
-        public Engine Engine
-        {
-            set
-            {
-                engine = value;
+                return IsBound ? GetString("EmptyZonesListText") : null;
             }
         }
 
 		/// <summary>
-		/// Filename of the cartridge.
+		/// Gets the filename of the cartridge.
 		/// </summary>
 		public string Filename 
 		{ 
 			get; 
-			set; 
+			internal set; 
 		}
 
         /// <summary>
-        /// Guid of the cartridge.
+        /// Gets the global unique ID of the cartridge.
         /// </summary>
         public string Guid
         {
@@ -424,7 +421,8 @@ namespace WF.Player.Core
             {
                 return guid;
             }
-            set
+            
+			internal set
             {
                 if (guid != value)
                 {
@@ -435,7 +433,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Icon of this cartridge.
+        /// Gets the icon of this cartridge.
         /// </summary>
         public Media Icon
         {
@@ -456,7 +454,8 @@ namespace WF.Player.Core
                 }
                 return icon;
             }
-            set
+            
+			internal set
             {
                 if (icon != value)
                 {
@@ -467,16 +466,16 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Set URL for the icon image of this cartridge.
+        /// Gets the URL for the icon image of this cartridge.
         /// </summary>
-        /// <value>The new URL for icon file.</value>
         public string IconFileURL
         {
             get
             {
                 return iconFileURL;
             }
-            set
+            
+			internal set
             {
                 if (iconFileURL != value)
                 {
@@ -500,7 +499,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// If the cartridge is archived.
+        /// Gets if the cartridge is archived.
         /// </summary>
         public bool IsArchived
         {
@@ -508,7 +507,8 @@ namespace WF.Player.Core
             {
                 return isArchived;
             }
-            set
+            
+			internal set
             {
                 if (isArchived != value)
                 {
@@ -519,7 +519,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// If the cartridge is disabled.
+        /// Gets if the cartridge is disabled.
         /// </summary>
         public bool IsDisabled
         {
@@ -527,7 +527,8 @@ namespace WF.Player.Core
             {
                 return isDisabled;
             }
-            set
+            
+			internal set
             {
                 if (isDisabled != value)
                 {
@@ -538,7 +539,7 @@ namespace WF.Player.Core
         }
 
 		/// <summary>
-		/// If the cartridge is an open source, so that the source is availible for download.
+		/// Gets if the cartridge is open source, i.e. the source is availible for download.
 		/// </summary>
 		/// <value><c>true</c> if this instance is open source; otherwise, <c>false</c>.</value>
         public bool IsOpenSource
@@ -547,7 +548,8 @@ namespace WF.Player.Core
             {
                 return isOpenSource;
             }
-            set
+            
+			internal set
             {
                 if (isOpenSource != value)
                 {
@@ -558,7 +560,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// If the cartridge is a play anywhere.
+        /// Gets if the cartridge can be played anywhere.
         /// </summary>
         public bool IsPlayAnywhere
         {
@@ -566,7 +568,8 @@ namespace WF.Player.Core
             {
                 return isPlayAnywhere;
             }
-            set
+            
+			internal set
             {
                 if (isPlayAnywhere != value)
                 {
@@ -577,7 +580,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// List of geocache names on www.geocaching.com belonging to this cartridge.
+        /// Gets a list of geocache names on geocaching.com that are linked to this cartridge.
         /// </summary>
         public string[] LinkedGeocacheNames
         {
@@ -585,7 +588,8 @@ namespace WF.Player.Core
             {
                 return linkedGeocacheNames;
             }
-            set
+            
+			internal set
             {
                 if (linkedGeocacheNames != value)
                 {
@@ -596,7 +600,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// List of geocache GC numbers on www.geocaching.com belonging to this cartridge.
+		/// Gets a list of geocache GC-codes on geocaching.com that are linked to this cartridge.
         /// </summary>
         public string[] LinkedGeocacheGCs
         {
@@ -604,7 +608,8 @@ namespace WF.Player.Core
             {
                 return linkedGeocacheGCs;
             }
-            set
+            
+			internal set
             {
                 if (linkedGeocacheGCs != value)
                 {
@@ -615,7 +620,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// List of geocache GUIDs on www.geocaching.com belonging to this cartridge.
+        /// Gets a list of geocache GUIDs on geocaching.com that are linked to this cartridge.
         /// </summary>
         public Guid[] LinkedGeocacheGUIDs
         {
@@ -623,7 +628,8 @@ namespace WF.Player.Core
             {
                 return linkedGeocacheGUIDs;
             }
-            set
+            
+			internal set
             {
                 if (linkedGeocacheGUIDs != value)
                 {
@@ -646,7 +652,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Long description for this cartridge.
+        /// Gets the long description for this cartridge.
         /// </summary>
         public string LongDescription
         {
@@ -654,7 +660,8 @@ namespace WF.Player.Core
             {
                 return longDescription;
             }
-            set
+            
+			internal set
             {
                 if (longDescription != value)
                 {
@@ -665,7 +672,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Name of this cartridge.
+        /// Gets the name of this cartridge.
         /// </summary>
         public string Name
         {
@@ -673,7 +680,8 @@ namespace WF.Player.Core
             {
                 return name;
             }
-            set
+            
+			internal set
             {
                 if (name != value)
                 {
@@ -684,7 +692,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// How often this cartridge is marked as completed.
+        /// Gets how often this cartridge has been marked as completed so far.
         /// </summary>
         public int NumberOfCompletions
         {
@@ -692,7 +700,8 @@ namespace WF.Player.Core
             {
                 return numberOfCompletions;
             }
-            set
+            
+			internal set
             {
                 if (numberOfCompletions != value)
                 {
@@ -703,7 +712,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// How many users watching this cartridge on the server.
+        /// Gets how many users watching this cartridge on the server.
         /// </summary>
         public int NumberOfUsersWatching
         {
@@ -711,7 +720,8 @@ namespace WF.Player.Core
             {
                 return numberOfUsersWatching;
             }
-            set
+            
+			internal set
             {
                 if (numberOfUsersWatching != value)
                 {
@@ -722,7 +732,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Object for the player of this cartridge.
+        /// Gets the name of the player this cartridge was compiled for.
         /// </summary>
         public string Player
         {
@@ -730,7 +740,8 @@ namespace WF.Player.Core
             {
                 return player;
             }
-            set
+            
+			internal set
             {
                 if (player != value)
                 {
@@ -741,7 +752,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Poster image for this cartridge.
+        /// Gets the poster image for this cartridge.
         /// </summary>
         public Media Poster
         {
@@ -763,7 +774,8 @@ namespace WF.Player.Core
 
                 return poster;
             }
-            set
+            
+			internal set
             {
                 if (poster != value)
                 {
@@ -774,16 +786,16 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Set URL for the poster image of this cartridge.
+        /// Gets the URL for the poster image of this cartridge.
         /// </summary>
-        /// <value>The new URL for poster file.</value>
         public string PosterFileURL
         {
             get
             {
                 return posterFileURL;
             }
-            set
+            
+			internal set
             {
                 if (posterFileURL != value)
                 {
@@ -808,7 +820,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Gets the array with all resources, belonging to this catridge.
+        /// Gets all media resources of this catridge.
         /// </summary>
         /// <value>The resources.</value>
         public Media[] Resources
@@ -817,7 +829,8 @@ namespace WF.Player.Core
             {
                 return resources;
             }
-            set
+            
+			internal set
             {
                 if (resources != value)
                 {
@@ -840,7 +853,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Short description for this cartridge.
+        /// Gets the short description of this cartridge.
         /// </summary>
         public string ShortDescription
         {
@@ -848,7 +861,8 @@ namespace WF.Player.Core
             {
                 return shortDescription;
             }
-            set
+            
+			internal set
             {
                 if (shortDescription != value)
                 {
@@ -859,7 +873,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Starting description for this cartridge.
+        /// Gets the starting description for this cartridge.
         /// </summary>
         public string StartingDescription
         {
@@ -867,7 +881,8 @@ namespace WF.Player.Core
             {
                 return startingDescription;
             }
-            set
+            
+			internal set
             {
                 if (startingDescription != value)
                 {
@@ -878,7 +893,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Latitude of the starting location.
+        /// Gets the latitude of the starting location.
         /// </summary>
         public double StartingLocationLatitude
         {
@@ -886,7 +901,8 @@ namespace WF.Player.Core
             {
                 return startingLocationLatitude;
             }
-            set
+            
+			internal set
             {
                 if (startingLocationLatitude != value)
                 {
@@ -897,7 +913,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Longitude of the starting location.
+        /// Gets the longitude of the starting location.
         /// </summary>
         public double StartingLocationLongitude
         {
@@ -905,7 +921,8 @@ namespace WF.Player.Core
             {
                 return startingLocationLongitude;
             }
-            set
+            
+			internal set
             {
                 if (startingLocationLongitude != value)
                 {
@@ -916,7 +933,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Altitude of the starting location.
+        /// Gets the altitude of the starting location.
         /// </summary>
         public double StartingLocationAltitude
         {
@@ -924,7 +941,8 @@ namespace WF.Player.Core
             {
                 return startingLocationAltitude;
             }
-            set
+            
+			internal set
             {
                 if (startingLocationAltitude != value)
                 {
@@ -935,7 +953,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// StateID for this cartridge.
+        /// Gets the StateID for this cartridge.
         /// </summary>
         public int StateID
         {
@@ -943,7 +961,8 @@ namespace WF.Player.Core
             {
                 return stateID;
             }
-            set
+            
+			internal set
             {
                 if (stateID != value)
                 {
@@ -954,7 +973,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Number of downloads from server for this cartridge.
+        /// Gets the amount of downloads from server for this cartridge.
         /// </summary>
         public int UniqueDownloads
         {
@@ -962,7 +981,8 @@ namespace WF.Player.Core
             {
                 return uniqueDownloads;
             }
-            set
+            
+			internal set
             {
                 if (uniqueDownloads != value)
                 {
@@ -973,7 +993,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Has user started to play the cartrtridge.
+        /// Gets if the user has already started to play the cartrtridge.
         /// </summary>
         public bool UserHasPartiallyPlayed
         {
@@ -981,7 +1001,8 @@ namespace WF.Player.Core
             {
                 return userHasPartiallyPlayed;
             }
-            set
+            
+			internal set
             {
                 if (userHasPartiallyPlayed != value)
                 {
@@ -992,7 +1013,7 @@ namespace WF.Player.Core
         }
 
         /// <summary>
-        /// Version of this cartridge.
+        /// Gets the version of this cartridge, as defined by its author.
         /// </summary>
         public string Version
         {
@@ -1000,7 +1021,8 @@ namespace WF.Player.Core
             {
                 return version;
             }
-            set
+            
+			internal set
             {
                 if (version != value)
                 {
@@ -1011,181 +1033,65 @@ namespace WF.Player.Core
         }
 
 		/// <summary>
-		/// Gets or sets the WGCode of this cartridge.
+		/// Gets the WGCode of this cartridge.
 		/// </summary>
 		/// <value>The WG code.</value>
-		public string WGCode {
-			get {
-				return wgCode;
-			}
-			set {
-				if (wgCode != value)
-					wgCode = value;
-			}
+		public string WGCode
+		{
+			get;
+			internal set;
 		}
 
 		/// <summary>
 		/// Gets or sets the Lua table representing the object on the Lua side.
 		/// </summary>
 		/// <value>The Lua table.</value>
-		public LuaTable WIGTable {
-			get {
+		internal new LuaTable WIGTable
+		{
+			get
+			{
 				return wigTable;
 			}
-			set {
-				if (wigTable != value)
-					wigTable = value;
+
+			set
+			{
+				wigTable = value;
+			}
+		}
+
+		/// <summary>
+		/// Sets the engine to which this cartridge belongs.
+		/// </summary>
+		/// <value>The engine.</value>
+		internal Engine Engine
+		{
+			set
+			{
+				engine = value;
+			}
+		}
+
+		/// <summary>
+		/// Gets if this Cartridge is bound to an engine and a lua Table.
+		/// </summary>
+		internal bool IsBound
+		{
+			get
+			{
+				return wigTable != null && engine != null;
 			}
 		}
 		
 		#endregion
 
-        #region C# Methods
-
-        #endregion
-
-        #region C# Function for handling of cartridge outside the game
-
-        /// <summary>
-		/// Gets the boolean from LuaTable for entry key as string.
-		/// </summary>
-		/// <returns>The boolean.</returns>
-		/// <param name="key">Key as string for the entry.</param>
-		public bool GetBool(string key)
-		{
-			if (wigTable == null)
-				return false;
-
-			object value = wigTable [key];
-
-			return value == null ? false : (bool)value;
-		}
-
-		/// <summary>
-		/// Gets the boolean from LuaTable for entry key as number.
-		/// </summary>
-		/// <returns>The boolean.</returns>
-		/// <param name="key">Key as number for the entry.</param>
-		public bool GetBool(double key)
-		{
-			if (wigTable == null)
-				return false;
-
-			object value = wigTable [key];
-
-			return value == null ? false : (bool)value;
-		}
-
-		/// <summary>
-		/// Gets the double from LuaTable for entry key as string.
-		/// </summary>
-		/// <returns>The double.</returns>
-		/// <param name="key">Key as string for the entry.</param>
-		public double GetDouble(string key)
-		{
-			if (wigTable == null)
-				return 0;
-
-			object num = wigTable [key];
-
-			return num == null ? 0 : (double)num;
-		}
-
-		/// <summary>
-		/// Gets the double from LuaTable for entry key as number.
-		/// </summary>
-		/// <returns>The double.</returns>
-		/// <param name="key">Key as number for the entry.</param>
-		public double GetDouble(double key)
-		{
-			if (wigTable == null)
-				return 0;
-
-			object num = wigTable [key];
-
-			return num == null ? 0 : (double)num;
-		}
-
-		/// <summary>
-		/// Gets the integer from LuaTable for entry key as string.
-		/// </summary>
-		/// <returns>The integer.</returns>
-		/// <param name="key">Key as string for the entry.</param>
-		public int GetInt(string key)
-		{
-			if (wigTable == null)
-				return 0;
-
-			object num = wigTable [key];
-
-			return num == null ? 0 : Convert.ToInt32 ((double)num);
-		}
-
-		/// <summary>
-		/// Gets the integer from LuaTable for entry key as number.
-		/// </summary>
-		/// <returns>The integer.</returns>
-		/// <param name="key">Key as number for the entry.</param>
-		public int GetInt(double key)
-		{
-			if (wigTable == null)
-				return 0;
-
-			object num = wigTable [key];
-
-			return num == null ? 0 : Convert.ToInt32 ((double)num);
-		}
-
-		/// <summary>
-		/// Gets the string from LuaTable for entry key as string.
-		/// </summary>
-		/// <returns>The string.</returns>
-		/// <param name="key">Key as string for the entry.</param>
-		public string GetString(string key)
-		{
-			if (wigTable == null)
-				return "";
-
-			object obj = wigTable [key];
-
-			return obj is string ? (string)obj : "";
-		}
-
-		/// <summary>
-		/// Gets the string from LuaTable for entry key as number.
-		/// </summary>
-		/// <returns>The string.</returns>
-		/// <param name="key">Key as number for the entry.</param>
-		public string GetString(double key)
-		{
-			if (wigTable == null)
-				return "";
-
-			object obj = wigTable [key];
-
-			return obj is string ? (string)obj : "";
-		}
-
-		/// <summary>
-		/// Gets a table of a LuaTable.
-		/// </summary>
-		/// <returns>Table.</returns>
-		/// <param name="t">LuaTable.</param>
-		public Table GetTable(LuaTable t)
-		{
-			return engine.GetTable (t);
-		}
-
-        #endregion
-
-        #region C# Helper Function
+        #region Downloading
 
 		/// <summary>
 		/// Download a file from web in async mode and call if ready callback with result as MemoryStream.
 		/// </summary>
 		/// <param name="url">URL address.</param>
 		/// <param name="callback">Callback function.</param>
-		internal void asyncDownloadFile(string url, Action<MemoryStream> callback)
+		private void asyncDownloadFile(string url, Action<MemoryStream> callback)
         {
             try
             {
@@ -1242,49 +1148,6 @@ namespace WF.Player.Core
             {
 				throw;
             }
-        }
-
-        /// <summary>
-        /// Read a null terminated string from binary stream.
-        /// </summary>
-        /// <param name="reader">Binary stream with gwc file as input.</param>
-        /// <returns>String, which represents the C# string.</returns>
-        private string readCString(BinaryReader input)
-        {
-            var bytes = new List<byte>();
-            byte b;
-
-            while ((b = input.ReadByte()) != 0)
-            {
-                bytes.Add(b);
-            }
-
-            return Encoding.UTF8.GetString(bytes.ToArray(), 0, bytes.ToArray().Length);
-        }
-
-        /// <summary>
-        /// Read data for the next media from binary stream.
-        /// </summary>
-        /// <param name="media"></param>
-        /// <param name="reader"></param>
-        private void readMedia(Media media, BinaryReader reader)
-        {
-			byte valid = reader.ReadByte();
-			if ( valid == 0 )
-			{
-				// No resources 
-                media.Type = 0;
-                media.Data = null;
-			}
-			else
-			{
-                // Read resources type
-                media.Type = (MediaType)Enum.ToObject(typeof(MediaType), reader.ReadInt32());
-                // Read resources data
-				long fileSize = reader.ReadInt32();
-				media.Data = new byte[fileSize];
-				reader.Read( media.Data, 0, media.Data.Length );
-			}
         }
 
 		#endregion

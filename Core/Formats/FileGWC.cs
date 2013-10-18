@@ -115,21 +115,29 @@ using System.Reflection;
 namespace WF.Player.Core.Formats
 {
 
-	public class FileGWC
+	public class FileGWC : ICartridgeLoader
 	{
 
-		/// <summary>
-		/// Determines, if stream contains a valid GWC file.
-		/// </summary>
-		/// <returns><c>true</c> if is valid GWC file; otherwise, <c>false</c>.</returns>
-		/// <param name="inputStream">Stream with cartridge file.</param>
-		public static bool IsValidFile(Stream inputStream)
+		public bool CanLoad(CartridgeFileFormat targetFileType)
+		{
+			return targetFileType == CartridgeFileFormat.GWC;
+		}
+
+		public bool IsValidFile(Stream inputStream, CartridgeFileFormat targetFormat)
+		{
+			if (targetFormat != CartridgeFileFormat.GWC)
+				throw new InvalidOperationException("FileGWC does not support other formats than GWC.");
+
+			return GetFileFormat(inputStream) == CartridgeFileFormat.GWC;
+		}
+
+		public CartridgeFileFormat GetFileFormat(Stream inputStream)
 		{
 			// If stream is shorter than 7 bytes, that could not a valid GWC file
 			if (inputStream.Length < 7)
-				return false;
+				return CartridgeFileFormat.Unknown;
 
-			BinaryReader reader = new BinaryReader (inputStream);
+			BinaryReader reader = new BinaryReader(inputStream);
 
 			// Save old position of stream
 			var oldPos = inputStream.Position;
@@ -144,14 +152,10 @@ namespace WF.Player.Core.Formats
 			// Signature of the compiled gwc file
 			byte[] signature = { 0x02, 0x0a, 0x43, 0x41, 0x52, 0x54, 0x00 };
 
-			return b.SequenceEqual<byte>(signature);
+			return b.SequenceEqual<byte>(signature) ? CartridgeFileFormat.GWC : CartridgeFileFormat.Unknown;
 		}
 
-		/// <summary>
-		/// Load whole GWC file into an Cartridge object.
-		/// </summary>
-		/// <param name="cart">Cartridge object to file with data.</param>
-		public static void Load(Stream inputStream, Cartridge cart)
+		public void Load(Stream inputStream, Cartridge cart)
 		{
 			try
 			{
@@ -196,15 +200,11 @@ namespace WF.Player.Core.Formats
 			}
 			catch (Exception e)
 			{
-				throw new Exception(String.Format ("An exception has occurred while reading the GWC file: {0}.",e.Message), e);
+				throw new Exception(String.Format("An exception has occurred while reading the GWC file: {0}.", e.Message), e);
 			}
 		}
 
-		/// <summary>
-		/// Load only header data of a GWC file into an Cartridge object.
-		/// </summary>
-		/// <param name="cart">Cartridge object to file with data.</param>
-		public static void LoadHeader(Stream inputStream, Cartridge cart)
+		public void LoadMetadata(Stream inputStream, Cartridge cart)
 		{
 			try
 			{
@@ -223,7 +223,7 @@ namespace WF.Player.Core.Formats
 
 		#region Private Functions
 
-		private static void loadGWCHeader(BinaryReader reader, Cartridge cart)
+		private void loadGWCHeader(BinaryReader reader, Cartridge cart)
 		{
 			int maxMediaFiles;
 			int posterId;
@@ -311,7 +311,7 @@ namespace WF.Player.Core.Formats
 		/// <param name="id"></param>
 		/// <param name="maxMediaFiles"></param>
 		/// <returns></returns>
-		private static Media loadGWCMedia(BinaryReader reader, string fileName, int position, int id, int maxMediaFiles)
+		private Media loadGWCMedia(BinaryReader reader, string fileName, int position, int id, int maxMediaFiles)
 		{
 			Media media = new Media();
 
@@ -331,7 +331,7 @@ namespace WF.Player.Core.Formats
 		/// <param name="offsets">A dictionary of key/value pairs describing for each Id of a file,
 		/// the position in the GWC file where it can be found.</param>
 		/// <returns>The maximum of Media files the GWC file contains.</returns>
-		private static int loadGWCOffsets(BinaryReader reader, out Dictionary<int, int> offsets)
+		private int loadGWCOffsets(BinaryReader reader, out Dictionary<int, int> offsets)
 		{
 			// Positions the stream right after the file descriptor.
 			reader.BaseStream.Position = 7;
@@ -358,7 +358,7 @@ namespace WF.Player.Core.Formats
 		/// </summary>
 		/// <param name="reader">Binary stream with gwc file as input.</param>
 		/// <returns>String, which represents the C# string.</returns>
-		private static string readCString(BinaryReader input)
+		private string readCString(BinaryReader input)
 		{
 			var bytes = new List<byte>();
 			byte b;
@@ -376,7 +376,7 @@ namespace WF.Player.Core.Formats
 		/// </summary>
 		/// <param name="media"></param>
 		/// <param name="input"></param>
-		private static void readMedia(Media media, BinaryReader input)
+		private void readMedia(Media media, BinaryReader input)
 		{
 			byte valid = input.ReadByte();
 			if (valid == 0)
@@ -399,7 +399,7 @@ namespace WF.Player.Core.Formats
 		}
 
 		#endregion
-
+		
 	}
 
 }

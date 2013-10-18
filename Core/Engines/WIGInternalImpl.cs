@@ -26,7 +26,7 @@ using System.Text;
 using NLua;
 using WF.Player.Core.Utils;
 
-namespace WF.Player.Core
+namespace WF.Player.Core.Engines
 {
 
     /// <summary>

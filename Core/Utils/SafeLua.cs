@@ -114,14 +114,25 @@ namespace WF.Player.Core.Utils
 		#endregion
 		
 		#region Members
+
+		/// <summary>
+		/// The underlying lua state, used both for lua operation and for locking.
+		/// </summary>
 		private Lua luaState; 
+
 		#endregion
 
 		#region Constructors
+
+		/// <summary>
+		/// Constructs a thread-safe wrapper around a lua state.
+		/// </summary>
+		/// <param name="lua"></param>
 		public SafeLua(Lua lua)
 		{
 			luaState = lua;
 		} 
+
 		#endregion
 
 		#region Public Methods
@@ -233,8 +244,22 @@ namespace WF.Player.Core.Utils
 		/// </summary>
 		/// <param name="chunk">Chunk to process.</param>
 		/// <param name="chunkName">Name of the chunk.</param>
-		/// <returns></returns>
+		/// <returns>The result of the lua state's DoString method.</returns>
 		public object[] SafeDoString(string chunk, string chunkName)
+		{
+			lock (luaState)
+			{
+				return luaState.DoString(chunk, chunkName);
+			}
+		}
+
+		/// <summary>
+		/// Processes a Lua chunk.
+		/// </summary>
+		/// <param name="chunk">Chunk to process.</param>
+		/// <param name="chunkName">Name of the chunk.</param>
+		/// <returns>The result of the lua state's DoString method.</returns>
+		public object[] SafeDoString(byte[] chunk, string chunkName)
 		{
 			lock (luaState)
 			{
@@ -394,8 +419,8 @@ namespace WF.Player.Core.Utils
 		/// <summary>
 		/// Gets the dictionary enumerator for a table.
 		/// </summary>
-		/// <param name="table"></param>
-		/// <returns></returns>
+		/// <param name="table">The table to get an enumerator of.</param>
+		/// <returns>A thread-safe enumerator on the table.</returns>
 		public IDictionaryEnumerator SafeGetEnumerator(LuaTable table)
 		{
 			IDictionaryEnumerator e;
@@ -409,5 +434,7 @@ namespace WF.Player.Core.Utils
 		}
 
 		#endregion
+
+
 	}
 }

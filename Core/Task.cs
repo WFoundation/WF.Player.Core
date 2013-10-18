@@ -20,16 +20,19 @@
 using System;
 using System.Collections.Generic;
 using NLua;
+using WF.Player.Core.Engines;
 
 namespace WF.Player.Core
 {
-
-	public class Zone : Thing
+	/// <summary>
+	/// A task that the player has to perform.
+	/// </summary>
+	public class Task : UIObject
 	{
 
 		#region Constructor
 
-		public Zone (Engine e, LuaTable t) : base (e, t)
+		internal Task (Engine e, LuaTable t) : base (e, t)
 		{
 		}
 
@@ -38,46 +41,32 @@ namespace WF.Player.Core
 		#region Properties
 
 		/// <summary>
-		/// Gets a value indicating whether this <see cref="WF.Player.Core.Zone"/> is active.
+		/// Gets a value indicating whether this <see cref="WF.Player.Core.Item"/> is active.
 		/// </summary>
 		/// <value><c>true</c> if active; otherwise, <c>false</c>.</value>
 		public bool Active {
-			get 
-			{
+			get {
 				return GetBool ("Active");
 			}
 		}
 
 		/// <summary>
-		/// Gets the original point.
+		/// Gets a value indicating whether this <see cref="WF.Player.Core.Item"/> is complete.
 		/// </summary>
-		/// <value>The original point as ZonePoint.</value>
-		public ZonePoint OriginalPoint {
-			get 
-			{
-				return GetTable("OriginalPoint") as ZonePoint;
+		/// <value><c>true</c> if complete; otherwise, <c>false</c>.</value>
+		public bool Complete {
+			get {
+				return GetBool ("Complete");
 			}
 		}
 
 		/// <summary>
-		/// Gets the point defining the zone.
+		/// Gets the CorrectState.
 		/// </summary>
-		/// <value>The inventory.</value>
-		public List<ZonePoint> Points {
-			get 
-			{
-				return GetTableList<ZonePoint>("Points");
-			}
-		}
-
-		/// <summary>
-		/// Gets the position state of the player for this zone.
-		/// </summary>
-		public PlayerZoneState State
-		{
-			get
-			{
-				return GetEnum<PlayerZoneState>("State");
+		/// <value>The CorrectState.</value>
+		public TaskCorrectness CorrectState {
+			get {
+				return GetEnum<TaskCorrectness> ("CorrectState", TaskCorrectness.None);
 			}
 		}
 

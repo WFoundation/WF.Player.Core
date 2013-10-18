@@ -1,4 +1,4 @@
-///
+﻿///
 /// WF.Player.Core - A Wherigo Player Core for different platforms.
 /// Copyright (C) 2012-2013  Dirk Weltz <web@weltz-online.de>
 /// Copyright (C) 2012-2013  Brice Clocher <contact@cybisoft.net>
@@ -17,30 +17,37 @@
 /// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ///
 
-using System;
-using System.Collections.Generic;
-using NLua;
-
 namespace WF.Player.Core
 {
-
-	public class Character : Thing
+	/// <summary>
+	/// A distance and a bearing to a location.
+	/// </summary>
+	public class LocationVector
 	{
+		#region Properties
 
-		#region Constructor
+		/// <summary>
+		/// Gets the distance.
+		/// </summary>
+		/// <value>If null, the distance is not available for this vector.</value>
+		public Distance Distance { get; private set; }
 
-		public Character (Engine e, LuaTable t) : base (e, t)
+		/// <summary>
+		/// Gets the value of the bearing, in degrees.
+		/// </summary>
+		/// <value>If null, the bearing is not available for this vector.</value>
+		public double? Bearing { get; private set; }
+
+		#endregion
+
+		#region Constructors
+
+		internal LocationVector(Distance dist, double? bearing)
 		{
+			Distance = dist;
+			Bearing = bearing;
 		}
 
 		#endregion
-
-		#region Properties
-
-
-		#endregion
-
 	}
-
 }
-

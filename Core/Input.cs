@@ -21,15 +21,18 @@ using System;
 using System.Collections.Generic;
 using NLua;
 using WF.Player.Core.Utils;
+using WF.Player.Core.Engines;
 
 namespace WF.Player.Core
 {
-
+	/// <summary>
+	/// An input requested of the player.
+	/// </summary>
 	public class Input : Table
 	{
 		#region Constructor
 
-		public Input (Engine e, LuaTable t) : base (e, t)
+		internal Input (Engine e, LuaTable t) : base (e, t)
 		{
 		}
 
@@ -55,7 +58,7 @@ namespace WF.Player.Core
 		public InputType InputType {
 			get 
 			{
-				return GetEnum<InputType>("InputType", Core.InputType.Unknown);
+				return GetEnum<InputType>("InputType", InputType.Unknown);
 			}
 		}
 

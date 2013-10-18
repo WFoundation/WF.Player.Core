@@ -32,11 +32,12 @@ using WF.Player.Core.Utils;
 using WF.Player.Core.Utils.Threading;
 using WF.Player.Core.Formats;
 
-namespace WF.Player.Core
+namespace WF.Player.Core.Engines
 {
 
     /// <summary>
-    /// Engine handling all things for the cartridge, including loading, saving and other things.
+    /// The core component of the Wherigo player, that is orchestrating the game engine and
+	/// gives feedback to the client user interface.
     /// </summary>
     #if MONOTOUCH
 	    [MonoTouch.Foundation.Preserve(AllMembers=true)]
@@ -46,21 +47,20 @@ namespace WF.Player.Core
 
         #region Private variables
 
+		private IPlatformHelper platformHelper;
 		private Cartridge cartridge;
 		private double lat = 0;
 		private double lon = 0;
 		private double alt = 0;
 		private double accuracy = 0;
 		private double heading = 0;
-		private string device = "unknown";
-		private string deviceId = "unknown";
-		private string uiVersion = "unknown";
 		private List<Thing> visibleInventory;
 		private List<Thing> visibleObjects;
 		private List<Zone> activeVisibleZones;
 		private List<Task> activeVisibleTasks;
 		private EngineGameState gameState;
 		private bool isReady;
+		private bool isBusy;
         private Lua luaState;
 		private SafeLua safeLuaState;
 		private LuaExecutionQueue luaExecQueue;
@@ -100,7 +100,6 @@ namespace WF.Player.Core
 		public event EventHandler<MessageBoxEventArgs> ShowMessageBoxRequested;
 		public event EventHandler<ScreenEventArgs> ShowScreenRequested;
 		public event EventHandler<StatusTextEventArgs> ShowStatusTextRequested;
-		public event EventHandler<UIDispatchEventArgs> DispatchOnUIRequested;
 		public event EventHandler<ZoneStateChangedEventArgs> ZoneStateChanged;
 		public event PropertyChangedEventHandler PropertyChanged;
 
@@ -108,17 +107,40 @@ namespace WF.Player.Core
 
         #region Constructor and Destructors
 
+		/// <summary>
+		/// Creates an instance of Engine that is uninitialized and cannot give
+		/// user interface feedback.
+		/// </summary>
         public Engine()
-        {			
+        {
+			InitInstance(new DefaultPlatformHelper());
+		}
+
+		/// <summary>
+		/// Creates an instance of Engine that is uninitialized, using a helper 
+		/// that implements platform-specific operations.
+		/// </summary>
+		/// <param name="platform">The platform-specific helper.</param>
+		public Engine(IPlatformHelper platform)
+		{
+			InitInstance(platform);
+		}
+
+		private void InitInstance(IPlatformHelper platform)
+		{
+			if (platform == null)
+				throw new ArgumentNullException("platform");
+			
+			platformHelper = platform;
 			luaState = new Lua();
 			safeLuaState = new SafeLua(luaState);
 
-            // Create Wherigo environment
-            wherigo = new WIGInternalImpl(this, luaState);
+			// Create Wherigo environment
+			wherigo = new WIGInternalImpl(this, luaState);
 
-            // Register events
-            wherigo.OnTimerStarted += HandleTimerStarted;
-            wherigo.OnTimerStopped += HandleTimerStopped;
+			// Register events
+			wherigo.OnTimerStarted += HandleTimerStarted;
+			wherigo.OnTimerStopped += HandleTimerStopped;
 			wherigo.OnCartridgeChanged += HandleCartridgeChanged;
 			wherigo.OnZoneStateChanged += HandleZoneStateChanged;
 			wherigo.OnInventoryChanged += HandleInventoryChanged;
@@ -126,43 +148,47 @@ namespace WF.Player.Core
 			wherigo.OnCommandChanged += HandleCommandChanged;
 
 			// Set definitions from Wherigo for ShowScreen
-			luaState ["Wherigo.MAINSCREEN"] = (int)ScreenType.Main;
-			luaState ["Wherigo.LOCATIONSCREEN"] = (int)ScreenType.Locations;
-			luaState ["Wherigo.ITEMSCREEN"] = (int)ScreenType.Items;
-			luaState ["Wherigo.INVENTORYSCREEN"] = (int)ScreenType.Inventory;
-			luaState ["Wherigo.TASKSCREEN"] = (int)ScreenType.Tasks;
-			luaState ["Wherigo.DETAILSCREEN"] = (int)ScreenType.Details;
+			luaState["Wherigo.MAINSCREEN"] = (int)ScreenType.Main;
+			luaState["Wherigo.LOCATIONSCREEN"] = (int)ScreenType.Locations;
+			luaState["Wherigo.ITEMSCREEN"] = (int)ScreenType.Items;
+			luaState["Wherigo.INVENTORYSCREEN"] = (int)ScreenType.Inventory;
+			luaState["Wherigo.TASKSCREEN"] = (int)ScreenType.Tasks;
+			luaState["Wherigo.DETAILSCREEN"] = (int)ScreenType.Details;
 
-            // Set definitions from Wherigo for LogMessage
-			luaState ["Wherigo.LOGDEBUG"] = (int)LogLevel.Debug;
-			luaState ["Wherigo.LOGCARTRIDGE"] = (int)LogLevel.Cartridge;
-			luaState ["Wherigo.LOGINFO"] = (int)LogLevel.Info;
-			luaState ["Wherigo.LOGWARNING"] = (int)LogLevel.Warning;
-			luaState ["Wherigo.LOGERROR"] = (int)LogLevel.Error;
+			// Set definitions from Wherigo for LogMessage
+			luaState["Wherigo.LOGDEBUG"] = (int)LogLevel.Debug;
+			luaState["Wherigo.LOGCARTRIDGE"] = (int)LogLevel.Cartridge;
+			luaState["Wherigo.LOGINFO"] = (int)LogLevel.Info;
+			luaState["Wherigo.LOGWARNING"] = (int)LogLevel.Warning;
+			luaState["Wherigo.LOGERROR"] = (int)LogLevel.Error;
 
-            // Get information about the player
-            // Create table for Env, ...
-			luaState.NewTable ("Env");
-			LuaTable env = luaState.GetTable ("Env");
+			// Get information about the player
+			// Create table for Env, ...
+			luaState.NewTable("Env");
+			LuaTable env = luaState.GetTable("Env");
 
-            // Set defaults
-            env["CartFolder"] = "nothing";
-            env["SyncFolder"] = "nothing";
-            env["LogFolder"] = "nothing";
-            env["PathSep"] = System.IO.Path.DirectorySeparatorChar;
-            env["Downloaded"] = 0.0;
-            env["Platform"] = CorePlatform;
-            env["Device"] = device;
-            env["DeviceID"] = deviceId;
-            env["Version"] = uiVersion + " (" + CorePlatform + " " + CoreVersion + ")";
+			// Set defaults
+			env["CartFolder"] = platformHelper.CartridgeFolder;
+			env["SyncFolder"] = platformHelper.SavegameFolder;
+			env["LogFolder"] = platformHelper.LogFolder;
+			env["PathSep"] = platformHelper.PathSeparator;
+			env["Downloaded"] = 0.0;
+			env["Platform"] = String.Format("{0} ({1})", CorePlatform, platformHelper.Platform);
+			env["Device"] = platformHelper.Device;
+			env["DeviceID"] = platformHelper.DeviceId;
+			//env["Version"] = uiVersion + " (" + CorePlatform + " " + CoreVersion + ")";
+			env["Version"] = String.Format("{0} ({1} {2})", platformHelper.ClientVersion, CorePlatform, CoreVersion);
 
 			// Creates an execution queue that runs in another thread.
 			luaExecQueue = new LuaExecutionQueue(safeLuaState);
+
+			// Sets some event handlers for the job queues.
 			luaExecQueue.IsBusyChanged += new EventHandler(HandleLuaExecQueueIsBusyChanged);
+			uiDispatchPump.IsBusyChanged += new EventHandler(HandleUIDispatchPumpIsBusyChanged);
 
 			// Sets the game state.
 			GameState = EngineGameState.Uninitialized;
-        }
+		}
 
 		~Engine()
 		{
@@ -196,12 +222,14 @@ namespace WF.Player.Core
 				// Bye bye threads.
 				if (luaExecQueue != null)
 				{
+					luaExecQueue.IsBusyChanged -= new EventHandler(HandleLuaExecQueueIsBusyChanged);					
 					luaExecQueue.Dispose();
 					luaExecQueue = null;
 				}
 
 				if (uiDispatchPump != null)
 				{
+					uiDispatchPump.IsBusyChanged -= new EventHandler(HandleUIDispatchPumpIsBusyChanged);
 					uiDispatchPump.Dispose();
 					uiDispatchPump = null;
 				}
@@ -256,86 +284,6 @@ namespace WF.Player.Core
 					return cartridge;
 				}
 			} 
-		}
-
-		public string Device
-		{
-			get
-			{
-				lock (syncRoot)
-				{
-					return device;
-				}
-			}
-			set
-			{
-				CheckStateForLuaAccess();
-
-				if (device != value)
-				{
-					lock (syncRoot)
-					{
-						device = value; 
-					}
-					lock (luaState)
-					{
-						luaState.GetTable("Env")["Device"] = device;
-					}
-				}
-			}
-		}
-
-		public string DeviceId
-		{
-			get
-			{
-				lock (syncRoot)
-				{
-					return deviceId; 
-				}
-			}
-			set
-			{
-				CheckStateForLuaAccess();
-
-				if (deviceId != value)
-				{
-					lock (syncRoot)
-					{
-						deviceId = value;
-					}
-					lock (luaState)
-					{
-						luaState.GetTable("Env")["DeviceId"] = deviceId; 
-					}
-				}
-			}
-		}
-
-		public string UIVersion
-		{
-			get
-			{
-				lock (syncRoot)
-				{
-					return uiVersion; 
-				}
-			}
-			set
-			{
-				CheckStateForLuaAccess();
-				if (uiVersion != value)
-				{
-					lock (syncRoot)
-					{
-						uiVersion = value; 
-					}
-					lock (luaState)
-					{
-						luaState.GetTable("Env")["Version"] = uiVersion + " (" + CorePlatform + " " + CoreVersion + ")"; 
-					}
-				}
-			}
 		}
 
 		public double Heading
@@ -575,6 +523,39 @@ namespace WF.Player.Core
 						isReady = value;
 					}
 					RaisePropertyChanged("IsReady");
+				}
+			}
+		}
+
+		public bool IsBusy
+		{
+			get
+			{
+				lock (syncRoot)
+				{
+					return isBusy;
+				}
+			}
+
+			private set
+			{
+				bool ib;
+				lock (syncRoot)
+				{
+					ib = isBusy;
+				}
+
+				if (ib != value)
+				{
+					lock (syncRoot)
+					{
+						isBusy = value;
+					}
+
+					// This event is raised bypassing the ui dispatch pump because
+					// it carries information that needs immediate processing by the UI,
+					// even if lua processing has already started.
+					RaisePropertyChanged("IsBusy", false);
 				}
 			}
 		}
@@ -1168,9 +1149,20 @@ namespace WF.Player.Core
 
 		private void HandleLuaExecQueueIsBusyChanged(object sender, EventArgs e)
 		{
+			bool leqIsBusy = luaExecQueue.IsBusy;
+
 			// Sets the UI dispatching action pump to be pumping when the lua exec queue
 			// is not busy.
-			uiDispatchPump.IsPumping = !luaExecQueue.IsBusy;
+			uiDispatchPump.IsPumping = !leqIsBusy;
+
+			// The engine is busy if the lua execution queue or the ui dispatch pump are busy.
+			IsBusy = leqIsBusy || uiDispatchPump.IsBusy;
+		}
+
+		private void HandleUIDispatchPumpIsBusyChanged(object sender, EventArgs e)
+		{
+			// The engine is busy if the lua execution queue or the ui dispatch pump are busy.
+			IsBusy = luaExecQueue.IsBusy || uiDispatchPump.IsBusy;
 		}
 
 		#endregion
@@ -1304,7 +1296,7 @@ namespace WF.Player.Core
 			}
 			if (shoudTimerTick && timerExists)
 				// Call Tick synchronized with the GUI (for not thread safe interfaces)
-				RaiseDispatchOnUIRequested(new Action(() => WherigoTimerTickCore(source)));
+				BeginInvokeInUIThread(new Action(() => WherigoTimerTickCore(source)));
         }
 
         /// <summary>
@@ -1657,15 +1649,6 @@ namespace WF.Player.Core
 		
         #endregion
 
-        #region Serialization
-
-		// TODO: Move into other class, write multithreading safeties.
-
-
- 
-
-        #endregion
-
 		#region Event Raisers
 
 		/// <summary>
@@ -1674,19 +1657,19 @@ namespace WF.Player.Core
 		/// <param name="action"></param>
 		private void BeginInvokeInUIThread(Action action, bool usePump = false)
 		{
+			// Throws an exception if there is no handler for this.
+			if (!platformHelper.CanDispatchOnUIThread)
+				throw new InvalidOperationException("Unable to dispatch on UI Thread. Make sure to construct Engine with a IPlatformHelper that implements DispatchOnUIThread() and has CanDispatchOnUIThread return true.");
+
 			if (usePump)
 			{
-				// Throws an exception if there is no handler for this.
-				if (DispatchOnUIRequested == null)
-					throw new InvalidOperationException("No DispatchOnUIRequested handler has been found.");
-
 				// Adds a sync request action to the action pump.
-				uiDispatchPump.AcceptAction(new Action(() => RaiseDispatchOnUIRequested(action, false))); 
+				uiDispatchPump.AcceptAction(new Action(() => platformHelper.BeginDispatchOnUIThread(action))); 
 			}
 			else
 			{
 				// Invokes the event right away.
-				RaiseDispatchOnUIRequested(action);
+				platformHelper.BeginDispatchOnUIThread(action);
 			}
 		}
 
@@ -1706,7 +1689,7 @@ namespace WF.Player.Core
 			}, true);
 		}
 
-		private void RaisePropertyChanged(string propName)
+		private void RaisePropertyChanged(string propName, bool usePump = true)
 		{
 			BeginInvokeInUIThread(() =>
 			{
@@ -1714,7 +1697,7 @@ namespace WF.Player.Core
 				{
 					PropertyChanged(this, new PropertyChangedEventArgs(propName));
 				}
-			}, true);
+			}, usePump);
 		}
 
 		private void RaiseLogMessageRequested(LogLevel level, string message)
@@ -1901,23 +1884,6 @@ namespace WF.Player.Core
 
 				ShowStatusTextRequested(this, new StatusTextEventArgs(text));
 			});
-		}
-
-		private void RaiseDispatchOnUIRequested(Action action, bool throwIfNoHandler = true)
-		{		
-			if (DispatchOnUIRequested == null)
-			{
-				if (throwIfNoHandler)
-				{
-					throw new InvalidOperationException("No DispatchOnUIRequested handler has been found.");
-				}
-				else
-				{
-					return;
-				}
-			}
-
-			DispatchOnUIRequested(this, new UIDispatchEventArgs(action));
 		}
 
 		#endregion

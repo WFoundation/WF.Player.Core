@@ -20,16 +20,19 @@
 using System;
 using System.Collections.Generic;
 using NLua;
+using WF.Player.Core.Engines;
 
 namespace WF.Player.Core
 {
-
-	public class Item : Thing
+	/// <summary>
+	/// An entity of the game that can be interacted with.
+	/// </summary>
+	public class Thing : UIObject
 	{
 
 		#region Constructor
 
-		public Item (Engine e, LuaTable t) : base (e, t)
+		internal Thing (Engine e, LuaTable t) : base (e, t)
 		{
 		}
 
@@ -38,24 +41,56 @@ namespace WF.Player.Core
 		#region Properties
 
 		/// <summary>
-		/// Gets a value indicating whether this <see cref="WF.Player.Core.Item"/> is locked.
+		/// Gets the commands for this item.
 		/// </summary>
-		/// <value><c>true</c> if locked; otherwise, <c>false</c>.</value>
-		public bool Locked {
+		/// <value>The list of commands.</value>
+		public List<Command> Commands {
 			get 
 			{
-				return GetBool ("Locked");
+				return GetTableList<Command>("Commands");
 			}
 		}
 
 		/// <summary>
-		/// Gets a value indicating whether this <see cref="WF.Player.Core.Item"/> is opened.
+		/// Gets the container.
 		/// </summary>
-		/// <value><c>true</c> if opened; otherwise, <c>false</c>.</value>
-		public bool Opened {
+		/// <value>The container.</value>
+		public Thing Container {
 			get 
 			{
-				return GetBool ("Opened");
+				return GetTable("Container") as Thing;
+			}
+		}
+
+		/// <summary>
+		/// Gets a list of available commands.
+		/// </summary>
+		public List<Command> ActiveCommands {
+			get 
+			{
+				return GetTableFuncList<Command>("GetActiveCommands");
+			}
+		}
+
+		/// <summary>
+		/// Gets the inventory.
+		/// </summary>
+		/// <value>The inventory.</value>
+		public List<Thing> Inventory {
+			get 
+			{
+				return GetTableList<Thing>("Inventory");
+			}
+		}
+
+		/// <summary>
+		/// Gets the distance and bearing between the player and this Thing.
+		/// </summary>
+		public LocationVector VectorFromPlayer
+		{
+			get
+			{
+				return engine.GetVectorFromPlayer(this);
 			}
 		}
 

@@ -22,6 +22,9 @@ using WF.Player.Core.Utils;
 
 namespace WF.Player.Core
 {
+	/// <summary>
+	/// A message box that is displayed to the player.
+	/// </summary>
 	public class MessageBox
 	{
 		#region Properties
@@ -47,11 +50,13 @@ namespace WF.Player.Core
 
 		#endregion
 
-		#region Fields
+		#region Members
 
 		private Action<string> callback;
 
 		#endregion
+
+		#region Constructor
 
 		/// <summary>
 		/// Creates a message box descriptor.
@@ -69,8 +74,11 @@ namespace WF.Player.Core
 			SecondButtonLabel = String.IsNullOrEmpty(btn2label) ? null : btn2label;
 
 			callback = cb;
-		}
+		} 
 
+		#endregion
+
+		#region Methods
 		/// <summary>
 		/// Gives a result to the message box, allowing its underlying execution tree to continue.
 		/// </summary>
@@ -109,13 +117,15 @@ namespace WF.Player.Core
 				case MessageBoxResult.Cancel:
 
 					// Cancelled message boxes call the callback with a nil parameter.
-					callback (null);
+					callback(null);
 
 					break;
 
 				default:
 					throw new NotImplementedException("This result type is not implemented: " + result.ToString());
 			}
-		}
+		} 
+
+		#endregion
 	}
 }

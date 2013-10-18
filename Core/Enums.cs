@@ -103,7 +103,7 @@ namespace WF.Player.Core
 	}
 
 	/// <summary>
-	/// A state of the player with respect to a Zone.
+	/// A relative position of the player with respect to a Zone.
 	/// </summary>
 	public enum PlayerZoneState
 	{
@@ -121,6 +121,16 @@ namespace WF.Player.Core
 		None,
 		Correct,
 		NotCorrect
+	}
+
+	/// <summary>
+	/// A gender a character can have.
+	/// </summary>
+	public enum CharacterGender
+	{
+		It,
+		Female,
+		Male
 	}
 
 	/// <summary>

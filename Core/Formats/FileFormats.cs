@@ -23,24 +23,36 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-#if SILVERLIGHT
-using System.Reflection;
-#endif
 
 namespace WF.Player.Core.Formats
 {
-	public enum CartridgeFileTypes 
+	public enum CartridgeFileFormat 
 	{ 
 		Unknown, 
 		GWC, 
 		GWS, 
-		GWZ, 
-		WFC, 
-		WFZ 
+		GWZ
 	};
 
-    class FileFormats
+    public class FileFormats
     {
+		#region Members
+
+		private static List<ICartridgeLoader> loaders;
+
+		#endregion
+
+		#region Constructors
+
+		static FileFormats()
+		{
+			loaders = new List<ICartridgeLoader>();
+
+			loaders.Add(new FileGWC());
+			loaders.Add(new FileGWZ());
+		}
+
+		#endregion
 
         #region Public static functions
 
@@ -49,15 +61,21 @@ namespace WF.Player.Core.Formats
         /// </summary>
         /// <param name="inputStream">Stream, which holds the file to check.</param>
         /// <returns>FileFormat of given stream.</returns>
-		public static CartridgeFileTypes GetFileFormat(Stream inputStream)
+		public static CartridgeFileFormat GetFileFormat(Stream inputStream)
         {
-			if (FileGWC.IsValidFile (inputStream))
-				return CartridgeFileTypes.GWC;
+			CartridgeFileFormat current;
 
-			if (FileGWZ.IsValidFile (inputStream))
-				return CartridgeFileTypes.GWZ;
+			foreach (ICartridgeLoader loader in loaders)
+			{
+				// Gets the file format.
+				current = loader.GetFileFormat(inputStream);
 
-			return CartridgeFileTypes.Unknown;
+				// Returns it if it's not unknown.
+				if (current != CartridgeFileFormat.Unknown)
+					return current;
+			}
+
+			return CartridgeFileFormat.Unknown;
         }
 
         /// <summary>
@@ -65,12 +83,12 @@ namespace WF.Player.Core.Formats
         /// </summary>
         /// <param name="filename">Filename with path of the file to check.</param>
         /// <returns>The FileFormat of the file in the given MemoryStream.</returns>
-		public static CartridgeFileTypes GetFileFormat(string filename)
+		public static CartridgeFileFormat GetFileFormat(string filename)
         {
             if (File.Exists(filename))
                 return GetFileFormat(new FileStream(filename,FileMode.Open));
             else
-				return CartridgeFileTypes.Unknown;
+				return CartridgeFileFormat.Unknown;
         }
 
         /// <summary>
@@ -80,15 +98,15 @@ namespace WF.Player.Core.Formats
         /// <param name="cart">Cartridge object, which should be used.</param>
         public static void Load(Stream inputStream, Cartridge cart)
         {
-            switch (GetFileFormat(inputStream))
-            {
-				case CartridgeFileTypes.GWC:
-                    FileGWC.Load(inputStream, cart);
-                    break;
-				case CartridgeFileTypes.GWZ:
-					FileGWZ.Load(inputStream, cart);
-					break;
-         }
+            // Gets the first loader that can load the stream.
+			CartridgeFileFormat fFormat = GetFileFormat(inputStream);
+			ICartridgeLoader loader = loaders.FirstOrDefault(icl => icl.CanLoad(fFormat));
+
+			if (loader == null)
+				throw new InvalidOperationException("The file format is not supported.");
+
+			// Loads the cartridge.
+			loader.Load(inputStream, cart);
         }
 
         /// <summary>
@@ -96,53 +114,17 @@ namespace WF.Player.Core.Formats
         /// </summary>
         /// <param name="inputStream">Stream containing the cartridge file.</param>
         /// <param name="cart">Cartridge object, which should be used.</param>
-        public static void LoadHeader(Stream inputStream, Cartridge cart)
+        public static void LoadMetadata(Stream inputStream, Cartridge cart)
         {
-            switch (GetFileFormat(inputStream))
-            {
-				case CartridgeFileTypes.GWC:
-                    FileGWC.LoadHeader(inputStream, cart);
-                    break;
-				case CartridgeFileTypes.GWZ:
-					FileGWZ.LoadHeader(inputStream, cart);
-					break;
-         }
-        }
+			// Gets the first loader that can load the stream.
+			CartridgeFileFormat fFormat = GetFileFormat(inputStream);
+			ICartridgeLoader loader = loaders.FirstOrDefault(icl => icl.CanLoad(fFormat));
 
-        /// <summary>
-        /// Load a whole WFC file into a Cartridge object.
-        /// </summary>
-        /// <param name="cart">Cartridge object to file with data.</param>
-        public static void LoadWFC(Stream inputStream, Cartridge cart)
-        {
-            throw new NotImplementedException(@"FileFormats.LoadWFC is not implemented yet.");
-        }
+			if (loader == null)
+				throw new InvalidOperationException("The file format is not supported.");
 
-        /// <summary>
-        /// Load only header data of a WFC file into a Cartridge object.
-        /// </summary>
-        /// <param name="cart">Cartridge object to file with data.</param>
-        public static void LoadWFCHeader(Stream inputStream, Cartridge cart)
-        {
-            throw new NotImplementedException(@"FileFormats.LoadWFCHeader is not implemented yet.");
-        }
-
-        /// <summary>
-        /// Load a whole WFZ file into a Cartridge object.
-        /// </summary>
-        /// <param name="cart">Cartridge object to file with data.</param>
-        public static void LoadWFZ(Stream inputStream, Cartridge cart)
-        {
-            throw new NotImplementedException(@"FileFormats.LoadWFZ is not implemented yet.");
-        }
-
-        /// <summary>
-        /// Load only header data of a WFZ file into a Cartridge object.
-        /// </summary>
-        /// <param name="cart">Cartridge object to file with data.</param>
-        public static void LoadWFZHeader(Stream inputStream, Cartridge cart)
-        {
-            throw new NotImplementedException(@"FileFormats.LoadWFZHeader is not implemented yet.");
+			// Loads the cartridge.
+			loader.LoadMetadata(inputStream, cart);
         }
 
         #endregion

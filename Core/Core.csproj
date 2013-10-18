@@ -56,30 +56,42 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Engine\Engine.cs" />
-    <Compile Include="Engine\WIGInternalsImpl.cs" />
-    <Compile Include="LiveAPI\Cartridges.cs" />
-    <Compile Include="LiveAPI\Reference.cs" />
-    <Compile Include="Loaders\FileFormats.cs" />
-    <Compile Include="Loaders\FileGWC.cs" />
-    <Compile Include="Loaders\FileGWZ.cs" />
-    <Compile Include="Loaders\FileWFC.cs" />
-    <Compile Include="Loaders\FileWFZ.cs" />
-    <Compile Include="Model\Cartridge.cs" />
-    <Compile Include="Model\Character.cs" />
-    <Compile Include="Model\Command.cs" />
-    <Compile Include="Model\Distance.cs" />
-    <Compile Include="Model\Input.cs" />
-    <Compile Include="Model\Item.cs" />
-    <Compile Include="Model\Media.cs" />
-    <Compile Include="Model\MessageBox.cs" />
-    <Compile Include="Model\Table.cs" />
-    <Compile Include="Model\Task.cs" />
-    <Compile Include="Model\Thing.cs" />
-    <Compile Include="Model\UIObject.cs" />
-    <Compile Include="Model\Zone.cs" />
-    <Compile Include="Model\ZonePoint.cs" />
+    <Compile Include="Cartridge.cs" />
+    <Compile Include="Character.cs" />
+    <Compile Include="Command.cs" />
+    <Compile Include="Distance.cs" />
+    <Compile Include="Engines\DefaultPlatformHelper.cs" />
+    <Compile Include="Engines\Engine.cs" />
+    <Compile Include="Engines\IPlatformHelper.cs" />
+    <Compile Include="Engines\WIGInternalImpl.cs" />
+    <Compile Include="Enums.cs" />
+    <Compile Include="Events.cs" />
+    <Compile Include="Formats\FileFormats.cs" />
+    <Compile Include="Formats\FileGWC.cs" />
+    <Compile Include="Formats\FileGWS.cs" />
+    <Compile Include="Formats\FileGWZ.cs" />
+    <Compile Include="Formats\ICartridgeLoader.cs" />
+    <Compile Include="Input.cs" />
+    <Compile Include="Item.cs" />
+    <Compile Include="Live\Reference.cs" />
+    <Compile Include="LocationVector.cs" />
+    <Compile Include="Media.cs" />
+    <Compile Include="MessageBox.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Table.cs" />
+    <Compile Include="Task.cs" />
+    <Compile Include="Thing.cs" />
+    <Compile Include="Timer.cs" />
+    <Compile Include="UIObject.cs" />
+    <Compile Include="Utils\Extensions.cs" />
+    <Compile Include="Utils\SafeLua.cs" />
+    <Compile Include="Utils\Threading\ActionPump.cs" />
+    <Compile Include="Utils\Threading\JobQueue.cs" />
+    <Compile Include="Utils\Threading\LuaExecutionQueue.cs" />
+    <Compile Include="Utils\Utils.cs" />
+    <Compile Include="WherigoHelper.cs" />
+    <Compile Include="Zone.cs" />
+    <Compile Include="ZonePoint.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

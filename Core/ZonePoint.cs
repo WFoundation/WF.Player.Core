@@ -16,41 +16,62 @@
 /// You should have received a copy of the GNU Lesser General Public License
 /// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ///
-/// 
 
 using System;
-using System.IO;
+using NLua;
+using WF.Player.Core.Engines;
 
-namespace WF.Player.Core.Formats
+namespace WF.Player.Core
 {
-	public class FileWFC
+	/// <summary>
+	/// A defining point of a Zone.
+	/// </summary>
+	public class ZonePoint : Table
 	{
-		/// <summary>
-		/// Determines, if stream contains a valid WFC file.
-		/// </summary>
-		/// <returns><c>true</c> if is valid WFC file; otherwise, <c>false</c>.</returns>
-		/// <param name="inputStream">Stream with cartridge file.</param>
-		public static bool IsValidFile(Stream inputStream)
+
+		#region Constructor
+
+		internal ZonePoint (Engine e, LuaTable t) : base (e, t)
 		{
-			return false;
+		}
+
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the altitude.
+		/// </summary>
+		/// <value>The altitude.</value>
+		public double Altitude {
+			get {
+				return GetDouble ("altitude");
+			}
 		}
 
 		/// <summary>
-		/// Load a whole WFC file into a Cartridge object.
+		/// Gets the latitude.
 		/// </summary>
-		/// <param name="cart">Cartridge object to file with data.</param>
-		public static void Load(Stream inputStream, Cartridge cart)
-		{
-			throw new NotImplementedException(@"FileWFC.Load is not implemented yet.");
+		/// <value>The latitude.</value>
+		public double Latitude {
+			get {
+				return GetDouble ("latitude");
+			}
 		}
 
 		/// <summary>
-		/// Load only header data of a WFC file into a Cartridge object.
+		/// Gets the longitude.
 		/// </summary>
-		/// <param name="cart">Cartridge object to file with data.</param>
-		public static void LoadHeader(Stream inputStream, Cartridge cart)
-		{
-			throw new NotImplementedException(@"FileWFC.LoadHeader is not implemented yet.");
+		/// <value>The longitude.</value>
+		public double Longitude {
+			get {
+				return GetDouble ("longitude");
+			}
 		}
+
+		#endregion
+
 	}
+
 }
+

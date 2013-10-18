@@ -20,16 +20,19 @@
 using System;
 using System.Collections.Generic;
 using NLua;
+using WF.Player.Core.Engines;
 
 namespace WF.Player.Core
 {
-
-	public class Task : UIObject
+	/// <summary>
+	/// An item of the game: a Thing that can be opened.
+	/// </summary>
+	public class Item : Thing
 	{
 
 		#region Constructor
 
-		public Task (Engine e, LuaTable t) : base (e, t)
+		internal Item (Engine e, LuaTable t) : base (e, t)
 		{
 		}
 
@@ -38,32 +41,24 @@ namespace WF.Player.Core
 		#region Properties
 
 		/// <summary>
-		/// Gets a value indicating whether this <see cref="WF.Player.Core.Item"/> is active.
+		/// Gets a value indicating whether this <see cref="WF.Player.Core.Item"/> is locked.
 		/// </summary>
-		/// <value><c>true</c> if active; otherwise, <c>false</c>.</value>
-		public bool Active {
-			get {
-				return GetBool ("Active");
+		/// <value><c>true</c> if locked; otherwise, <c>false</c>.</value>
+		public bool Locked {
+			get 
+			{
+				return GetBool ("Locked");
 			}
 		}
 
 		/// <summary>
-		/// Gets a value indicating whether this <see cref="WF.Player.Core.Item"/> is complete.
+		/// Gets a value indicating whether this <see cref="WF.Player.Core.Item"/> is opened.
 		/// </summary>
-		/// <value><c>true</c> if complete; otherwise, <c>false</c>.</value>
-		public bool Complete {
-			get {
-				return GetBool ("Complete");
-			}
-		}
-
-		/// <summary>
-		/// Gets the CorrectState.
-		/// </summary>
-		/// <value>The CorrectState.</value>
-		public TaskCorrectness CorrectState {
-			get {
-				return GetEnum<TaskCorrectness> ("CorrectState", TaskCorrectness.None);
+		/// <value><c>true</c> if opened; otherwise, <c>false</c>.</value>
+		public bool Opened {
+			get 
+			{
+				return GetBool ("Opened");
 			}
 		}
 

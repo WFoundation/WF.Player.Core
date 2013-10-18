@@ -20,15 +20,19 @@
 using System;
 using NLua;
 using System.Globalization;
+using WF.Player.Core.Engines;
 
 namespace WF.Player.Core
 {
+	/// <summary>
+	/// A distance between two objects of the game.
+	/// </summary>
 	public class Distance : Table
 	{
 
 		#region Constructor
 
-		public Distance (Engine e, LuaTable t) : base (e, t)
+		internal Distance (Engine e, LuaTable t) : base (e, t)
 		{
 		}
 

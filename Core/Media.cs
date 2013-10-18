@@ -24,7 +24,7 @@ using System.Text;
 namespace WF.Player.Core
 {
 	/// <summary>
-	/// Class for objects to store informations for medias.
+	/// A container for a media resource.
 	/// </summary>
     #if MONOTOUCH
 	    [MonoTouch.Foundation.Preserve(AllMembers=true)]
@@ -34,7 +34,7 @@ namespace WF.Player.Core
 
         #region Constructor
 
-        public Media()
+        internal Media()
         {
         }
 
@@ -43,38 +43,38 @@ namespace WF.Player.Core
         #region Properties
 
         /// <summary>
-        /// Bytes for the media.
+        /// Gets the raw data of the media.
         /// </summary>
 		public byte[] Data { get; internal set; }
 
 		/// <summary>
-		/// Name of the file, which is containing this media.
+		/// Gets the name of the file, which is containing this media.
 		/// </summary>
 		public string FileName { get; internal set; }
 
 		/// <summary>
-		/// File position for media in the underlaying file.
+		/// Gets the position of the media in the underlying cartridge.
 		/// </summary>
 		public long FileOffset { get; internal set; }
 
 		/// <summary>
-		/// File size for media in the underlaying file.
+		/// Gets the file size of the media in the underlying file.
 		/// </summary>
 		public long FileSize { get; internal set; }
 
 		/// <summary>
-        /// Id for media, which determins the position in gwc file.
+        /// Gets the id of the media in the cartridge file it came from.
         /// </summary>
 		public int MediaId { get; internal set; }
 
 		/// <summary>
-		/// Gets the name.
+		/// Gets the name of the media.
 		/// </summary>
 		/// <value>The name.</value>
 		public string Name { get; internal set; }
 
         /// <summary>
-        /// Type of the media.
+        /// Gets the type of the media.
         /// </summary>
 		public MediaType Type { get; internal set; }
 

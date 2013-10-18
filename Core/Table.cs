@@ -20,25 +20,38 @@
 using System;
 using NLua;
 using System.Collections.Generic;
+using WF.Player.Core.Engines;
 
 namespace WF.Player.Core
 {
 	public class Table
 	{
-		protected LuaTable wigTable;
-		protected Engine engine;
+		#region Members
 
-		public Table (Engine e, LuaTable t)
-		{
-			engine = e;
-			wigTable = t;
-		}
+		protected LuaTable wigTable;
+		protected Engine engine; 
+
+		#endregion
+
+		#region Properties
 
 		/// <summary>
 		/// Underlying LuaTable for this object.
 		/// </summary>
 		/// <value>The LuaTable.</value>
 		internal LuaTable WIGTable { get { return wigTable; } }
+
+		#endregion
+
+		#region Constructor
+
+		internal Table(Engine e, LuaTable t)
+		{
+			engine = e;
+			wigTable = t;
+		} 
+
+		#endregion
 
 		#region Table Field Getters
 

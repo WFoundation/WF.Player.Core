@@ -183,22 +183,6 @@ namespace WF.Player.Core
 	}
 
 	/// <summary>
-	/// Event arguments for an action dispatch on the UI thread.
-	/// </summary>
-	public class UIDispatchEventArgs : EventArgs
-	{
-		/// <summary>
-		/// Gets the action to execute in the UI thread.
-		/// </summary>
-		public Action Action { get; private set; }
-
-		internal UIDispatchEventArgs(Action action)
-		{
-			Action = action;
-		}
-	}
-
-	/// <summary>
 	/// Event arguments for a change in zone states.
 	/// </summary>
 	public class ZoneStateChangedEventArgs : EventArgs

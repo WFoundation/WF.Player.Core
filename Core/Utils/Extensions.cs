@@ -24,6 +24,9 @@ using NLua;
 
 namespace WF.Player.Core.Utils
 {
+	/// <summary>
+	/// Adds various useful extensions to common types used by the core.
+	/// </summary>
 	public static class Extensions
 	{
 		/// <summary>

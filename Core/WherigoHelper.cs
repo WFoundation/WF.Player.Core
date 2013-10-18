@@ -17,34 +17,38 @@
 /// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ///
 
+using System;
+using WF.Player.Core.Engines;
+using System.IO;
+
 namespace WF.Player.Core
 {
-	public class LocationVector
+	public static class WherigoHelper
 	{
-		#region Properties
-
 		/// <summary>
-		/// Gets the distance.
+		/// Creates an instance of Engine for the current platform
 		/// </summary>
-		/// <value>If null, the distance is not available for this vector.</value>
-		public Distance Distance { get; private set; }
-
-		/// <summary>
-		/// Gets the value of the bearing, in degrees.
-		/// </summary>
-		/// <value>If null, the bearing is not available for this vector.</value>
-		public double? Bearing { get; private set; }
-
-		#endregion
-
-		#region Constructors
-
-		internal LocationVector(Distance dist, double? bearing)
+		/// <returns></returns>
+		public static Engine CreateEngine()
 		{
-			Distance = dist;
-			Bearing = bearing;
+			// Chooses one of the standard platform helpers.
+			IPlatformHelper platform = new DefaultPlatformHelper();
+#if WINDOWS_PHONE
+			platform = new WinPhonePlatformHelper();
+#endif
+
+			// Creates a new Engine for the platform.
+			return new Engine(platform);
 		}
 
-		#endregion
+		public static Cartridge InitAndStartCartridge(Engine engine, Stream cartridgeStream, long firstLat, long firstLon, long firstAlt)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Cartridge InitAndStartCartridgeAsync(Engine engine, Stream cartridgeStream, long firstLat, long firstLon, long firstAlt)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

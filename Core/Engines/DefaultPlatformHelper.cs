@@ -1,4 +1,4 @@
-///
+﻿///
 /// WF.Player.Core - A Wherigo Player Core for different platforms.
 /// Copyright (C) 2012-2013  Dirk Weltz <web@weltz-online.de>
 /// Copyright (C) 2012-2013  Brice Clocher <contact@cybisoft.net>
@@ -19,34 +19,59 @@
 
 using System;
 using System.IO;
-namespace WF.Player.Core.Formats
+
+namespace WF.Player.Core.Engines
 {
-	public class FileGWZ : ICartridgeLoader
+	internal class DefaultPlatformHelper : IPlatformHelper
 	{
-		public bool CanLoad(CartridgeFileFormat targetFileType)
+		public string CartridgeFolder
 		{
-			throw new NotImplementedException();
+			get { return "unknown"; }
 		}
 
-		public bool IsValidFile(Stream inputStream, CartridgeFileFormat targetFormat)
+		public string SavegameFolder
 		{
-			throw new NotImplementedException();
+			get { return "unknown"; }
 		}
 
-		public CartridgeFileFormat GetFileFormat(Stream inputStream)
+		public string LogFolder
 		{
-			throw new NotImplementedException();
+			get { return "unknown"; }
 		}
 
-		public void Load(Stream inputStream, Cartridge cart)
+		public string PathSeparator
 		{
-			throw new NotImplementedException();
+			get { return Path.DirectorySeparatorChar.ToString(); }
 		}
 
-		public void LoadMetadata(Stream inputStream, Cartridge cart)
+		public string Platform
+		{
+			get { return "unknown"; }
+		}
+
+		public string Device
+		{
+			get { return "unknown"; }
+		}
+
+		public string DeviceId
+		{
+			get { return "unknown"; }
+		}
+
+		public string ClientVersion
+		{
+			get { return "unknown"; }
+		}
+
+		public bool CanDispatchOnUIThread
+		{
+			get { return false; }
+		}
+
+		public void BeginDispatchOnUIThread(Action action)
 		{
 			throw new NotImplementedException();
 		}
 	}
-
 }

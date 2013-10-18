@@ -1,4 +1,4 @@
-///
+﻿///
 /// WF.Player.Core - A Wherigo Player Core for different platforms.
 /// Copyright (C) 2012-2013  Dirk Weltz <web@weltz-online.de>
 /// Copyright (C) 2012-2013  Brice Clocher <contact@cybisoft.net>
@@ -18,18 +18,20 @@
 ///
 
 using System;
-using System.Collections.Generic;
 using NLua;
+using WF.Player.Core.Engines;
 
 namespace WF.Player.Core
 {
-
-	public class Thing : UIObject
-	{
-
+	/// <summary>
+	/// A timer clock relevant to the game.
+	/// </summary>
+	public class Timer : Table
+	{		
 		#region Constructor
 
-		public Thing (Engine e, LuaTable t) : base (e, t)
+		internal Timer(Engine e, LuaTable t)
+			: base(e, t)
 		{
 		}
 
@@ -38,61 +40,55 @@ namespace WF.Player.Core
 		#region Properties
 
 		/// <summary>
-		/// Gets the commands for this item.
+		/// Gets the type of the Timer.
 		/// </summary>
-		/// <value>The list of commands.</value>
-		public List<Command> Commands {
-			get 
-			{
-				return GetTableList<Command>("Commands");
-			}
-		}
-
-		/// <summary>
-		/// Gets the container.
-		/// </summary>
-		/// <value>The container.</value>
-		public Thing Container {
-			get 
-			{
-				return GetTable("Container") as Thing;
-			}
-		}
-
-		/// <summary>
-		/// Gets a list of available commands.
-		/// </summary>
-		public List<Command> ActiveCommands {
-			get 
-			{
-				return GetTableFuncList<Command>("GetActiveCommands");
-			}
-		}
-
-		/// <summary>
-		/// Gets the inventory.
-		/// </summary>
-		/// <value>The inventory.</value>
-		public List<Thing> Inventory {
-			get 
-			{
-				return GetTableList<Thing>("Inventory");
-			}
-		}
-
-		/// <summary>
-		/// Gets the distance and bearing between the player and this Thing.
-		/// </summary>
-		public LocationVector VectorFromPlayer
+		public TimerType Type
 		{
 			get
 			{
-				return engine.GetVectorFromPlayer(this);
+				return GetEnum<TimerType>("Type");
+			}
+		}
+
+		/// <summary>
+		/// Gets how much time remains before this Timer's OnElapsed event will be
+		/// raised next.
+		/// </summary>
+		public TimeSpan Remaining
+		{
+			get
+			{
+				return SecondsFieldToTimeSpan("Remaining");
+			}
+		}
+
+		/// <summary>
+		/// Gets how much time has elapsed since the start of the timer.
+		/// </summary>
+		public TimeSpan Elapsed
+		{
+			get
+			{
+				return SecondsFieldToTimeSpan("Elapsed");
+			}
+		}
+
+		/// <summary>
+		/// Gets how much time the timer runs before it elapses.
+		/// </summary>
+		public TimeSpan Duration
+		{
+			get
+			{
+				return SecondsFieldToTimeSpan("Duration");
 			}
 		}
 
 		#endregion
 
+		private TimeSpan SecondsFieldToTimeSpan(string field)
+		{
+			return new TimeSpan(0, 0, Convert.ToInt32(GetDouble(field)));
+		}
 	}
-
 }

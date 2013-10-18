@@ -22,16 +22,19 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using NLua;
 using WF.Player.Core.Utils;
+using WF.Player.Core.Engines;
 
 namespace WF.Player.Core
 {
-
+	/// <summary>
+	/// Base class for a game entity that notifies of changes of its properties.
+	/// </summary>
 	public class UIObject : Table, INotifyPropertyChanged
 	{
 
 		#region Constructor
 
-		public UIObject (Engine e, LuaTable t) : base (e, t)
+		internal UIObject (Engine e, LuaTable t) : base (e, t)
 		{
 		}
 
@@ -121,11 +124,11 @@ namespace WF.Player.Core
 
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		internal void NotifyPropertyChanged(String info)
+		internal void NotifyPropertyChanged(string propName)
 		{
 			if (PropertyChanged != null)
 			{
-				PropertyChanged(this, new PropertyChangedEventArgs(info));
+				PropertyChanged(this, new PropertyChangedEventArgs(propName));
 			}
 		}
 

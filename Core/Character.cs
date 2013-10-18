@@ -1,4 +1,4 @@
-﻿///
+///
 /// WF.Player.Core - A Wherigo Player Core for different platforms.
 /// Copyright (C) 2012-2013  Dirk Weltz <web@weltz-online.de>
 /// Copyright (C) 2012-2013  Brice Clocher <contact@cybisoft.net>
@@ -18,16 +18,21 @@
 ///
 
 using System;
+using System.Collections.Generic;
 using NLua;
+using WF.Player.Core.Engines;
 
 namespace WF.Player.Core
 {
-	public class Timer : Table
-	{		
+	/// <summary>
+	/// A character of the game: a Thing with a gender.
+	/// </summary>
+	public class Character : Thing
+	{
+
 		#region Constructor
 
-		public Timer(Engine e, LuaTable t)
-			: base(e, t)
+		internal Character (Engine e, LuaTable t) : base (e, t)
 		{
 		}
 
@@ -36,55 +41,20 @@ namespace WF.Player.Core
 		#region Properties
 
 		/// <summary>
-		/// Gets the type of the Timer.
+		/// Gets the gender of the character.
 		/// </summary>
-		public TimerType Type
+		/// <value>The default is <code>It</code>.</value>
+		public CharacterGender Gender
 		{
 			get
 			{
-				return GetEnum<TimerType>("Type");
-			}
-		}
-
-		/// <summary>
-		/// Gets how much time remains before this Timer's OnElapsed event will be
-		/// raised next.
-		/// </summary>
-		public TimeSpan Remaining
-		{
-			get
-			{
-				return SecondsFieldToTimeSpan("Remaining");
-			}
-		}
-
-		/// <summary>
-		/// Gets how much time has elapsed since the start of the timer.
-		/// </summary>
-		public TimeSpan Elapsed
-		{
-			get
-			{
-				return SecondsFieldToTimeSpan("Elapsed");
-			}
-		}
-
-		/// <summary>
-		/// Gets how much time the timer runs before it elapses.
-		/// </summary>
-		public TimeSpan Duration
-		{
-			get
-			{
-				return SecondsFieldToTimeSpan("Duration");
+				return GetEnum<CharacterGender>("Gender", CharacterGender.It);
 			}
 		}
 
 		#endregion
 
-		private TimeSpan SecondsFieldToTimeSpan(string field)
-		{
-			return new TimeSpan(0, 0, Convert.ToInt32(GetDouble(field)));
-		}
 	}
+
 }
+

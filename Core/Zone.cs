@@ -18,16 +18,21 @@
 ///
 
 using System;
+using System.Collections.Generic;
 using NLua;
+using WF.Player.Core.Engines;
 
 namespace WF.Player.Core
 {
-	public class ZonePoint : Table
+	/// <summary>
+	/// A Thing that has a location and can contain other Things.
+	/// </summary>
+	public class Zone : Thing
 	{
 
 		#region Constructor
 
-		public ZonePoint (Engine e, LuaTable t) : base (e, t)
+		internal Zone (Engine e, LuaTable t) : base (e, t)
 		{
 		}
 
@@ -36,32 +41,46 @@ namespace WF.Player.Core
 		#region Properties
 
 		/// <summary>
-		/// Gets the altitude.
+		/// Gets a value indicating whether this <see cref="WF.Player.Core.Zone"/> is active.
 		/// </summary>
-		/// <value>The altitude.</value>
-		public double Altitude {
-			get {
-				return GetDouble ("altitude");
+		/// <value><c>true</c> if active; otherwise, <c>false</c>.</value>
+		public bool Active {
+			get 
+			{
+				return GetBool ("Active");
 			}
 		}
 
 		/// <summary>
-		/// Gets the latitude.
+		/// Gets the original point.
 		/// </summary>
-		/// <value>The latitude.</value>
-		public double Latitude {
-			get {
-				return GetDouble ("latitude");
+		/// <value>The original point as ZonePoint.</value>
+		public ZonePoint OriginalPoint {
+			get 
+			{
+				return GetTable("OriginalPoint") as ZonePoint;
 			}
 		}
 
 		/// <summary>
-		/// Gets the longitude.
+		/// Gets the point defining the zone.
 		/// </summary>
-		/// <value>The longitude.</value>
-		public double Longitude {
-			get {
-				return GetDouble ("longitude");
+		/// <value>The inventory.</value>
+		public List<ZonePoint> Points {
+			get 
+			{
+				return GetTableList<ZonePoint>("Points");
+			}
+		}
+
+		/// <summary>
+		/// Gets the position state of the player for this zone.
+		/// </summary>
+		public PlayerZoneState State
+		{
+			get
+			{
+				return GetEnum<PlayerZoneState>("State");
 			}
 		}
 
@@ -70,4 +89,3 @@ namespace WF.Player.Core
 	}
 
 }
-

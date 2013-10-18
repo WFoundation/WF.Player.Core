@@ -41,6 +41,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Phone" />
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.5.0.6\lib\portable-net40+sl4+wp7+win8\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -54,6 +55,10 @@
     <Reference Include="mscorlib.extensions" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Engines\DefaultPlatformHelper.cs" />
+    <Compile Include="Engines\IPlatformHelper.cs" />
+    <Compile Include="Engines\WinPhonePlatformHelper.cs" />
+    <Compile Include="Formats\ICartridgeLoader.cs" />
     <Compile Include="Utils\Threading\ActionPump.cs" />
     <Compile Include="Utils\Threading\JobQueue.cs" />
     <Compile Include="Utils\SafeLua.cs" />
@@ -64,32 +69,31 @@
     <Compile Include="Live\Reference.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\Cartridge.cs" />
-    <Compile Include="Model\Character.cs" />
-    <Compile Include="Model\Command.cs" />
-    <Compile Include="Model\Distance.cs" />
-    <Compile Include="Engine\Engine.cs" />
+    <Compile Include="Cartridge.cs" />
+    <Compile Include="Character.cs" />
+    <Compile Include="Command.cs" />
+    <Compile Include="Distance.cs" />
+    <Compile Include="Engines\Engine.cs" />
     <Compile Include="Formats\FileFormats.cs" />
     <Compile Include="Formats\FileGWC.cs" />
     <Compile Include="Formats\FileGWZ.cs" />
-    <Compile Include="Formats\FileWFC.cs" />
-    <Compile Include="Formats\FileWFZ.cs" />
-    <Compile Include="Model\Enums.cs" />
-    <Compile Include="Model\Events.cs" />
-    <Compile Include="Model\Input.cs" />
-    <Compile Include="Model\Item.cs" />
-    <Compile Include="Model\LocationVector.cs" />
-    <Compile Include="Model\Media.cs" />
-    <Compile Include="Model\MessageBox.cs" />
-    <Compile Include="Model\Timer.cs" />
+    <Compile Include="Enums.cs" />
+    <Compile Include="Events.cs" />
+    <Compile Include="Input.cs" />
+    <Compile Include="Item.cs" />
+    <Compile Include="LocationVector.cs" />
+    <Compile Include="Media.cs" />
+    <Compile Include="MessageBox.cs" />
+    <Compile Include="Timer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Model\Table.cs" />
-    <Compile Include="Model\Task.cs" />
-    <Compile Include="Model\Thing.cs" />
-    <Compile Include="Model\UIObject.cs" />
-    <Compile Include="Engine\WIGInternalImpl.cs" />
-    <Compile Include="Model\Zone.cs" />
-    <Compile Include="Model\ZonePoint.cs" />
+    <Compile Include="Table.cs" />
+    <Compile Include="Task.cs" />
+    <Compile Include="Thing.cs" />
+    <Compile Include="UIObject.cs" />
+    <Compile Include="Engines\WIGInternalImpl.cs" />
+    <Compile Include="WherigoHelper.cs" />
+    <Compile Include="Zone.cs" />
+    <Compile Include="ZonePoint.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\Wherigo.luac" />
@@ -102,6 +106,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages-wp7.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.$(TargetFrameworkProfile).Overrides.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.CSharp.targets" />

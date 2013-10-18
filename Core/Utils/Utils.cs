@@ -23,7 +23,7 @@ using System.Reflection;
 namespace WF.Player.Core.Utils
 {
 	/// <summary>
-	/// Defines utility methods.
+	/// Defines various useful utilities.
 	/// </summary>
 	public static class Utils
 	{

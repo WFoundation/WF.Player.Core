@@ -20,16 +20,19 @@
 using System;
 using System.Collections.Generic;
 using NLua;
+using WF.Player.Core.Engines;
 
 namespace WF.Player.Core
 {
-
+	/// <summary>
+	/// An action of the game that can be executed.
+	/// </summary>
 	public class Command : Table
 	{
 
 		#region Constructor
 
-		public Command (Engine e, LuaTable t) : base (e, t)
+		internal Command (Engine e, LuaTable t) : base (e, t)
 		{
 		}
 
@@ -82,7 +85,8 @@ namespace WF.Player.Core
 		/// Gets a list if objects that this command can use as targets.
 		/// </summary>
 		public List<Thing> TargetObjects {
-			get {
+			get 
+			{
 				List<Thing> result = new List<Thing> ();
 
 				// Works this command with targets?
@@ -100,7 +104,8 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <value>The text.</value>
 		public string Text {
-			get {
+			get 
+			{
 				return GetString ("Text");
 			}
 		}
@@ -129,12 +134,18 @@ namespace WF.Player.Core
 
 		#region Methods
 
-		public void Execute(Thing t = null)
+		/// <summary>
+		/// Executes this command on an optional target.
+		/// </summary>
+		/// <param name="target">The thing to execute this command on. If null, the command
+		/// is executed without target. This parameter is mandatory if <code>CmdWith</code>
+		/// is true.</param>
+		public void Execute(Thing target = null)
 		{
-			if (t == null)
+			if (target == null)
 				engine.LuaExecQueue.BeginCallSelf(this, "exec");
 			else
-				engine.LuaExecQueue.BeginCallSelf(this, "exec", t.WIGTable);
+				engine.LuaExecQueue.BeginCallSelf(this, "exec", target.WIGTable);
 		}
 
 		#endregion

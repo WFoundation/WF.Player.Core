@@ -426,7 +426,7 @@ namespace WF.Player.Core.Utils.Threading
 					// If there are more jobs to do and we should do them, let's go!
 					if (jobsLeftToDo > 0 && ContinuesOnCompletion)
 					{
-						// Sleeps a litte bit before to free UI thread memory.
+						// Sleeps a litte bit before to free UI thread cpu.
 						Thread.Sleep(DelayBetweenJobs);
 
 						// Let's do the next job!
