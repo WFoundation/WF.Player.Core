@@ -78,20 +78,21 @@ namespace WF.Player.Core
 		/// Gets the measure of the distance for a given unit and a given precision.
 		/// </summary>
 		/// <param name="unit">The unit to query for.</param>
-		/// <param name="decimalDigits">How many digits should the measure have. Should be 0 or greater.</param>
+		/// <param name="digitsOfPrecision">How many precision digits should the measure have. Should be 0 or greater.</param>
 		/// <returns>The measure of the distance, i.e. is value and unit symbol.</returns>
-		public string MeasureAs(DistanceUnit unit, int decimalDigits)
+		public string MeasureAs(DistanceUnit unit, int digitsOfPrecision)
 		{
-			return String.Format("{0:F"+ decimalDigits +"} {1}", ValueAs(unit), unit.ToSymbol());
+			return String.Format("{0:F"+ digitsOfPrecision +"} {1}", ValueAs(unit), unit.ToSymbol());
 		}
 
 		/// <summary>
 		/// Gets the most meaningful measure of the distance.
 		/// </summary>
 		/// <param name="smallestUnit">Smallest unit displayable in the measure.</param>
+		/// <param name="format">Optional format for the measure.</param>
 		/// <returns>The measure of the distance, in <code>smallestUnit</code> or its supported
 		/// factors.</returns>
-		public string BestMeasureAs(DistanceUnit smallestUnit)
+		public string BestMeasureAs(DistanceUnit smallestUnit, DistanceFormat format = null)
 		{
 			if (!smallestUnit.Equals(DistanceUnit.Meters) && !smallestUnit.Equals(DistanceUnit.Kilometers))
 			{
@@ -101,20 +102,45 @@ namespace WF.Player.Core
 			double v = Value;
 			if (v > 1000d)
 			{
-				return MeasureAs(DistanceUnit.Kilometers, 2);
+				return MeasureAs(DistanceUnit.Kilometers, format != null ? format.BigDistancePrecisionDigits : 2);
 			}
 			else if (v > 100d)
 			{
-				return MeasureAs(DistanceUnit.Meters, 0);
+				return MeasureAs(DistanceUnit.Meters, format != null ? format.MediumDistancePrecisionDigits : 0);
 			}
 			else
 			{
-				return MeasureAs(DistanceUnit.Meters, 1);
+				return MeasureAs(DistanceUnit.Meters, format != null ? format.SmallDistancePrecisionDigits : 1);
 			}
 		}
 
 		#endregion
 
+	}
+
+	/// <summary>
+	/// Describes parameters that have an influence on the formatting of a distance.
+	/// </summary>
+	public class DistanceFormat
+	{
+		#region Properties
+
+		/// <summary>
+		/// Gets or sets how many digits of precision should have a big distance.
+		/// </summary>
+		public int BigDistancePrecisionDigits { get; set; }
+
+		/// <summary>
+		/// Gets or sets how many digits of precision should have a medium distance.
+		/// </summary>
+		public int MediumDistancePrecisionDigits { get; set; }
+
+		/// <summary>
+		/// Gets or sets how many digits of precision should have a small distance.
+		/// </summary>
+		public int SmallDistancePrecisionDigits { get; set; }
+
+		#endregion
 	}
 
 }
