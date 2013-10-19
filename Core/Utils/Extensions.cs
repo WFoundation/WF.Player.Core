@@ -103,7 +103,7 @@ namespace WF.Player.Core.Utils
 		/// </summary>
 		/// <param name="s"></param>
 		/// <returns></returns>
-		internal static string ReplaceMarkup(this string s)
+		internal static string ReplaceHTMLMarkup(this string s)
 		{
 			// <BR> and <BR/> and <BR>\n -> new line
 			// &nbsp; and &nbsp; + space -> space
@@ -128,6 +128,40 @@ namespace WF.Player.Core.Utils
 				.Replace("&gt;", ">", sc)
 				.Replace("(?:&amp;)+", "&", ro)
 				.Replace("\n", Environment.NewLine, sc);
+		}
+
+		/// <summary>
+		/// Replaces all script markup with textual equivalents.
+		/// </summary>
+		/// <param name="s"></param>
+		/// <returns></returns>
+		internal static string ReplaceHTMLScriptMarkup(this string s)
+		{
+			// '<' -> &lt; 
+			// '>' -> &gt;
+
+			if (s == null)
+			{
+				return null;
+			}
+
+			// Defines the options for replacement: ignore case and culture invariant.
+			StringComparison sc = StringComparison.InvariantCultureIgnoreCase;
+
+			return s
+					.Replace("<", "&lt;", sc)
+					.Replace(">", "&gt;", sc);
+		}
+
+		/// <summary>
+		/// Replaces all Markdown markup.
+		/// </summary>
+		/// <param name="s"></param>
+		/// <param name="markdown"></param>
+		/// <returns></returns>
+		internal static string ReplaceMarkdown(this string s)
+		{
+			return new MarkdownSharp.Markdown().Transform(s);
 		}
 
 		/// <summary>

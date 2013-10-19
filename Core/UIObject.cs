@@ -31,6 +31,7 @@ namespace WF.Player.Core
 	/// </summary>
 	public class UIObject : Table, INotifyPropertyChanged
 	{
+		private string html;
 
 		#region Constructor
 
@@ -43,12 +44,35 @@ namespace WF.Player.Core
 		#region Properties
 
 		/// <summary>
+		/// Gets the containe, which is holding this object.
+		/// </summary>
+		/// <value>The Container holding this object.</value>
+		public UIObject Container {
+			get {
+				return GetTable("Container") as UIObject;
+			}
+		}
+
+		/// <summary>
 		/// Gets the description.
 		/// </summary>
 		/// <value>The description.</value>
 		public string Description {
 			get {
-				return GetString ("Description").ReplaceMarkup();
+				return GetString ("Description").ReplaceHTMLMarkup();
+			}
+		}
+
+		/// <summary>
+		/// Gets the description as Html.
+		/// </summary>
+		/// <value>The description.</value>
+		public string HTML {
+			get {
+				if (html == null) {
+					html = "<html><body><center>" + GetString("Description").ReplaceHTMLScriptMarkup().ReplaceMarkdown() +"</center></body></html>";
+				}
+				return html;
 			}
 		}
 
@@ -126,6 +150,9 @@ namespace WF.Player.Core
 
 		internal void NotifyPropertyChanged(string propName)
 		{
+			if (propName.Equals ("Description"))
+				html = null;
+
 			if (PropertyChanged != null)
 			{
 				PropertyChanged(this, new PropertyChangedEventArgs(propName));

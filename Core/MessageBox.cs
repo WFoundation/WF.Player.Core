@@ -28,6 +28,17 @@ namespace WF.Player.Core
 	public class MessageBox
 	{
 		#region Properties
+
+		/// <summary>
+		/// Gets the text as Markdown converted to HTML.
+		/// </summary>
+		/// <value>The text.</value>
+		public string HTML {
+			get {
+				return "<html><body><center>" + Text.ReplaceMarkdown() + "</center></body></html>";
+			}
+		}
+
 		/// <summary>
 		/// Gets the text of the message box to display.
 		/// </summary>
@@ -68,7 +79,7 @@ namespace WF.Player.Core
 		/// <param name="callback">Function to call once the message box has gotten a result.</param>
 		public MessageBox(string text, Media mediaObj, string btn1label, string btn2label, Action<string> cb)
 		{
-			Text = text.ReplaceMarkup();
+			Text = text.ReplaceHTMLMarkup();
 			Image = mediaObj;
 			FirstButtonLabel = String.IsNullOrEmpty(btn1label) ? null : btn1label;
 			SecondButtonLabel = String.IsNullOrEmpty(btn2label) ? null : btn2label;

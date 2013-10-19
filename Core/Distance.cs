@@ -95,7 +95,7 @@ namespace WF.Player.Core
 		{
 			if (!smallestUnit.Equals(DistanceUnit.Meters) && !smallestUnit.Equals(DistanceUnit.Kilometers))
 			{
-				throw new NotImplementedException("smallestUnit must be Meters or Kilometers.");
+				throw new NotImplementedException("Parameter smallestUnit must be Meters or Kilometers.");
 			}
 
 			double v = Value;
@@ -105,11 +105,11 @@ namespace WF.Player.Core
 			}
 			else if (v > 100d)
 			{
-				return MeasureAs(DistanceUnit.Meters, 1);
+				return MeasureAs(DistanceUnit.Meters, 0);
 			}
 			else
 			{
-				return MeasureAs(DistanceUnit.Meters, 0);
+				return MeasureAs(DistanceUnit.Meters, 1);
 			}
 		}
 

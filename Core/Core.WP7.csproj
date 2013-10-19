@@ -59,6 +59,7 @@
     <Compile Include="Engines\IPlatformHelper.cs" />
     <Compile Include="Engines\WinPhonePlatformHelper.cs" />
     <Compile Include="Formats\ICartridgeLoader.cs" />
+    <Compile Include="Utils\MarkdownSharp.cs" />
     <Compile Include="Utils\Threading\ActionPump.cs" />
     <Compile Include="Utils\Threading\JobQueue.cs" />
     <Compile Include="Utils\SafeLua.cs" />

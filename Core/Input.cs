@@ -63,6 +63,16 @@ namespace WF.Player.Core
 		}
 
 		/// <summary>
+		/// Gets the text as Markdown converted to HTML.
+		/// </summary>
+		/// <value>The text.</value>
+		public string HTML {
+			get {
+				return "<html><body><center>" + GetString ("Text").ReplaceHTMLScriptMarkup().ReplaceMarkdown() + "</center></body></html>";
+			}
+		}
+
+		/// <summary>
 		/// Gets the image.
 		/// </summary>
 		/// <value>The image.</value>
@@ -99,7 +109,7 @@ namespace WF.Player.Core
 		/// <value>The text.</value>
 		public string Text {
 			get {
-				return GetString ("Text").ReplaceMarkup();
+				return GetString ("Text").ReplaceHTMLMarkup();
 			}
 		}
 
