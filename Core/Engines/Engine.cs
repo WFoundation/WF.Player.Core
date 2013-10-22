@@ -219,19 +219,28 @@ namespace WF.Player.Core.Engines
 			// Cleans managed resources in here.
 			if (disposeManagedResources)
 			{
+				// Bye bye timers.
+				DisposeTimers();
+				
 				// Bye bye threads.
 				if (luaExecQueue != null)
 				{
 					luaExecQueue.IsBusyChanged -= new EventHandler(HandleLuaExecQueueIsBusyChanged);					
 					luaExecQueue.Dispose();
-					luaExecQueue = null;
+					lock (syncRoot)
+					{
+						luaExecQueue = null; 
+					}
 				}
 
 				if (uiDispatchPump != null)
 				{
 					uiDispatchPump.IsBusyChanged -= new EventHandler(HandleUIDispatchPumpIsBusyChanged);
 					uiDispatchPump.Dispose();
-					uiDispatchPump = null;
+					lock (syncRoot)
+					{
+						uiDispatchPump = null; 
+					}
 				}
 
 				// Disposes the underlying objects.
@@ -244,8 +253,19 @@ namespace WF.Player.Core.Engines
 					luaState = null;
 				} 
 			}
+		}
 
-			// Clean unmanaged resources here.
+		private void DisposeTimers()
+		{
+			foreach (var timer in timers.Values.ToList())
+			{
+				timer.Dispose();
+			}
+
+			lock (syncRoot)
+			{
+				timers.Clear();
+			}
 		}
 
         #endregion
@@ -572,10 +592,60 @@ namespace WF.Player.Core.Engines
 
 		#endregion
 
-        #region Start/Stop/Load/Save
+        #region Game Operations (Init, Start...)
+
+		/// <summary>
+		/// Initializes this Engine with the data of a Cartridge, loaded from a stream.
+		/// </summary>
+		/// <param name="input">Stream to load cartridge load from.</param>
+		/// <param name="cartridge">Cartridge object to load and init.</param>
+		public void Init(Stream input, Cartridge cartridge)
+		{
+			// Sanity checks.
+			CheckStateIs(EngineGameState.Uninitialized, "The engine cannot be initialized in this state", true);
+
+			GameState = EngineGameState.Initializing;
+
+			this.cartridge = cartridge;
+			cartridge.Engine = this;
+
+			luaState["Env.CartFilename"] = cartridge.Filename;
+
+			FileFormats.Load(input, cartridge);
+
+			// Set player relevant data
+			player = (LuaTable)luaState["Wherigo.Player"];
+			player["CompletionCode"] = cartridge.CompletionCode;
+			player["Name"] = cartridge.Player;
+			player["ObjectLocation.latitude"] = lat;
+			player["ObjectLocation.longitude"] = lon;
+			player["ObjectLocation.altitude"] = alt;
+
+			try
+			{
+				// Now start Lua binary chunk
+				byte[] luaBytes = cartridge.Resources[0].Data;
+
+				// TODO: Asynchronize this!
+				cartridge.WIGTable = (LuaTable)luaState.DoString(luaBytes, cartridge.Filename)[0];
+				player["Cartridge"] = cartridge.WIGTable;
+
+				GameState = EngineGameState.Initialized;
+
+			}
+			catch (Exception e)
+			{
+				// TODO
+				// Rethrow exception
+				Console.WriteLine(e.Message);
+
+				GameState = EngineGameState.Uninitialized;
+			}
+
+		}
 
         /// <summary>
-        /// Start engine.
+        /// Starts the engine, playing a new game.
         /// </summary>
         public void Start()
         {
@@ -600,7 +670,7 @@ namespace WF.Player.Core.Engines
         }
 
         /// <summary>
-        /// Stop engine.
+        /// Stops the engine, terminating the game session.
         /// </summary>
         public void Stop()
         {
@@ -611,8 +681,7 @@ namespace WF.Player.Core.Engines
 			
 			GameState = EngineGameState.Stopping;
 
-			foreach(System.Threading.Timer t in timers.Values)
-				t.Dispose ();
+			DisposeTimers();
 
 			HandleNotifyOS ("StopSound");
 
@@ -623,9 +692,9 @@ namespace WF.Player.Core.Engines
 		}
 
         /// <summary>
-        /// Start engine and restore a saved cartridge.
+        /// Starts the engine, restoring a saved game for the current cartridge.
         /// </summary>
-        /// <param name="stream">Stream, where the cartridge load from.</param>
+        /// <param name="stream">Stream, where the save game load from.</param>
         public void Restore(Stream stream)
         {
 			// Sanity checks.
@@ -644,63 +713,13 @@ namespace WF.Player.Core.Engines
         }
 
         /// <summary>
-        /// Load and init all data belonging to the selected cartridge.
-        /// </summary>
-        /// <param name="input">Stream to load cartridge load from.</param>
-        /// <param name="cartridge">Cartridge object to load and init.</param>
-        public void Init(Stream input, Cartridge cartridge)
-        {
-			// Sanity checks.
-			CheckStateIs(EngineGameState.Uninitialized, "The engine cannot be initialized in this state", true);
-			
-			GameState = EngineGameState.Initializing;
-			
-			this.cartridge = cartridge;
-			cartridge.Engine = this;
-
-            luaState["Env.CartFilename"] = cartridge.Filename;
-
-			FileFormats.Load(input, cartridge);
-
-			// Set player relevant data
-			player = (LuaTable)luaState["Wherigo.Player"];
-			player["CompletionCode"] = cartridge.CompletionCode;
-			player["Name"] = cartridge.Player;
-			player["ObjectLocation.latitude"] = lat;
-			player["ObjectLocation.longitude"] = lon;
-			player["ObjectLocation.altitude"] = alt;
-
-			try
-            {
-                // Now start Lua binary chunk
-                byte[] luaBytes = cartridge.Resources[0].Data;
-
-				// TODO: Asynchronize this!
-				cartridge.WIGTable = (LuaTable)luaState.DoString(luaBytes, cartridge.Filename)[0];
-				player["Cartridge"] = cartridge.WIGTable;
-
-				GameState = EngineGameState.Initialized;
-
-            }
-            catch (Exception e)
-            {
-                // TODO
-                // Rethrow exception
-                Console.WriteLine(e.Message);
-
-				GameState = EngineGameState.Uninitialized;
-            }
-
-        }
-
-        /// <summary>
-        /// Save the cartridge.
+        /// Saves the game for the current cartridge.
         /// </summary>
         /// <param name="stream">Stream, where the cartridge is saved.</param>
         public void Save(Stream stream)
         {
 			// Sanity checks.
-			CheckStateIs(EngineGameState.Playing, "The engine is not playing.");
+			CheckStateIs(EngineGameState.Playing, "The engine is not playing.", true);
 
 			// State change.
 			GameState = EngineGameState.Saving;
@@ -715,6 +734,65 @@ namespace WF.Player.Core.Engines
 			// State change.
 			GameState = EngineGameState.Playing;
         }
+
+		/// <summary>
+		/// Pauses the engine, suspending its ongoing actions.
+		/// </summary>
+		public void Pause()
+		{
+			// Sanity checks.
+			CheckStateIs(EngineGameState.Playing, "The engine is not playing.", true);
+
+			// State change.
+			GameState = EngineGameState.Pausing;
+
+			// Stops and disposes the timers.
+			DisposeTimers();
+
+			// Pauses the action queues.
+			uiDispatchPump.IsPumping = false;
+			luaExecQueue.IsRunning = false;
+
+			// State change.
+			GameState = EngineGameState.Paused;
+		}
+
+		/// <summary>
+		/// Resumes the engine after a pause, continuing its suspended actions.
+		/// </summary>
+		public void Resume()
+		{
+			// Sanity checks.
+			CheckStateIs(EngineGameState.Paused, "The engine is not paused.", true);
+
+			// State change.
+			GameState = EngineGameState.Resuming;
+
+			// Resumes the action queues.
+			uiDispatchPump.IsPumping = true;
+			luaExecQueue.IsRunning = true;
+
+			// Restarts the timers.
+			IDictionaryEnumerator e = safeLuaState.SafeGetEnumerator(safeLuaState.SafeCallSelf(player, "GetActiveTimers"));
+			while (e.MoveNext())
+			{
+				LuaTable obj = (LuaTable) e.Value;
+				
+				// Should the timer be restarted?
+				bool shouldRestart = safeLuaState.SafeGetField<bool>(safeLuaState.SafeCallSelf(obj, "Restart"), 0);
+				if (!shouldRestart)
+				{
+					continue;
+				}
+
+				// Creates the internal timer.
+				int objIndex = safeLuaState.SafeGetField<int>(obj, "ObjIndex");
+				CreateAndStartInternalTimer(objIndex);
+			}
+
+			// State change.
+			GameState = EngineGameState.Playing;
+		}
 
 		#endregion
 
@@ -1182,6 +1260,23 @@ namespace WF.Player.Core.Engines
 				objIndex = Convert.ToInt32((double)t["ObjIndex"]); 
 			}
 
+			// Starts a timer.
+			CreateAndStartInternalTimer(objIndex);
+
+			// Call OnStart of this timer
+			lock (luaState)
+			{
+				t.CallSelf("Start"); 
+			}
+        }
+
+		/// <summary>
+		/// Creates, registers and starts an internal timer for an object index.
+		/// </summary>
+		/// <param name="objIndex">Key of the newly created timer.</param>
+		/// <returns></returns>
+		private System.Threading.Timer CreateAndStartInternalTimer(int objIndex)
+		{
 			// Initializes a corresponding internal timer, but do not start it yet.
 			System.Threading.Timer timer = new System.Threading.Timer(InternalTimerTick, objIndex, Timeout.Infinite, internalTimerDuration);
 
@@ -1190,18 +1285,14 @@ namespace WF.Player.Core.Engines
 			lock (syncRoot)
 			{
 				if (!timers.ContainsKey(objIndex))
-					timers.Add(objIndex, timer); 
+					timers.Add(objIndex, timer);
 			}
 
 			// Starts the timer, now that it is registered.
 			timer.Change(internalTimerDuration, internalTimerDuration);
 
-			// Call OnStart of this timer
-			lock (luaState)
-			{
-				t.CallSelf("Start"); 
-			}
-        }
+			return timer;
+		}
 
         /// <summary>
         /// Stops an OS timer corresponding to a Wherigo ZTimer.
@@ -1652,6 +1743,15 @@ namespace WF.Player.Core.Engines
 		#region Event Raisers
 
 		/// <summary>
+		/// Raises this Engine's PropertyChanged event.
+		/// </summary>
+		/// <param name="propName">Name of the property to raise.</param>
+		protected void RaisePropertyChanged(string propName)
+		{
+			RaisePropertyChanged(propName, true);
+		}
+
+		/// <summary>
 		/// Asynchronously invokes an action to be run in the UI thread.
 		/// </summary>
 		/// <param name="action"></param>
@@ -1931,6 +2031,12 @@ namespace WF.Player.Core.Engines
 				case EngineGameState.Stopping:
 					throw new InvalidOperationException("The engine is busy stopping a game.");
 
+				case EngineGameState.Pausing:
+					throw new InvalidOperationException("The engine is busy pausing the game.");
+
+				case EngineGameState.Resuming:
+					throw new InvalidOperationException("The engine is busy resuming the game.");
+
 				default:
 					return;
 			}
@@ -1983,7 +2089,10 @@ namespace WF.Player.Core.Engines
 		Restoring,
 		Saving,
 		Playing,
+		Pausing,
+		Resuming,
 		Stopping,
+		Paused,
 		Disposed
 	}
 

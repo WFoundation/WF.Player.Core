@@ -35,6 +35,26 @@ namespace WF.Player.Core.Utils.Threading
 
 		#endregion
 
+		#region Properties
+
+		/// <summary>
+		/// Gets or sets if this execution queue is running.
+		/// </summary>
+		public bool IsRunning
+		{
+			get
+			{
+				return base.IsActive;
+			}
+
+			set
+			{
+				base.IsActive = value;
+			}
+		}
+
+		#endregion
+
 		#region Constructors and Destructor
 		/// <summary>
 		/// Creates a new execution queue for a Lua state.
