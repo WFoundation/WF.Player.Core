@@ -45,32 +45,44 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Resources\Resource.designer.cs" />
-    <Compile Include="Engine\Engine.cs" />
-    <Compile Include="Engine\WIGInternalImpl.cs" />
-    <Compile Include="LiveAPI\Cartridges.cs" />
-    <Compile Include="LiveAPI\Reference.cs" />
-    <Compile Include="Loaders\FileGWC.cs" />
-    <Compile Include="Loaders\FileGWZ.cs" />
-    <Compile Include="Loaders\FileWFC.cs" />
-    <Compile Include="Loaders\FileWFZ.cs" />
-    <Compile Include="Loaders\FileFormats.cs" />
-    <Compile Include="Model\Cartridge.cs" />
-    <Compile Include="Model\Character.cs" />
-    <Compile Include="Model\Command.cs" />
-    <Compile Include="Model\Distance.cs" />
-    <Compile Include="Model\Enums.cs" />
-    <Compile Include="Model\Events.cs" />
-    <Compile Include="Model\Input.cs" />
-    <Compile Include="Model\Item.cs" />
-    <Compile Include="Model\Media.cs" />
-    <Compile Include="Model\MessageBox.cs" />
-    <Compile Include="Model\Table.cs" />
-    <Compile Include="Model\Task.cs" />
-    <Compile Include="Model\Thing.cs" />
-    <Compile Include="Model\Timer.cs" />
-    <Compile Include="Model\UIObject.cs" />
-    <Compile Include="Model\Zone.cs" />
-    <Compile Include="Model\ZonePoint.cs" />
+    <Compile Include="Engines\WinPhonePlatformHelper.cs" />
+    <Compile Include="Engines\DefaultPlatformHelper.cs" />
+    <Compile Include="Engines\IPlatformHelper.cs" />
+    <Compile Include="Engines\Engine.cs" />
+    <Compile Include="Engines\WIGInternalImpl.cs" />
+    <Compile Include="Formats\FileGWS.cs" />
+    <Compile Include="Formats\FileGWZ.cs" />
+    <Compile Include="Formats\FileGWC.cs" />
+    <Compile Include="Formats\FileFormats.cs" />
+    <Compile Include="Formats\ICartridgeLoader.cs" />
+    <Compile Include="Live\Reference.cs" />
+    <Compile Include="Live\Cartridges.cs" />
+    <Compile Include="Utils\Utils.cs" />
+    <Compile Include="Utils\MarkdownSharp.cs" />
+    <Compile Include="Utils\Extensions.cs" />
+    <Compile Include="Utils\SafeLua.cs" />
+    <Compile Include="Utils\Threading\ActionPump.cs" />
+    <Compile Include="Utils\Threading\JobQueue.cs" />
+    <Compile Include="Utils\Threading\LuaExecutionQueue.cs" />
+    <Compile Include="Cartridge.cs" />
+    <Compile Include="Character.cs" />
+    <Compile Include="Command.cs" />
+    <Compile Include="Distance.cs" />
+    <Compile Include="Enums.cs" />
+    <Compile Include="Events.cs" />
+    <Compile Include="Input.cs" />
+    <Compile Include="Item.cs" />
+    <Compile Include="LocationVector.cs" />
+    <Compile Include="Media.cs" />
+    <Compile Include="MessageBox.cs" />
+    <Compile Include="Table.cs" />
+    <Compile Include="Task.cs" />
+    <Compile Include="Thing.cs" />
+    <Compile Include="Timer.cs" />
+    <Compile Include="UIObject.cs" />
+    <Compile Include="WherigoHelper.cs" />
+    <Compile Include="Zone.cs" />
+    <Compile Include="ZonePoint.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
@@ -83,13 +95,15 @@
     <EmbeddedResource Include="Resources\Wherigo.luac" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NLua\Core\NLua\NLua.Android.csproj">
-      <Project>{420205BB-ABE3-4FDD-B5D4-BE96611BF0D5}</Project>
-      <Name>NLua.Android</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Newtonsoft.Json\Newtonsoft.Json\Newtonsoft.Json.MonoDroid.csproj">
       <Project>{E6C3413C-919B-486D-8B6C-225CBD921B98}</Project>
       <Name>Newtonsoft.Json.MonoDroid</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Engines\" />
+    <Folder Include="Formats\" />
+    <Folder Include="Live\" />
+    <Folder Include="Utils\" />
   </ItemGroup>
 </Project>
