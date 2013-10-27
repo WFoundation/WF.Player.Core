@@ -166,6 +166,26 @@ namespace WF.Player.Core
 		}
 
 		/// <summary>
+		/// Gets a LuaFunction from a field in the table.
+		/// </summary>
+		/// <param name="key"></param>
+		/// <returns></returns>
+		protected LuaFunction GetLuaFunc(string key)
+		{
+			return engine.SafeLuaState.SafeGetField<LuaFunction>(wigTable, key);
+		}
+
+		/// <summary>
+		/// Gets a LuaFunction from a field in the table.
+		/// </summary>
+		/// <param name="key"></param>
+		/// <returns></returns>
+		protected LuaFunction GetLuaFunc(double key)
+		{
+			return engine.SafeLuaState.SafeGetField<LuaFunction>(wigTable, key);
+		}
+		
+		/// <summary>
 		/// Gets a LuaTable object from a field in the table.
 		/// </summary>
 		/// <param name="key"></param>

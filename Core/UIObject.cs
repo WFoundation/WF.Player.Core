@@ -64,6 +64,18 @@ namespace WF.Player.Core
 		}
 
 		/// <summary>
+		/// Gets a value indicating whether this object has event OnClick or not.
+		/// </summary>
+		/// <value><c>true</c> if this object has OnClick; otherwise, <c>false</c>.</value>
+		public bool HasOnClick 
+		{
+			get
+			{
+				return (this.GetLuaFunc("OnClick") != null);
+			}
+		}
+		
+		/// <summary>
 		/// Gets the description as Html.
 		/// </summary>
 		/// <value>The description.</value>
@@ -144,6 +156,18 @@ namespace WF.Player.Core
 
 		#endregion
 
+		#region Methods
+
+		/// <summary>
+		/// Calls OnClick.
+		/// </summary>
+		public void CallOnClick()
+		{
+			engine.LuaExecQueue.BeginCallSelf(this, "OnClick");
+		}
+
+		#endregion
+		
 		#region Notify Property Change
 
 		public event PropertyChangedEventHandler PropertyChanged;
