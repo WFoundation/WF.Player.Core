@@ -278,7 +278,7 @@ namespace WF.Player.Core.Utils.Threading
 				// now that _isDisposed is true.
 				jobThreadCanResumeEvent.Set();
 
-				// Waits for the thread to die and then disposed other related resources.
+				// Waits for the thread to die and then dispose other related resources.
 				jobThread.Join();
 				jobThreadCanResumeEvent.Dispose();
 

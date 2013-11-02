@@ -64,11 +64,11 @@ namespace WF.Player.Core.Engines
         private Lua luaState;
 		private SafeLua safeLuaState;
 		private LuaExecutionQueue luaExecQueue;
-		private ActionPump uiDispatchPump = new ActionPump();
+		private ActionPump uiDispatchPump;
         private WIGInternalImpl wherigo;
         private LuaTable player;
-		private Dictionary<int, System.Threading.Timer> timers = new Dictionary<int, System.Threading.Timer>();
-		private Dictionary<int,UIObject> uiObjects = new Dictionary<int, UIObject> ();
+		private Dictionary<int, System.Threading.Timer> timers;
+		private Dictionary<int,UIObject> uiObjects;
 		private object syncRoot = new object();
 
         #endregion
@@ -131,9 +131,12 @@ namespace WF.Player.Core.Engines
 			if (platform == null)
 				throw new ArgumentNullException("platform");
 			
+			// Base objects.
 			platformHelper = platform;
 			luaState = new Lua();
 			safeLuaState = new SafeLua(luaState);
+			timers = new Dictionary<int, System.Threading.Timer>();
+			uiObjects = new Dictionary<int, UIObject>();
 
 			// Create Wherigo environment
 			wherigo = new WIGInternalImpl(this, luaState);
@@ -179,8 +182,9 @@ namespace WF.Player.Core.Engines
 			//env["Version"] = uiVersion + " (" + CorePlatform + " " + CoreVersion + ")";
 			env["Version"] = String.Format("{0} ({1} {2})", platformHelper.ClientVersion, CorePlatform, CoreVersion);
 
-			// Creates an execution queue that runs in another thread.
+			// Creates job queues that runs in another thread.
 			luaExecQueue = new LuaExecutionQueue(safeLuaState);
+			uiDispatchPump = new ActionPump();
 
 			// Sets some event handlers for the job queues.
 			luaExecQueue.IsBusyChanged += new EventHandler(HandleLuaExecQueueIsBusyChanged);
@@ -203,7 +207,7 @@ namespace WF.Player.Core.Engines
 			GC.SuppressFinalize(this);
 		}
 
-		private void Dispose(bool disposeManagedResources)
+		private void Dispose(bool disposeManagedResources, bool noStateChange = false)
 		{			
 			// Sets the state as disposed. Returns if it is already.
 			lock (syncRoot)
@@ -213,7 +217,34 @@ namespace WF.Player.Core.Engines
 					return;
 				}
 
-				gameState = EngineGameState.Disposed;
+				if (!noStateChange)
+				{
+					gameState = EngineGameState.Disposed;
+				}
+
+				// Safe lua goes into disposal mode.
+				safeLuaState.RethrowsExceptions = false;
+			 
+				// Clears some members set by Init().
+				if (cartridge != null)
+				{
+					cartridge.Engine = null;
+					cartridge = null;
+				}
+				player = null;
+
+				// Unhooks WIGInternal.
+				if (wherigo != null)
+				{
+					wherigo.OnTimerStarted -= HandleTimerStarted;
+					wherigo.OnTimerStopped -= HandleTimerStopped;
+					wherigo.OnCartridgeChanged -= HandleCartridgeChanged;
+					wherigo.OnZoneStateChanged -= HandleZoneStateChanged;
+					wherigo.OnInventoryChanged -= HandleInventoryChanged;
+					wherigo.OnAttributeChanged -= HandleAttributeChanged;
+					wherigo.OnCommandChanged -= HandleCommandChanged;
+					wherigo = null;
+				}
 			}
 
 			// Cleans managed resources in here.
@@ -221,6 +252,13 @@ namespace WF.Player.Core.Engines
 			{
 				// Bye bye timers.
 				DisposeTimers();
+
+				// Bye bye UI objects.
+				foreach (UIObject uiObject in uiObjects.Values)
+				{
+					uiObject.WIGTable.Dispose(disposeManagedResources);
+				}
+				uiObjects.Clear();
 				
 				// Bye bye threads.
 				if (luaExecQueue != null)
@@ -251,6 +289,7 @@ namespace WF.Player.Core.Engines
 						luaState.Dispose();
 					}
 					luaState = null;
+					safeLuaState = null;
 				} 
 			}
 		}
@@ -508,7 +547,8 @@ namespace WF.Player.Core.Engines
 					// Checks if IsReady needs to be changed.
 					bool newIsReady = value != EngineGameState.Uninitialized
 						&& value != EngineGameState.Initializing
-						&& value != EngineGameState.Disposed;
+						&& value != EngineGameState.Disposed
+						&& value != EngineGameState.Uninitializing;
 					if (newIsReady != IsReady)
 					{
 						// Changes IsReady.
@@ -642,6 +682,24 @@ namespace WF.Player.Core.Engines
 				GameState = EngineGameState.Uninitialized;
 			}
 
+		}
+
+		public void Reset()
+		{
+			// Sanity checks.
+			CheckStateIs(EngineGameState.Initialized, "The engine is not in state Initialized.", true);
+
+			// State change.
+			GameState = EngineGameState.Uninitializing;
+
+			// Silent dispose.
+			Dispose(true, true);
+
+			// Reinit instance.
+			InitInstance(this.platformHelper);
+
+			// State change.
+			GameState = EngineGameState.Uninitialized;
 		}
 
         /// <summary>
@@ -1121,6 +1179,7 @@ namespace WF.Player.Core.Engines
 		/// <param name="mediaObj">Media object itself.</param>
 		internal void HandlePlayMedia (int type, Media mediaObj)
 		{
+			
 			// The Groundspeak engine only should give 1 as a type.
 			if (type != 1)
 			{
@@ -1253,7 +1312,7 @@ namespace WF.Player.Core.Engines
         /// <param name="t">Timer to start.</param>
         internal void HandleTimerStarted(LuaTable t)
         {
-            // Gets the object index of the Timer that started.
+			// Gets the object index of the Timer that started.
 			int objIndex;
 			lock (luaState)
 			{
@@ -1396,7 +1455,7 @@ namespace WF.Player.Core.Engines
         /// <param name="source">ObjIndex of the timer that released the tick.</param>
         private void WherigoTimerTickCore(object source)
         {
-            int objIndex = (int)source;
+			int objIndex = (int)source;
 
 			bool timerExists = false;
 			lock (syncRoot)
@@ -2003,6 +2062,9 @@ namespace WF.Player.Core.Engines
 				case EngineGameState.Initializing:
 					throw new InvalidOperationException("The engine is initializing.");
 
+				case EngineGameState.Uninitializing:
+					throw new InvalidOperationException("The engine is uninitializing.");
+
 				case EngineGameState.Disposed:
 					throw new ObjectDisposedException("Engine instance", "The engine has been disposed.");
 
@@ -2082,6 +2144,7 @@ namespace WF.Player.Core.Engines
 	/// </summary>
 	public enum EngineGameState
 	{
+		Uninitializing,
 		Uninitialized,
 		Initializing,
 		Initialized,

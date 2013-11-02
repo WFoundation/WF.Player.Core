@@ -116,9 +116,16 @@ namespace WF.Player.Core.Utils
 		#region Members
 
 		/// <summary>
-		/// The underlying lua state, used both for lua operation and for locking.
+		/// The underlying lua state, used both for lua operation and for locking lua operations.
 		/// </summary>
-		private Lua luaState; 
+		private Lua luaState;
+
+		/// <summary>
+		/// A sync root used for locking on this instance's internal operations.
+		/// </summary>
+		private object syncRoot = new object();
+
+		private bool rethrowsExceptions = true;
 
 		#endregion
 
@@ -132,6 +139,33 @@ namespace WF.Player.Core.Utils
 		{
 			luaState = lua;
 		} 
+
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets or sets if the methods of this SafeLua rethrow exceptions when they occur,
+		/// or if they return default values instead.
+		/// </summary>
+		public bool RethrowsExceptions
+		{
+			get
+			{
+				lock (syncRoot)
+				{
+					return rethrowsExceptions;
+				}
+			}
+
+			set
+			{
+				lock (syncRoot)
+				{
+					rethrowsExceptions = value;
+				}
+			}
+		}
 
 		#endregion
 
@@ -153,12 +187,19 @@ namespace WF.Player.Core.Utils
 
 			lock (luaState)
 			{
-				var t = table.GetEnumerator();
-
-				while (t.MoveNext())
+				try
 				{
-					if (t.Value != null && t.Value is T)
-						result.Add((T)t.Value);
+					var t = table.GetEnumerator();
+
+					while (t.MoveNext())
+					{
+						if (t.Value != null && t.Value is T)
+							result.Add((T)t.Value);
+					}
+				}
+				catch (Exception e)
+				{
+					return HandleException(e, null) as List<T>;
 				}
 			}
 
@@ -178,7 +219,14 @@ namespace WF.Player.Core.Utils
 			object o;
 			lock (luaState)
 			{
-				o = table[key];
+				try
+				{
+					o = table[key];
+				}
+				catch (Exception e)
+				{
+					o = HandleException(e, null);
+				}
 			}
 
 			return (o != null && o is T) ? (T)o : default(T);
@@ -197,7 +245,14 @@ namespace WF.Player.Core.Utils
 		{
 			lock (luaState)
 			{
-				return table.CallSelf(func, parameters);
+				try
+				{
+					return table.CallSelf(func, parameters);
+				}
+				catch (Exception e)
+				{
+					return HandleException(e, null) as LuaTable;
+				}
 			}
 		}
 
@@ -206,11 +261,20 @@ namespace WF.Player.Core.Utils
 		/// </summary>
 		/// <param name="func">Function to call.</param>
 		/// <param name="parameters">Parameters to pass the function.</param>
+		/// <returns>The raw array returned by the function, or null if the function
+		/// could not be called.</returns>
 		public object[] SafeCallRaw(LuaFunction func, params object[] parameters)
 		{
 			lock (luaState)
 			{
-				return func.Call(parameters);
+				try
+				{
+					return func.Call(parameters);
+				}
+				catch (Exception e)
+				{
+					return HandleException(e, null) as object[];
+				}
 			}
 		}
 
@@ -235,7 +299,14 @@ namespace WF.Player.Core.Utils
 
 			lock (luaState)
 			{
-				return lf.Call(parameters);
+				try
+				{
+					return lf.Call(parameters);
+				}
+				catch (Exception e)
+				{
+					return HandleException(e, null) as object[];
+				}
 			}
 		}
 
@@ -249,7 +320,14 @@ namespace WF.Player.Core.Utils
 		{
 			lock (luaState)
 			{
-				return luaState.DoString(chunk, chunkName);
+				try
+				{
+					return luaState.DoString(chunk, chunkName);
+				}
+				catch (Exception e)
+				{
+					return HandleException(e, null) as object[];
+				}
 			}
 		}
 
@@ -263,7 +341,14 @@ namespace WF.Player.Core.Utils
 		{
 			lock (luaState)
 			{
-				return luaState.DoString(chunk, chunkName);
+				try
+				{
+					return luaState.DoString(chunk, chunkName);
+				}
+				catch (Exception e)
+				{
+					return HandleException(e, null) as object[];
+				}
 			}
 		}
 
@@ -276,7 +361,14 @@ namespace WF.Player.Core.Utils
 		{
 			lock (luaState)
 			{
-				return luaTable.Keys.Count;
+				try
+				{
+					return luaTable.Keys.Count;
+				}
+				catch (Exception e)
+				{
+					return (int)HandleException(e, 0);
+				}
 			}
 		}
 
@@ -290,7 +382,14 @@ namespace WF.Player.Core.Utils
 		{
 			lock (luaState)
 			{
-				table[key] = value;
+				try
+				{
+					table[key] = value;
+				}
+				catch (Exception e)
+				{
+					HandleException(e);
+				}
 			}
 		}
 
@@ -304,7 +403,14 @@ namespace WF.Player.Core.Utils
 		{
 			lock (luaState)
 			{
-				return luaState.LoadString(chunk, chunkName);
+				try
+				{
+					return luaState.LoadString(chunk, chunkName);
+				}
+				catch (Exception e)
+				{
+					return HandleException(e, null) as LuaFunction;
+				}
 			}
 		}
 
@@ -316,7 +422,14 @@ namespace WF.Player.Core.Utils
 		{
 			lock (luaState)
 			{
-				return luaState.EmptyTable();
+				try
+				{
+					return luaState.EmptyTable();
+				}
+				catch (Exception e)
+				{
+					return HandleException(e, null) as LuaTable;
+				}
 			}
 		}
 
@@ -349,7 +462,14 @@ namespace WF.Player.Core.Utils
 			object current;
 			lock (luaState)
 			{
-				lastTable = luaTable[firstKey] as LuaTable;
+				try
+				{
+					lastTable = luaTable[firstKey] as LuaTable;
+				}
+				catch (Exception ex)
+				{
+					return HandleException<T>(ex, default(T));
+				}
 			}
 			if (lastTable == null)
 			{
@@ -357,7 +477,14 @@ namespace WF.Player.Core.Utils
 			}
 			lock (luaState)
 			{
-				current = lastTable[secondKey];
+				try
+				{
+					current = lastTable[secondKey];
+				}
+				catch (Exception ex)
+				{
+					return HandleException<T>(ex, default(T));
+				}
 			}
 
 			// Return now?
@@ -388,7 +515,14 @@ namespace WF.Player.Core.Utils
 				// Gets the next field.
 				lock (luaState)
 				{
-					current = lastTable[e.Current];
+					try
+					{
+						current = lastTable[e.Current];
+					}
+					catch (Exception ex)
+					{
+						return HandleException<T>(ex, default(T));
+					}
 				}
 
 				// No more keys? Break!
@@ -427,7 +561,14 @@ namespace WF.Player.Core.Utils
 
 			lock (luaState)
 			{
-				e = table.GetEnumerator();
+				try
+				{
+					e = table.GetEnumerator();
+				}
+				catch (Exception ex)
+				{
+					return HandleException(ex, null) as IDictionaryEnumerator;
+				}
 			}
 
 			return new SafeDictionaryEnumerator(e, luaState);
@@ -435,6 +576,30 @@ namespace WF.Player.Core.Utils
 
 		#endregion
 
+		private object HandleException(Exception ex, object defValue = null)
+		{
+			return HandleException<object>(ex, defValue);
+		}
 
+		private T HandleException<T>(Exception ex, T defValue)
+		{
+			if (RethrowsExceptions)
+			{
+				if (ex.GetType().Equals(typeof(NullReferenceException)))
+				{
+					// The exception is due to the Lua state being disposed.
+					// Just emit a warning and ignore it.
+					System.Diagnostics.Debug.WriteLine("SafeLua: Ignored NullReferenceException likely due to a disposed Lua state.");
+					
+					return defValue;
+				}
+
+				throw ex;
+			}
+			else
+			{
+				return defValue;
+			}
+		}
 	}
 }
