@@ -221,11 +221,6 @@ namespace WF.Player.Core.Engines
 					return;
 				}
 
-				if (!noStateChange)
-				{
-					gameState = EngineGameState.Disposed;
-				}
-
 				// Safe lua goes into disposal mode.
 				safeLuaState.RethrowsExceptions = false;
 			 
@@ -296,13 +291,21 @@ namespace WF.Player.Core.Engines
 					safeLuaState = null;
 				} 
 			}
+
+			if (!noStateChange)
+			{
+				gameState = EngineGameState.Disposed;
+			}
 		}
 
 		private void DisposeTimers()
 		{
+			AutoResetEvent waitHandle = new AutoResetEvent(false);
+			
 			foreach (var timer in timers.Values.ToList())
 			{
-				timer.Dispose();
+				timer.Dispose(waitHandle);
+				waitHandle.WaitOne();
 			}
 
 			lock (syncRoot)
@@ -1007,6 +1010,65 @@ namespace WF.Player.Core.Engines
 			}
 		}
 
+		private void RefreshThingVectorFromPlayerAsync(Thing t)
+		{
+			// Sanity checks.
+			if (!IsReady)
+			{
+				return;
+			}
+
+			// If we're not in the lua exec thread, be in it!
+			if (!LuaExecQueue.IsSameThread)
+			{
+				LuaExecQueue.BeginAction(() => RefreshThingVectorFromPlayerAsync(t));
+				return;
+			}
+
+			/// This below executes in the lua exec thread, so it's fine to block.
+
+			// Gets more info about the thing.
+			object thingLoc;
+			lock (luaState)
+			{
+				thingLoc = t.WIGTable["ObjectLocation"];
+			}
+			bool isZone = t is Zone;
+
+			// If the Thing is not a zone and has no location, consider it is close to the player.
+			if (!isZone && thingLoc == null)
+			{
+				LuaTable lt;
+				lock (luaState)
+				{
+					lt = (LuaTable)luaState.DoString("return Wherigo.Distance(0)")[0];
+				}
+				t.VectorFromPlayer = new LocationVector((Distance)GetTable(lt), 0);
+				RaisePropertyChangedInObject(t, "VectorFromPlayer");
+				return;
+			}
+
+			object[] ret;
+			if (isZone)
+			{
+				lock (luaState)
+				{
+					ret = luaState.GetFunction("WIGInternal.VectorToZone").Call(new object[] { player["ObjectLocation"], t.WIGTable });
+				}
+			}
+			else
+			{
+				lock (luaState)
+				{
+					ret = luaState.GetFunction("WIGInternal.VectorToPoint").Call(new object[] { player["ObjectLocation"], thingLoc });
+				}
+			}
+
+			t.VectorFromPlayer = new LocationVector((Distance)GetTable((LuaTable)ret[0]), (double)ret[1]);
+			RaisePropertyChangedInObject(t, "VectorFromPlayer");
+			return;
+		}
+
 		#endregion
 
 		#region WIGInternal Event Handlers
@@ -1259,7 +1321,7 @@ namespace WF.Player.Core.Engines
 				if (zone != null)
 				{
 					RaisePropertyChangedInObject((UIObject)zone, "State");
-					RaisePropertyChangedInObject((UIObject)zone, "VectorFromPlayer");
+					RefreshThingVectorFromPlayerAsync(zone);
 				}
 
 				// Adds the zone to the list.
@@ -1278,7 +1340,7 @@ namespace WF.Player.Core.Engines
 			RefreshVisibleObjectsAsync();
 
 			// Notifies all visible objects that their distances have changed.
-			VisibleObjects.ForEach(t => RaisePropertyChangedInObject(t, "VectorFromPlayer"));
+			VisibleObjects.ForEach(t => RefreshThingVectorFromPlayerAsync(t));
 
 			// Raise the event.
 			RaiseZoneStateChanged(list);
@@ -1449,38 +1511,19 @@ namespace WF.Player.Core.Engines
 				timerExists = timers.ContainsKey(objIndex);
 			}
 			if (shoudTimerTick && timerExists)
-				// Call Tick synchronized with the GUI (for not thread safe interfaces)
-				BeginInvokeInUIThread(new Action(() => WherigoTimerTickCore(source)));
-        }
-
-        /// <summary>
-        /// Function for tick of a timer in source.
-        /// </summary>
-        /// <param name="source">ObjIndex of the timer that released the tick.</param>
-        private void WherigoTimerTickCore(object source)
-        {
-			int objIndex = (int)source;
-
-			bool timerExists = false;
-			lock (syncRoot)
 			{
-				timerExists = timers.ContainsKey (objIndex);
-			}
-			if (timerExists) {
-				System.Threading.Timer timer = timers [objIndex];
-
-				timer.Dispose ();
+				// Disables and removes the current timer.
+				System.Threading.Timer timer = timers[objIndex];
+				timer.Dispose();
 				lock (syncRoot)
 				{
-					timers.Remove(objIndex); 
+					timers.Remove(objIndex);
 				}
+
+				// Call OnTick of this timer
+				LuaExecQueue.BeginCallSelf(GetObject(objIndex).WIGTable, "Tick");
 			}
-
-			LuaTable t = GetObject(objIndex).WIGTable;
-
-			// Call OnTick of this timer
-			LuaExecQueue.BeginCallSelf(t, "Tick");
-		}
+        }
 
         #endregion
 
@@ -1504,54 +1547,7 @@ namespace WF.Player.Core.Engines
 
 			return idx == -1 ? null : GetTable (lt);
 		}
-
-		/// <summary>
-		/// Gets the distance and bearing vector from the player to a thing.
-		/// </summary>
-		/// <param name="thing"></param>
-		/// <returns></returns>
-		internal LocationVector GetVectorFromPlayer(Thing thing)
-		{
-			// Sanity checks.
-			CheckStateForLuaAccess();
-			
-			object thingLoc;
-			lock (luaState)
-			{
-				thingLoc = thing.WIGTable["ObjectLocation"]; 
-			}
-			bool isZone = thing is Zone;
-
-			// If the Thing is not a zone and has no location, consider it is close to the player.
-			if (!isZone && thingLoc == null)
-			{
-				LuaTable lt;
-				lock (luaState)
-				{
-					lt = (LuaTable)luaState.DoString("return Wherigo.Distance(0)")[0];
-				}
-				return new LocationVector((Distance)GetTable(lt), 0);
-			}
-
-			object[] ret;
-			if (isZone)
-			{
-				lock (luaState)
-				{
-					ret = luaState.GetFunction("WIGInternal.VectorToZone").Call(new object[] { player["ObjectLocation"], thing.WIGTable }); 
-				}
-			}
-			else
-			{
-				lock (luaState)
-				{
-					ret = luaState.GetFunction("WIGInternal.VectorToPoint").Call(new object[] { player["ObjectLocation"], thingLoc }); 
-				}
-			}
-
-			return new LocationVector((Distance)GetTable((LuaTable)ret[0]), (double)ret[1]);
-		}
-
+		
         #endregion
 
 		#region Wherigo Objects Type Checkers
@@ -1841,7 +1837,7 @@ namespace WF.Player.Core.Engines
 			BeginInvokeInUIThread(() =>
 			{
 				obj.NotifyPropertyChanged(propName);
-			});
+			}, true);
 		}
 
 		private void RaisePropertyChangedInObject(Cartridge obj, string propName)

@@ -88,10 +88,8 @@ namespace WF.Player.Core
 		/// </summary>
 		public LocationVector VectorFromPlayer
 		{
-			get
-			{
-				return engine.GetVectorFromPlayer(this);
-			}
+			get;
+			internal set;
 		}
 
 		#endregion
