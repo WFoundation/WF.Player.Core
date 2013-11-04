@@ -24,7 +24,7 @@ namespace WF.Player.Core
 	/// <summary>
 	/// A kind of screen that displays game-related information to the players.
 	/// </summary>
-	public enum ScreenType
+	public enum ScreenType : int
 	{
 		Main = 0,
 		Locations,
@@ -38,7 +38,7 @@ namespace WF.Player.Core
 	/// <summary>
 	/// A level of importance associated to log messages.
 	/// </summary>
-	public enum LogLevel
+	public enum LogLevel : int
 	{
 		Debug = 0,
 		Cartridge,
@@ -50,7 +50,7 @@ namespace WF.Player.Core
 	/// <summary>
 	/// A type of media.
 	/// </summary>
-	public enum MediaType
+	public enum MediaType : int
 	{
 		BMP = 1,
 		PNG = 2,
@@ -64,7 +64,7 @@ namespace WF.Player.Core
 	/// <summary>
 	/// Units of distance.
 	/// </summary>
-	public enum DistanceUnit
+	public enum DistanceUnit : int
 	{
 		Meters,
 		Kilometers,
@@ -76,7 +76,7 @@ namespace WF.Player.Core
 	/// <summary>
 	/// A type of input requested to the player.
 	/// </summary>
-	public enum InputType
+	public enum InputType : int
 	{
 		Text,
 		MultipleChoice,
@@ -86,7 +86,7 @@ namespace WF.Player.Core
 	/// <summary>
 	/// A type of timer run by a cartridge.
 	/// </summary>
-	public enum TimerType
+	public enum TimerType : int
 	{
 		Countdown,
 		Interval
@@ -95,7 +95,7 @@ namespace WF.Player.Core
 	/// <summary>
 	/// A kind of result a message box can have.
 	/// </summary>
-	public enum MessageBoxResult
+	public enum MessageBoxResult : int
 	{
 		FirstButton,
 		SecondButton,
@@ -105,7 +105,7 @@ namespace WF.Player.Core
 	/// <summary>
 	/// A relative position of the player with respect to a Zone.
 	/// </summary>
-	public enum PlayerZoneState
+	public enum PlayerZoneState : int
 	{
 		Inside,
 		Proximity,
@@ -116,7 +116,7 @@ namespace WF.Player.Core
 	/// <summary>
 	/// A correctness a task can have.
 	/// </summary>
-	public enum TaskCorrectness
+	public enum TaskCorrectness : int
 	{
 		None,
 		Correct,
@@ -126,7 +126,7 @@ namespace WF.Player.Core
 	/// <summary>
 	/// A gender a character can have.
 	/// </summary>
-	public enum CharacterGender
+	public enum CharacterGender : int
 	{
 		It,
 		Female,

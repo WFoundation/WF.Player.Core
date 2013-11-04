@@ -1,4 +1,4 @@
-﻿///
+///
 /// WF.Player.Core - A Wherigo Player Core for different platforms.
 /// Copyright (C) 2012-2013  Dirk Weltz <web@weltz-online.de>
 /// Copyright (C) 2012-2013  Brice Clocher <contact@cybisoft.net>
@@ -546,7 +546,7 @@ namespace WF.Player.Core.Engines
 
 			lock (luaState)
 			{
-				intersect = TranslatePoint(firstLinePointObj, luaState.DoString(String.Format("return Wherigo.Distance({0}, 'nauticalmiles')", dat * 60))[0], bs); 
+				intersect = TranslatePoint(firstLinePointObj, luaState.DoString(String.Format("return Wherigo.Distance({0}, 'nauticalmiles')", (dat * 60).ToString(nfi)))[0], bs); 
 			}
 
 			return VectorToPoint(pointObj, intersect, out bearing);

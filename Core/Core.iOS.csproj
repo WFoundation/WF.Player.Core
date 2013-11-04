@@ -9,7 +9,6 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Core</RootNamespace>
-    <AssemblyName>Core</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{6BC8ED88-2882-458C-8E55-DFD12B67127B};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
@@ -26,8 +25,10 @@
     <ConsolePause>False</ConsolePause>
     <MtouchProfiling>True</MtouchProfiling>
     <MtouchDebug>True</MtouchDebug>
-    <MtouchI18n />
+    <MtouchI18n>
+    </MtouchI18n>
     <MtouchArch>ARMv7</MtouchArch>
+    <AssemblyName>WF.Player.Core</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
     <DebugType>none</DebugType>
@@ -36,6 +37,7 @@
     <WarningLevel>4</WarningLevel>
     <ConsolePause>False</ConsolePause>
     <MtouchLink>None</MtouchLink>
+    <AssemblyName>WF.Player.Core</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhone' ">
     <DebugSymbols>True</DebugSymbols>
@@ -48,6 +50,7 @@
     <ConsolePause>False</ConsolePause>
     <MtouchDebug>True</MtouchDebug>
     <CodesignKey>iPhone Developer</CodesignKey>
+    <AssemblyName>Core</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
     <DebugType>none</DebugType>
@@ -56,6 +59,7 @@
     <WarningLevel>4</WarningLevel>
     <ConsolePause>False</ConsolePause>
     <CodesignKey>iPhone Developer</CodesignKey>
+    <AssemblyName>Core</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Ad-Hoc|iPhone' ">
     <DebugType>none</DebugType>
@@ -66,6 +70,7 @@
     <CodesignKey>iPhone Distribution</CodesignKey>
     <ConsolePause>False</ConsolePause>
     <CodesignProvision>Automatic:AdHoc</CodesignProvision>
+    <AssemblyName>Core</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'AppStore|iPhone' ">
     <DebugType>none</DebugType>
@@ -75,36 +80,47 @@
     <CodesignKey>iPhone Distribution</CodesignKey>
     <ConsolePause>False</ConsolePause>
     <CodesignProvision>Automatic:AppStore</CodesignProvision>
+    <AssemblyName>Core</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Engine\Engine.cs" />
-    <Compile Include="Engine\WIGInternalImpl.cs" />
-    <Compile Include="LiveAPI\Cartridges.cs" />
-    <Compile Include="LiveAPI\Reference.cs" />
-    <Compile Include="Loaders\FileGWC.cs" />
-    <Compile Include="Loaders\FileGWZ.cs" />
-    <Compile Include="Loaders\FileWFC.cs" />
-    <Compile Include="Loaders\FileWFZ.cs" />
-    <Compile Include="Loaders\FileFormats.cs" />
-    <Compile Include="Model\Cartridge.cs" />
-    <Compile Include="Model\Character.cs" />
-    <Compile Include="Model\Command.cs" />
-    <Compile Include="Model\Distance.cs" />
-    <Compile Include="Model\Enums.cs" />
-    <Compile Include="Model\Events.cs" />
-    <Compile Include="Model\Input.cs" />
-    <Compile Include="Model\Item.cs" />
-    <Compile Include="Model\Media.cs" />
-    <Compile Include="Model\MessageBox.cs" />
-    <Compile Include="Model\Table.cs" />
-    <Compile Include="Model\Task.cs" />
-    <Compile Include="Model\Thing.cs" />
-    <Compile Include="Model\Timer.cs" />
-    <Compile Include="Model\UIObject.cs" />
-    <Compile Include="Model\Zone.cs" />
-    <Compile Include="Model\ZonePoint.cs" />
-    <Compile Include="Engine\Extensions.cs" />
-    <Compile Include="Model\LocationVector.cs" />
+    <Compile Include="Engines\DefaultPlatformHelper.cs" />
+    <Compile Include="Engines\Engine.cs" />
+    <Compile Include="Engines\IPlatformHelper.cs" />
+    <Compile Include="Engines\WIGInternalImpl.cs" />
+    <Compile Include="Live\Cartridges.cs" />
+    <Compile Include="Live\Reference.cs" />
+    <Compile Include="Formats\FileFormats.cs" />
+    <Compile Include="Formats\FileGWC.cs" />
+    <Compile Include="Formats\FileGWS.cs" />
+    <Compile Include="Formats\FileGWZ.cs" />
+    <Compile Include="Formats\ICartridgeLoader.cs" />
+    <Compile Include="Cartridge.cs" />
+    <Compile Include="Character.cs" />
+    <Compile Include="Command.cs" />
+    <Compile Include="Distance.cs" />
+    <Compile Include="Enums.cs" />
+    <Compile Include="Events.cs" />
+    <Compile Include="Input.cs" />
+    <Compile Include="Item.cs" />
+    <Compile Include="LocationVector.cs" />
+    <Compile Include="Media.cs" />
+    <Compile Include="MessageBox.cs" />
+    <Compile Include="Table.cs" />
+    <Compile Include="Task.cs" />
+    <Compile Include="Thing.cs" />
+    <Compile Include="Timer.cs" />
+    <Compile Include="UIObject.cs" />
+    <Compile Include="WherigoHelper.cs" />
+    <Compile Include="Zone.cs" />
+    <Compile Include="ZonePoint.cs" />
+    <Compile Include="Utils\Extensions.cs" />
+    <Compile Include="Utils\MarkdownSharp.cs" />
+    <Compile Include="Utils\SafeLua.cs" />
+    <Compile Include="Utils\Utils.cs" />
+    <Compile Include="Utils\Threading\ActionPump.cs" />
+    <Compile Include="Utils\Threading\JobQueue.cs" />
+    <Compile Include="Utils\Threading\LuaExecutionQueue.cs" />
+    <Compile Include="Engines\iOSPlatformHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -112,16 +128,7 @@
     <Reference Include="System.Core" />
     <Reference Include="monotouch" />
     <Reference Include="Newtonsoft.Json.MonoTouch">
-      <HintPath>..\Lib\Newtonsoft.Json.MonoTouch.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpZipLib.iOS">
-      <HintPath>..\Lib\SharpZipLib.iOS.dll</HintPath>
-    </Reference>
-    <Reference Include="KeraLua.iOS">
-      <HintPath>..\Lib\KeraLua.iOS.dll</HintPath>
-    </Reference>
-    <Reference Include="NLuaiOS">
-      <HintPath>..\Lib\NLua.iOS.dll</HintPath>
+      <HintPath>..\Newtonsoft.Json.MonoTouch.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -134,8 +141,21 @@
   -->
   <ItemGroup>
     <Folder Include="Resources\" />
+    <Folder Include="Engines\" />
+    <Folder Include="Live\" />
+    <Folder Include="Formats\" />
+    <Folder Include="Utils\" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Wherigo.luac" />
+    <ProjectReference Include="..\NLua\Core\NLua\NLua.iOS.csproj">
+      <Project>{7064B157-DD57-4828-94C5-CA149B25CB40}</Project>
+      <Name>NLua.iOS</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Wherigo.luac">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <LogicalName>WF.Player.Core.Resources.Wherigo.luac</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

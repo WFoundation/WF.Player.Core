@@ -82,6 +82,7 @@
     <Compile Include="WherigoHelper.cs" />
     <Compile Include="Zone.cs" />
     <Compile Include="ZonePoint.cs" />
+    <Compile Include="Engines\AndroidPlatformHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
