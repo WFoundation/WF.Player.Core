@@ -126,6 +126,7 @@ namespace WF.Player.Core.Utils
 		private object syncRoot = new object();
 
 		private bool rethrowsExceptions = true;
+		private bool rethrowsDisposedLuaExceptions = true;
 
 		#endregion
 
@@ -163,6 +164,29 @@ namespace WF.Player.Core.Utils
 				lock (syncRoot)
 				{
 					rethrowsExceptions = value;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets if when rethrowing exceptions, this instance should
+		/// also rethrow exceptions that are due to a disposed lua state.
+		/// </summary>
+		public bool RethrowsDisposedLuaExceptions
+		{
+			get
+			{
+				lock (syncRoot)
+				{
+					return rethrowsDisposedLuaExceptions;
+				}
+			}
+
+			set
+			{
+				lock (syncRoot)
+				{
+					rethrowsDisposedLuaExceptions = value;
 				}
 			}
 		}
@@ -585,7 +609,7 @@ namespace WF.Player.Core.Utils
 		{
 			if (RethrowsExceptions)
 			{
-				if (ex.GetType().Equals(typeof(NullReferenceException)))
+				if (ex.GetType().Equals(typeof(NullReferenceException)) && !RethrowsDisposedLuaExceptions)
 				{
 					// The exception is due to the Lua state being disposed.
 					// Just emit a warning and ignore it.

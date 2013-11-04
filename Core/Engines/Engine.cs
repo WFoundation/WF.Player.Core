@@ -134,7 +134,11 @@ namespace WF.Player.Core.Engines
 			// Base objects.
 			platformHelper = platform;
 			luaState = new Lua();
-			safeLuaState = new SafeLua(luaState);
+			safeLuaState = new SafeLua(luaState)
+			{
+				RethrowsExceptions = true,
+				RethrowsDisposedLuaExceptions = false
+			};
 			timers = new Dictionary<int, System.Threading.Timer>();
 			uiObjects = new Dictionary<int, UIObject>();
 
