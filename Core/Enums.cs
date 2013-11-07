@@ -52,6 +52,7 @@ namespace WF.Player.Core
 	/// </summary>
 	public enum MediaType : int
 	{
+		Unknown = 0,
 		BMP = 1,
 		PNG = 2,
 		JPG = 3,

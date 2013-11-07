@@ -27,94 +27,97 @@ using System.Text;
 using System.Reflection; 
 #endif
 
-/// <summary>
-/// File format of GWC files:
-/// 
-///	@0000:							; Signature
-///		BYTE	 0x02
-///		BYTE	 0x0a
-///		BYTE	 "CART"
-///		BYTE	 0x00
-///
-///	@0007:
-///		USHORT	 NumberOfObjects	; Number of objects ("media files") in cartridge:
-///
-///	@0009:
-///		; References to individual objects in cartridge.
-///		; Object 0 is always Lua bytecode for cartridge.
-///		; There is exactly [number_of_objects] blocks like this:
-///		repeat <NumberOfObjects> times
-///		{
-///			USHORT	 ObjectID		; Distinct ID for each object, duplicates are forbidden
-///			INT		 Address		; Address of object in GWC file
-///		}
-///
-/// @xxxx:	 						; 0009 + <NumberOfObjects> * 0006 bytes from begining
-///		; Header with all important informations for this cartridge
-///		INT		 HeaderLength		; Length of information header (following block):
-///
-///		DOUBLE	 Latitude			; N+/S-
-///		DOUBLE	 Longitude			; E+/W-
-///		DOUBLE	 Altitude			; Meters
-///
-///		LONG	 Date of creation	; Seconds since 2004-02-10 01:00:00
-///
-///		; MediaID of icon and splashscreen
-///		SHORT	 ObjectID of splashscreen	 ; -1 = without splashscreen/poster
-///		SHORT	 ObjectID of icon			 ; -1 = without icon
-///
-///		ASCIIZ	 TypeOfCartridge			 ; "Tour guide", "Wherigo cache", etc.
-///		ASCIIZ	 Player						 ; Name of player downloaded cartridge
-///		LONG	 PlayerID					 ; ID of player in the Groundspeak database
-///
-///		ASCIIZ	 CartridgeName				 ; "Name of this cartridge"
-///		ASCIIZ	 CartridgeGUID
-///		ASCIIZ	 CartridgeDescription		 ; "This is a sample cartridge"
-///		ASCIIZ	 StartingLocationDescription ; "Nice parking"
-///		ASCIIZ	 Version					 ; "1.2"
-///		ASCIIZ	 Author						 ; Author of cartridge
-///		ASCIIZ	 Company					 ; Company of cartridge author
-///		ASCIIZ	 RecommendedDevice			 ; "Garmin Colorado", "Windows PPC", etc.
-///
-///		INT		 Length						 ; Length of CompletionCode
-///		ASCIIZ	 CompletionCode				 ; Normally 15/16 characters
-///
-/// @address_of_FIRST_object (with ObjectID = 0):
-///		; always Lua bytecode
-///		INT		 Length						 ; Length of Lua bytecode
-///		BYTE[Length]	ContentOfObject		 ; Lua bytecode
-///
-///	@address_of_ALL_OTHER_objects (with ID > 0):
-///		BYTE	 ValidObject
-///		if (ValidObject == 0)
-///		{
-///			; when ValidObject == 0, it means that object is DELETED and does
-///			; not exist in cartridge. Nothing else follows.
-///		}
-///		else
-///		{
-///			INT		ObjectType				 ; 1=bmp, (2=png?), 3=jpg, 4=gif, 17=wav, 18=mp3, 19=fdl, other values have unknown meaning
-///			INT	 	Length
-///			BYTE[Length]	content_of_object
-///		}
-///
-///	@end
-///
-/// Varibles
-/// 
-///		BYTE   = unsigned char (1 byte)
-///		SHORT  = signed short (2 bytes)
-///		USHORT = unsigned short (2 bytes)
-///		INT	   = signed long (4 bytes)
-///		UINT   = unsigned long (4 bytes)
-///		LONG   = signed long (8 bytes)
-///		DOUBLE = double-precision floating point number (8 bytes)
-///		ASCIIZ = zero-terminated string ("hello world!", 0x00)
-///
-/// </summary>
+
 namespace WF.Player.Core.Formats
 {
+	/*
+	 File format of GWC files:
 
+	@0000:							; Signature
+		BYTE	 0x02
+		BYTE	 0x0a
+		BYTE	 "CART"
+		BYTE	 0x00
+
+	@0007:
+		USHORT	 NumberOfObjects	; Number of objects ("media files") in cartridge:
+
+	@0009:
+		; References to individual objects in cartridge.
+		; Object 0 is always Lua bytecode for cartridge.
+		; There is exactly [number_of_objects] blocks like this:
+		repeat <NumberOfObjects> times
+		{
+			USHORT	 ObjectID		; Distinct ID for each object, duplicates are forbidden
+			INT		 Address		; Address of object in GWC file
+		}
+
+	@xxxx:	 						; 0009 + <NumberOfObjects> * 0006 bytes from begining
+		; Header with all important informations for this cartridge
+		INT		 HeaderLength		; Length of information header (following block):
+
+		DOUBLE	 Latitude			; N+/S-
+		DOUBLE	 Longitude			; E+/W-
+		DOUBLE	 Altitude			; Meters
+
+		LONG	 Date of creation	; Seconds since 2004-02-10 01:00:00
+
+		; MediaID of icon and splashscreen
+		SHORT	 ObjectID of splashscreen	 ; -1 = without splashscreen/poster
+		SHORT	 ObjectID of icon			 ; -1 = without icon
+
+		ASCIIZ	 TypeOfCartridge			 ; "Tour guide", "Wherigo cache", etc.
+		ASCIIZ	 Player						 ; Name of player downloaded cartridge
+		LONG	 PlayerID					 ; ID of player in the Groundspeak database
+
+		ASCIIZ	 CartridgeName				 ; "Name of this cartridge"
+		ASCIIZ	 CartridgeGUID
+		ASCIIZ	 CartridgeDescription		 ; "This is a sample cartridge"
+		ASCIIZ	 StartingLocationDescription ; "Nice parking"
+		ASCIIZ	 Version					 ; "1.2"
+		ASCIIZ	 Author						 ; Author of cartridge
+		ASCIIZ	 Company					 ; Company of cartridge author
+		ASCIIZ	 RecommendedDevice			 ; "Garmin Colorado", "Windows PPC", etc.
+
+		INT		 Length						 ; Length of CompletionCode
+		ASCIIZ	 CompletionCode				 ; Normally 15/16 characters
+
+	@address_of_FIRST_object (with ObjectID = 0):
+		; always Lua bytecode
+		INT		 Length						 ; Length of Lua bytecode
+		BYTE[Length]	ContentOfObject		 ; Lua bytecode
+
+	@address_of_ALL_OTHER_objects (with ID > 0):
+		BYTE	 ValidObject
+		if (ValidObject == 0)
+		{
+			; when ValidObject == 0, it means that object is DELETED and does
+			; not exist in cartridge. Nothing else follows.
+		}
+		else
+		{
+			INT		ObjectType				 ; 1=bmp, (2=png?), 3=jpg, 4=gif, 17=wav, 18=mp3, 19=fdl, other values have unknown meaning
+			INT	 	Length
+			BYTE[Length]	content_of_object
+		}
+
+	@end
+
+	Varibles
+
+		BYTE   = unsigned char (1 byte)
+		SHORT  = signed short (2 bytes)
+		USHORT = unsigned short (2 bytes)
+		INT	   = signed long (4 bytes)
+		UINT   = unsigned long (4 bytes)
+		LONG   = signed long (8 bytes)
+		DOUBLE = double-precision floating point number (8 bytes)
+		ASCIIZ = zero-terminated string ("hello world!", 0x00)
+	*/
+
+	/// <summary>
+	/// A parser for Groundspeak Wherigo Cartridge files.
+	/// </summary>
 	public class FileGWC : ICartridgeLoader
 	{
 
@@ -184,17 +187,12 @@ namespace WF.Player.Core.Formats
 					cart.Resources[0].Data = new byte[fileSize];
 					reader.Read(cart.Resources[0].Data, 0, cart.Resources[0].Data.Length);
 
-					// Read all other resources
-					for (int i = 1; i < maxMediaFiles; i++)
+					int i = 1;
+					foreach (var item in objects.Where(kv => kv.Key > 0))
 					{
-						// Get pos of resources in stream, ...
-						pos = objects[i];
-						// ... jump to this position ...
-						reader.BaseStream.Position = pos;
-						// ... and read resources
-						cart.Resources[i] = new Media();
-						cart.Resources[i].FileName = cart.Filename;
-						readMedia(cart.Resources[i], reader);
+						Media media = loadGWCMedia(reader, cart.Filename, item.Value, item.Key, maxMediaFiles);
+						cart.Resources[i] = media;
+						i++;
 					}
 				}
 			}
@@ -317,6 +315,7 @@ namespace WF.Player.Core.Formats
 
 			// Save filename for later use
 			media.FileName = fileName;
+			media.MediaId = id;
 
 			reader.BaseStream.Position = position;
 			readMedia(media, reader);
@@ -382,13 +381,14 @@ namespace WF.Player.Core.Formats
 			if (valid == 0)
 			{
 				// No resources 
-				media.Type = 0;
+				media.Type = MediaType.Unknown;
 				media.Data = null;
 			}
 			else
 			{
 				// Read resources type
 				media.Type = (MediaType)Enum.ToObject (typeof(MediaType), input.ReadInt32());
+
 				// Read resources data
 				long fileSize = input.ReadInt32();
 				media.FileOffset = input.BaseStream.Position;
