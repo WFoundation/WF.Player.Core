@@ -23,23 +23,6 @@ using System.Collections.Generic;
 namespace WF.Player.Core
 {
 	/// <summary>
-	/// Event arguments for a wherigo object of a certain type.
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	public class ObjectEventArgs<T> : EventArgs where T : class
-	{
-		/// <summary>
-		/// Gets the wherigo object that this event is associated to.
-		/// </summary>
-		public T Object { get; private set; }
-
-		internal ObjectEventArgs(T obj)
-		{
-			Object = obj;
-		}
-	}
-
-	/// <summary>
 	/// Event arguments for a change in an attribute of a Wherigo object.
 	/// </summary>
 	public class AttributeChangedEventArgs : ObjectEventArgs<Table>
@@ -49,26 +32,10 @@ namespace WF.Player.Core
 		/// </summary>
 		public string PropertyName { get; private set; }
 
-		internal AttributeChangedEventArgs(Table obj, string prop)
-			: base(obj)
+		internal AttributeChangedEventArgs(Cartridge cart, Table obj, string prop)
+			: base(cart, obj)
 		{
 			PropertyName = prop;
-		}
-	}
-
-	/// <summary>
-	/// Event arguments for a change in the cartridge entity.
-	/// </summary>
-	public class CartridgeEventArgs : EventArgs
-	{
-		/// <summary>
-		/// Gets the cartridge entity that changed.
-		/// </summary>
-		public Cartridge Cartridge { get; private set; }
-
-		internal CartridgeEventArgs(Cartridge cart)
-		{
-			Cartridge = cart;
 		}
 	}
 
@@ -87,8 +54,8 @@ namespace WF.Player.Core
 		/// </summary>
 		public Thing NewContainer { get; private set; }
 
-		internal InventoryChangedEventArgs(Thing obj, Thing fromContainer, Thing toContainer)
-			: base(obj)
+		internal InventoryChangedEventArgs(Cartridge cart, Thing obj, Thing fromContainer, Thing toContainer)
+			: base(cart, obj)
 		{
 			OldContainer = fromContainer;
 			NewContainer = toContainer;
@@ -98,7 +65,7 @@ namespace WF.Player.Core
 	/// <summary>
 	/// Event arguments for a message from the Wherigo engine to be logged.
 	/// </summary>
-	public class LogMessageEventArgs : EventArgs
+	public class LogMessageEventArgs : WherigoEventArgs
 	{
 		/// <summary>
 		/// Gets the level of logging of the message.
@@ -110,7 +77,8 @@ namespace WF.Player.Core
 		/// </summary>
 		public string Message { get; private set; }
 
-		internal LogMessageEventArgs(LogLevel level, string message)
+		internal LogMessageEventArgs(Cartridge cart, LogLevel level, string message)
+			: base(cart)
 		{
 			Level = level;
 			Message = message;
@@ -118,34 +86,55 @@ namespace WF.Player.Core
 	}
 
 	/// <summary>
-	/// Event arguments for a special command requested by the Wherigo engine.
-	/// </summary>
-	public class NotifyOSEventArgs : EventArgs
-	{
-		/// <summary>
-		/// Gets the command that is requested.
-		/// </summary>
-		public string Command { get; private set; }
-
-		internal NotifyOSEventArgs(string c)
-		{
-			Command = c;
-		}
-	}
-
-	/// <summary>
 	/// Event arguments for a message box.
 	/// </summary>
-	public class MessageBoxEventArgs : EventArgs
+	public class MessageBoxEventArgs : WherigoEventArgs
 	{
 		/// <summary>
 		/// Gets the message box descriptor.
 		/// </summary>
 		public MessageBox Descriptor { get; private set; }
 
-		internal MessageBoxEventArgs(MessageBox descriptor)
+		internal MessageBoxEventArgs(Cartridge cart, MessageBox descriptor)
+			: base(cart)
 		{
 			Descriptor = descriptor;
+		}
+	}
+
+	/// <summary>
+	/// Event arguments for a wherigo object of a certain type.
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
+	public class ObjectEventArgs<T> : WherigoEventArgs where T : class
+	{
+		/// <summary>
+		/// Gets the wherigo object that this event is associated to.
+		/// </summary>
+		public T Object { get; private set; }
+
+		internal ObjectEventArgs(Cartridge cart, T obj)
+			: base(cart)
+		{
+			Object = obj;
+		}
+	}
+
+	/// <summary>
+	/// Event arguments for saving the game.
+	/// </summary>
+	public class SavingEventArgs : WherigoEventArgs
+	{
+		/// <summary>
+		/// Gets if the Cartridge should be closed - and therefore the game be stopped -
+		/// after saving is done.
+		/// </summary>
+		public bool CloseAfterSave { get; private set; }
+
+		internal SavingEventArgs(Cartridge cart, bool closeAfterSave)
+			: base(cart)
+		{
+			CloseAfterSave = closeAfterSave;
 		}
 	}
 
@@ -159,8 +148,8 @@ namespace WF.Player.Core
 		/// </summary>
 		public ScreenType Screen { get; private set; }
 
-		internal ScreenEventArgs(ScreenType kind, UIObject obj)
-			: base(obj)
+		internal ScreenEventArgs(Cartridge cart, ScreenType kind, UIObject obj)
+			: base(cart, obj)
 		{
 			Screen = kind;
 		}
@@ -169,30 +158,48 @@ namespace WF.Player.Core
 	/// <summary>
 	/// Event arguments for a status text.
 	/// </summary>
-	public class StatusTextEventArgs : EventArgs
+	public class StatusTextEventArgs : WherigoEventArgs
 	{
 		/// <summary>
 		/// Gets the status text associated with this event.
 		/// </summary>
 		public string Text;
 
-		internal StatusTextEventArgs(string text)
+		internal StatusTextEventArgs(Cartridge cart, string text)
+			: base(cart)
 		{
 			Text = text;
 		}
 	}
 
 	/// <summary>
+	/// Base class for arguments of a Wherigo-related event.
+	/// </summary>
+	public class WherigoEventArgs : EventArgs
+	{
+		/// <summary>
+		/// Gets the cartridge entity that changed.
+		/// </summary>
+		public Cartridge Cartridge { get; private set; }
+
+		internal WherigoEventArgs(Cartridge cart)
+		{
+			Cartridge = cart;
+		}
+	}
+
+	/// <summary>
 	/// Event arguments for a change in zone states.
 	/// </summary>
-	public class ZoneStateChangedEventArgs : EventArgs
+	public class ZoneStateChangedEventArgs : WherigoEventArgs
 	{
 		/// <summary>
 		/// Gets the list of active zones.
 		/// </summary>
 		public IList<Zone> Zones { get; private set; }
 
-		internal ZoneStateChangedEventArgs(List<Zone> z)
+		internal ZoneStateChangedEventArgs(Cartridge cart, List<Zone> z)
+			: base(cart)
 		{
 			Zones = z;
 		}

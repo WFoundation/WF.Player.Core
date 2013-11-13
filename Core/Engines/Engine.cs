@@ -89,18 +89,20 @@ namespace WF.Player.Core.Engines
 		#region Events
 
 		public event EventHandler<AttributeChangedEventArgs> AttributeChanged;
-		public event EventHandler<CartridgeEventArgs> CartridgeCompleted;
-		public event EventHandler<CartridgeEventArgs> SaveRequested;
+		public event EventHandler<WherigoEventArgs> CartridgeCompleted;
+		public event EventHandler<SavingEventArgs> SaveRequested;
 		public event EventHandler<ObjectEventArgs<Command>> CommandChanged;
 		public event EventHandler<ObjectEventArgs<Input>> InputRequested;
 		public event EventHandler<InventoryChangedEventArgs> InventoryChanged;
 		public event EventHandler<LogMessageEventArgs> LogMessageRequested;
-		public event EventHandler<NotifyOSEventArgs> NotifyOS;
 		public event EventHandler<ObjectEventArgs<Media>> PlayMediaRequested;
+		public event EventHandler<WherigoEventArgs> PlayAlertRequested;
 		public event EventHandler<MessageBoxEventArgs> ShowMessageBoxRequested;
 		public event EventHandler<ScreenEventArgs> ShowScreenRequested;
 		public event EventHandler<StatusTextEventArgs> ShowStatusTextRequested;
+		public event EventHandler<WherigoEventArgs> StopSoundsRequested;
 		public event EventHandler<ZoneStateChangedEventArgs> ZoneStateChanged;
+
 		public event PropertyChangedEventHandler PropertyChanged;
 
 		#endregion
@@ -1144,7 +1146,7 @@ namespace WF.Player.Core.Engines
 			else if ("sync".Equals(s))
 			{
 				// Raises the event.
-				RaiseSaveRequested(cartridge);
+				RaiseSaveRequested(cartridge, false);
 			}
 			
 		}
@@ -1233,9 +1235,23 @@ namespace WF.Player.Core.Engines
 		/// <param name="command">Name of command.</param>
 		internal void HandleNotifyOS (string command)
 		{
-			// TODO: Replace by meaningful events.
-			if (NotifyOS != null)
-				NotifyOS (this, new NotifyOSEventArgs(command));
+			if ("SaveClose".Equals(command))
+			{
+				RaiseSaveRequested(cartridge, true);
+			}
+			else if ("DriveTo".Equals(command))
+			{
+				// TODO: Make sure that this is unused. If so, remove it.
+				throw new NotImplementedException("The DriveTo command is not implemented.");
+			}
+			else if ("StopSound".Equals(command))
+			{
+				RaiseStopSoundsRequested();
+			}
+			else if ("Alert".Equals(command))
+			{
+				RaisePlayAlertRequested();
+			}
 		}
 
 		/// <summary>
@@ -1865,7 +1881,7 @@ namespace WF.Player.Core.Engines
 			{
 				if (LogMessageRequested != null)
 				{
-					LogMessageRequested(this, new LogMessageEventArgs(level, message));
+					LogMessageRequested(this, new LogMessageEventArgs(cartridge, level, message));
 				}
 			});
 		}
@@ -1886,7 +1902,7 @@ namespace WF.Player.Core.Engines
 					}
 				}
 
-				InputRequested(this, new ObjectEventArgs<Input>(input));
+				InputRequested(this, new ObjectEventArgs<Input>(cartridge, input));
 			});
 		}
 
@@ -1906,7 +1922,7 @@ namespace WF.Player.Core.Engines
 					}
 				}
 
-				ShowMessageBoxRequested(this, new MessageBoxEventArgs(mb));
+				ShowMessageBoxRequested(this, new MessageBoxEventArgs(cartridge, mb));
 			});
 		}
 
@@ -1926,7 +1942,7 @@ namespace WF.Player.Core.Engines
 					}
 				}
 
-				PlayMediaRequested(this, new ObjectEventArgs<Media>(media));
+				PlayMediaRequested(this, new ObjectEventArgs<Media>(cartridge, media));
 			});
 		}
 
@@ -1946,7 +1962,7 @@ namespace WF.Player.Core.Engines
 					}
 				}
 
-				ShowScreenRequested(this, new ScreenEventArgs(kind, obj));
+				ShowScreenRequested(this, new ScreenEventArgs(cartridge, kind, obj));
 			});
 		}
 
@@ -1956,7 +1972,7 @@ namespace WF.Player.Core.Engines
 			{
 				if (InventoryChanged != null)
 				{
-					InventoryChanged(this, new InventoryChangedEventArgs(obj, fromContainer, toContainer));
+					InventoryChanged(this, new InventoryChangedEventArgs(cartridge, obj, fromContainer, toContainer));
 				}
 			});
 		}
@@ -1967,7 +1983,7 @@ namespace WF.Player.Core.Engines
 			{
 				if (AttributeChanged != null)
 				{
-					AttributeChanged(this, new AttributeChangedEventArgs(obj, propName));
+					AttributeChanged(this, new AttributeChangedEventArgs(cartridge, obj, propName));
 				}
 			}, true);
 		}
@@ -1978,7 +1994,7 @@ namespace WF.Player.Core.Engines
 			{
 				if (CommandChanged != null)
 				{
-					CommandChanged(this, new ObjectEventArgs<Command>(command));
+					CommandChanged(this, new ObjectEventArgs<Command>(cartridge, command));
 				}
 			});
 		}
@@ -1989,12 +2005,12 @@ namespace WF.Player.Core.Engines
 			{
 				if (CartridgeCompleted != null)
 				{
-					CartridgeCompleted(this, new CartridgeEventArgs(cartridge));
+					CartridgeCompleted(this, new WherigoEventArgs(cartridge));
 				}
 			});
 		}
 
-		private void RaiseSaveRequested(Cartridge cartridge, bool throwIfNoHandler = true)
+		private void RaiseSaveRequested(Cartridge cartridge, bool closeAfterSave, bool throwIfNoHandler = true)
 		{
 			BeginInvokeInUIThread(() =>
 			{
@@ -2010,7 +2026,7 @@ namespace WF.Player.Core.Engines
 					}
 				}
 
-				SaveRequested(this, new CartridgeEventArgs(cartridge));
+				SaveRequested(this, new SavingEventArgs(cartridge, closeAfterSave));
 			});
 		}
 
@@ -2020,8 +2036,48 @@ namespace WF.Player.Core.Engines
 			{
 				if (ZoneStateChanged != null)
 				{
-					ZoneStateChanged(this, new ZoneStateChangedEventArgs(list));
+					ZoneStateChanged(this, new ZoneStateChangedEventArgs(cartridge, list));
 				}
+			});
+		}
+
+		private void RaiseStopSoundsRequested(bool throwIfNoHandler = true)
+		{
+			BeginInvokeInUIThread(() =>
+			{
+				if (StopSoundsRequested == null)
+				{
+					if (throwIfNoHandler)
+					{
+						throw new InvalidOperationException("No StopSoundsRequested handler has been found.");
+					}
+					else
+					{
+						return;
+					}
+				}
+
+				StopSoundsRequested(this, new WherigoEventArgs(cartridge));
+			});
+		}
+
+		private void RaisePlayAlertRequested(bool throwIfNoHandler = true)
+		{
+			BeginInvokeInUIThread(() =>
+			{
+				if (PlayAlertRequested == null)
+				{
+					if (throwIfNoHandler)
+					{
+						throw new InvalidOperationException("No PlayAlertRequested handler has been found.");
+					}
+					else
+					{
+						return;
+					}
+				}
+
+				PlayAlertRequested(this, new WherigoEventArgs(cartridge));
 			});
 		}
 
@@ -2041,7 +2097,7 @@ namespace WF.Player.Core.Engines
 					}
 				}
 
-				ShowStatusTextRequested(this, new StatusTextEventArgs(text));
+				ShowStatusTextRequested(this, new StatusTextEventArgs(cartridge, text));
 			});
 		}
 
