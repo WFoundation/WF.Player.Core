@@ -22,67 +22,63 @@ using System.Collections.Generic;
 using System.Collections;
 using WF.Player.Core.Lua;
 
-namespace WF.Player.Core.Utils
+namespace WF.Player.Core.Lua
 {
 	/// <summary>
 	/// A wrapper around a Lua state that provides with various thread-safe utilities.
 	/// </summary>
-	internal class SafeLua
+	public class SafeLua
 	{
 		#region Nested Classes
 
 		/// <summary>
 		/// A thread-safe wrapper around a IDictionaryEnumerator bound to a lua state.
 		/// </summary>
-		private class SafeDictionaryEnumerator : IEnumerator
+		private class SafeDictionaryEnumerator : IDictionaryEnumerator
 		{
-			private IEnumerator baseEnumerator;
+			private IDictionaryEnumerator baseEnumerator;
 			private LuaRuntime luaState;
 
-			public SafeDictionaryEnumerator(IEnumerator e, LuaRuntime luaState)
+			public SafeDictionaryEnumerator(IDictionaryEnumerator e, LuaRuntime luaState)
 			{
 				this.baseEnumerator = e;
 				this.luaState = luaState;
-			}
-
-			public void Dispose()
-			{
 			}
 
 			public DictionaryEntry Entry
 			{
 				get
 				{
-					LuaValue key, value;
+					object key, value;
 
 					lock (luaState)
 					{
-						key = ((KeyValuePair<LuaValue,LuaValue>)baseEnumerator.Current).Key;
-						value = ((KeyValuePair<LuaValue,LuaValue>)baseEnumerator.Current).Value;
+						key = baseEnumerator.Entry.Key;
+						value = baseEnumerator.Entry.Value;
 					}
 
 					return new DictionaryEntry(key, value);
 				}
 			}
 
-			public LuaValue Key
+			public object Key
 			{
 				get
 				{
 					lock (luaState)
 					{
-						return ((KeyValuePair<LuaValue,LuaValue>)baseEnumerator.Current).Key;
+						return baseEnumerator.Key;
 					}
 				}
 			}
 
-			public LuaValue Value
+			public object Value
 			{
 				get
 				{
 					lock (luaState)
 					{
-						return ((KeyValuePair<LuaValue,LuaValue>)baseEnumerator.Current).Value;
+						return baseEnumerator.Value;
 					}
 				}
 			}
@@ -206,7 +202,7 @@ namespace WF.Player.Core.Utils
 		/// <param name="table">The table to convert.</param>
 		/// <returns>A list of all the entities from the table that could be converted
 		/// to the type <typeparamref name="T"/>.</returns>
-		public List<T> SafeGetList<T>(LuaTable table) where T : LuaValue
+		public List<T> SafeGetList<T>(LuaTable table)
 		{
 			if (table == null)
 				return null;
@@ -217,12 +213,10 @@ namespace WF.Player.Core.Utils
 			{
 				try
 				{
-					var t = table.GetEnumerator();
-
-					while (t.MoveNext())
+					foreach(var t in table)
 					{
-						if (t.Current.Value != null && t.Current.Value is T)
-							result.Add((T)t.Current.Value);
+						if (t.Value != null && t.Value is T)
+							result.Add((T)t.Value);
 					}
 				}
 				catch (Exception e)
@@ -269,7 +263,7 @@ namespace WF.Player.Core.Utils
 		/// <param name="parameters">Parameters for the function. The table will be added
 		/// as first parameter.</param>
 		/// <returns>The inner LuaTable contained in the result, or null.</returns>
-		public LuaTable SafeCallSelf(LuaTable table, string func, params LuaValue[] parameters)
+		public LuaTable SafeCallSelf(LuaTable table, string func, params object[] parameters)
 		{
 			lock (luaState)
 			{
@@ -291,7 +285,7 @@ namespace WF.Player.Core.Utils
 		/// <param name="parameters">Parameters to pass the function.</param>
 		/// <returns>The raw array returned by the function, or null if the function
 		/// could not be called.</returns>
-		public LuaVararg SafeCallRaw(LuaFunction func, params LuaValue[] parameters)
+		public object[] SafeCallRaw(LuaFunction func, params object[] parameters)
 		{
 			lock (luaState)
 			{
@@ -301,7 +295,7 @@ namespace WF.Player.Core.Utils
 				}
 				catch (Exception e)
 				{
-					return HandleException(e, null) as LuaVararg;
+					return HandleException(e, null) as object[];
 				}
 			}
 		}
@@ -311,7 +305,7 @@ namespace WF.Player.Core.Utils
 		/// </summary>
 		/// <param name="func">Name of the function (in the lua state) to call.</param>
 		/// <param name="parameters">Parameters to pass the function.</param>
-		public LuaVararg SafeCallRaw(string funcName, params LuaValue[] parameters)
+		public object[] SafeCallRaw(string funcName, params object[] parameters)
 		{
 			LuaFunction lf;
 			
@@ -333,7 +327,7 @@ namespace WF.Player.Core.Utils
 				}
 				catch (Exception e)
 				{
-					return HandleException(e, null) as LuaVararg;
+					return HandleException(e, null) as object[];
 				}
 			}
 		}
@@ -344,7 +338,7 @@ namespace WF.Player.Core.Utils
 		/// <param name="chunk">Chunk to process.</param>
 		/// <param name="chunkName">Name of the chunk.</param>
 		/// <returns>The result of the lua state's DoString method.</returns>
-		public LuaVararg SafeDoString(string chunk, string chunkName)
+		public object[] SafeDoString(string chunk, string chunkName)
 		{
 			lock (luaState)
 			{
@@ -354,7 +348,7 @@ namespace WF.Player.Core.Utils
 				}
 				catch (Exception e)
 				{
-					return HandleException(e, null) as LuaVararg;
+					return HandleException(e, null) as object[];
 				}
 			}
 		}
@@ -365,7 +359,7 @@ namespace WF.Player.Core.Utils
 		/// <param name="chunk">Chunk to process.</param>
 		/// <param name="chunkName">Name of the chunk.</param>
 		/// <returns>The result of the lua state's DoString method.</returns>
-		public LuaVararg SafeDoString(byte[] chunk, string chunkName)
+		public object[] SafeDoString(byte[] chunk, string chunkName)
 		{
 			lock (luaState)
 			{
@@ -375,7 +369,7 @@ namespace WF.Player.Core.Utils
 				}
 				catch (Exception e)
 				{
-					return HandleException(e, null) as LuaVararg;
+					return HandleException(e, null) as object[];
 				}
 			}
 		}
@@ -433,7 +427,7 @@ namespace WF.Player.Core.Utils
 			{
 				try
 				{
-					return luaState.CompileString(chunk, chunkName);
+					return luaState.LoadString(chunk, chunkName);
 				}
 				catch (Exception e)
 				{
@@ -452,7 +446,7 @@ namespace WF.Player.Core.Utils
 			{
 				try
 				{
-					return luaState.EmptyTable();
+					return luaState.CreateTable();
 				}
 				catch (Exception e)
 				{
@@ -478,7 +472,7 @@ namespace WF.Player.Core.Utils
 		/// <returns>A valid <typeparamref name="T"/> or null.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="luaTable"/>, <paramref name="firstKey"/>
 		/// or <paramref name="secondKey"/> is null.</exception>
-		public T SafeGetInnerField<T>(LuaTable luaTable, LuaValue firstKey, LuaValue secondKey, params LuaValue[] otherKeys) where T : LuaValue
+		public T SafeGetInnerField<T>(LuaTable luaTable, LuaValue firstKey, LuaValue secondKey, params object[] otherKeys)
 		{
 			if (luaTable == null || firstKey == null || secondKey == null)
 			{
@@ -487,7 +481,7 @@ namespace WF.Player.Core.Utils
 
 			// Gets the inner fields for the first and second keys.
 			LuaTable lastTable;
-			LuaValue current;
+			object current;
 			lock (luaState)
 			{
 				try
@@ -545,7 +539,7 @@ namespace WF.Player.Core.Utils
 				{
 					try
 					{
-						current = lastTable[(LuaValue)e.Current];
+						current = lastTable[e.Current];
 					}
 					catch (Exception ex)
 					{
@@ -583,9 +577,9 @@ namespace WF.Player.Core.Utils
 		/// </summary>
 		/// <param name="table">The table to get an enumerator of.</param>
 		/// <returns>A thread-safe enumerator on the table.</returns>
-		public IEnumerator<KeyValuePair<LuaValue,LuaValue>> SafeGetEnumerator(LuaTable table)
+		public IDictionaryEnumerator SafeGetEnumerator(LuaTable table)
 		{
-			IEnumerator<KeyValuePair<LuaValue,LuaValue>> e;
+			IDictionaryEnumerator e;
 
 			lock (luaState)
 			{
@@ -595,11 +589,38 @@ namespace WF.Player.Core.Utils
 				}
 				catch (Exception ex)
 				{
-					return HandleException(ex, null) as IEnumerator<KeyValuePair<LuaValue,LuaValue>>;
+					return HandleException(ex, null) as IDictionaryEnumerator;
 				}
 			}
 
-			return (IEnumerator<KeyValuePair<LuaValue,LuaValue>>) new SafeDictionaryEnumerator(e, luaState);
+			return new SafeDictionaryEnumerator(e, luaState);
+		}
+
+		/// <summary>
+		/// Gets a list of Table entities from a LuaTable.
+		/// </summary>
+		/// <typeparam name="T">Type of entities.</typeparam>
+		/// <param name="table">LuaTable to convert.</param>
+		/// <returns>A list of Table entities that corresponds to all entries of the input
+		/// table that could convert to <typeparamref name="T"/>.</returns>
+		internal List<T> GetTableListFromLuaTable<T>(LuaTable table) where T : WherigoObject
+		{
+			if (table == null)
+				return null;
+
+			List<T> result = new List<T>();
+
+			lock (luaState)
+			{
+				foreach(var t in table)
+				{
+					T val = GetTable((LuaTable)t.Value) as T;
+					if (val != null)
+						result.Add(val);
+				}
+			}
+
+			return result;
 		}
 
 		#endregion

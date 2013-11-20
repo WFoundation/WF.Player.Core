@@ -19,8 +19,8 @@
 
 using System;
 using System.Collections.Generic;
-using NLua;
 using WF.Player.Core.Engines;
+using WF.Player.Core.Lua;
 
 namespace WF.Player.Core
 {

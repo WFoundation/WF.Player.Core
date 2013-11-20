@@ -18,13 +18,13 @@
 ///
 
 using System;
-using NLua;
 using System.Collections.Generic;
 using WF.Player.Core.Engines;
+using WF.Player.Core.Lua;
 
 namespace WF.Player.Core
 {
-	public class Table
+	public class WherigoObject
 	{
 		#region Members
 
@@ -45,7 +45,7 @@ namespace WF.Player.Core
 
 		#region Constructor
 
-		internal Table(Engine e, LuaTable t)
+		internal WherigoObject(Engine e, LuaTable t)
 		{
 			engine = e;
 			wigTable = t;
@@ -140,7 +140,7 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <param name="t"></param>
 		/// <returns></returns>
-		protected Table GetTable(LuaTable t)
+		protected WherigoObject GetTable(LuaTable t)
 		{
 			return t != null ? engine.GetTable(t) : null;
 		}
@@ -150,7 +150,7 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <param name="t"></param>
 		/// <returns></returns>
-		protected Table GetTable(string key)
+		protected WherigoObject GetTable(string key)
 		{
 			return GetTable(GetLuaTable(key));
 		}
@@ -160,7 +160,7 @@ namespace WF.Player.Core
 		/// </summary>
 		/// <param name="t"></param>
 		/// <returns></returns>
-		protected Table GetTable(double key)
+		protected WherigoObject GetTable(double key)
 		{
 			return GetTable(GetLuaTable(key));
 		}
@@ -224,7 +224,7 @@ namespace WF.Player.Core
 		/// <typeparam name="T"></typeparam>
 		/// <param name="key"></param>
 		/// <returns></returns>
-		protected List<T> GetList<T>(string key)
+		protected List<T> GetList<T>(string key) where T : LuaValue
 		{
 			return engine.SafeLuaState.SafeGetList<T>(GetLuaTable(key));
 		}
@@ -235,7 +235,7 @@ namespace WF.Player.Core
 		/// <typeparam name="T"></typeparam>
 		/// <param name="key"></param>
 		/// <returns></returns>
-		protected List<T> GetList<T>(double key)
+		protected List<T> GetList<T>(double key) where T : LuaValue
 		{
 			return engine.SafeLuaState.SafeGetList<T>(GetLuaTable(key));
 		}
@@ -248,7 +248,7 @@ namespace WF.Player.Core
 		/// <param name="key"></param>
 		/// <returns>A list of all entries of the table that could convert to 
 		/// <paramref name="T"/>.</returns>
-		protected List<T> GetTableList<T>(string key) where T : Table
+		protected List<T> GetTableList<T>(string key) where T : WherigoObject
 		{
 			return engine.GetTableListFromLuaTable<T>(GetLuaTable(key));
 		}
@@ -261,7 +261,7 @@ namespace WF.Player.Core
 		/// <param name="key"></param>
 		/// <returns>A list of all entries of the table that could convert to 
 		/// <paramref name="T"/>.</returns>
-		protected List<T> GetTableList<T>(double key) where T : Table
+		protected List<T> GetTableList<T>(double key) where T : WherigoObject
 		{
 			return engine.GetTableListFromLuaTable<T>(GetLuaTable(key));
 		}
@@ -274,7 +274,7 @@ namespace WF.Player.Core
 		/// <param name="key"></param>
 		/// <returns>A list of all entries of the table that could convert to 
 		/// <paramref name="T"/>.</returns>
-		protected List<T> GetTableFuncList<T>(string key, params object[] parameters) where T : Table
+		protected List<T> GetTableFuncList<T>(string key, params LuaValue[] parameters) where T : WherigoObject
 		{
 			return engine.GetTableListFromLuaTable<T>(engine.SafeLuaState.SafeCallSelf(wigTable, key, parameters));
 		}

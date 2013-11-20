@@ -25,12 +25,12 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using NLua;
 using System.Windows;
 using System.Collections;
 using WF.Player.Core.Utils;
 using WF.Player.Core.Utils.Threading;
 using WF.Player.Core.Formats;
+using WF.Player.Core.Lua;
 
 namespace WF.Player.Core.Engines
 {
@@ -61,7 +61,7 @@ namespace WF.Player.Core.Engines
 		private EngineGameState gameState;
 		private bool isReady;
 		private bool isBusy;
-        private Lua luaState;
+		private LuaRuntime luaState;
 		private SafeLua safeLuaState;
 		private LuaExecutionQueue luaExecQueue;
 		private ActionPump uiDispatchPump;
@@ -102,7 +102,6 @@ namespace WF.Player.Core.Engines
 		public event EventHandler<StatusTextEventArgs> ShowStatusTextRequested;
 		public event EventHandler<WherigoEventArgs> StopSoundsRequested;
 		public event EventHandler<ZoneStateChangedEventArgs> ZoneStateChanged;
-
 		public event PropertyChangedEventHandler PropertyChanged;
 
 		#endregion
@@ -135,12 +134,15 @@ namespace WF.Player.Core.Engines
 			
 			// Base objects.
 			platformHelper = platform;
-			luaState = new Lua();
-			safeLuaState = new SafeLua(luaState)
+
+			luaState = new LuaRuntime();
+
+			safeLuaState = new Utils.SafeLua(luaState)
 			{
 				RethrowsExceptions = true,
 				RethrowsDisposedLuaExceptions = false
 			};
+
 			timers = new Dictionary<int, System.Threading.Timer>();
 			uiObjects = new Dictionary<int, UIObject>();
 
@@ -157,24 +159,25 @@ namespace WF.Player.Core.Engines
 			wherigo.OnCommandChanged += HandleCommandChanged;
 
 			// Set definitions from Wherigo for ShowScreen
-			luaState["Wherigo.MAINSCREEN"] = (int)ScreenType.Main;
-			luaState["Wherigo.LOCATIONSCREEN"] = (int)ScreenType.Locations;
-			luaState["Wherigo.ITEMSCREEN"] = (int)ScreenType.Items;
-			luaState["Wherigo.INVENTORYSCREEN"] = (int)ScreenType.Inventory;
-			luaState["Wherigo.TASKSCREEN"] = (int)ScreenType.Tasks;
-			luaState["Wherigo.DETAILSCREEN"] = (int)ScreenType.Details;
+			LuaTable wherigoTable = (LuaTable)luaState.Globals["Wherigo"];
+			wherigoTable["MAINSCREEN"] = (int)ScreenType.Main;
+			wherigoTable["LOCATIONSCREEN"] = (int)ScreenType.Locations;
+			wherigoTable["ITEMSCREEN"] = (int)ScreenType.Items;
+			wherigoTable["INVENTORYSCREEN"] = (int)ScreenType.Inventory;
+			wherigoTable["TASKSCREEN"] = (int)ScreenType.Tasks;
+			wherigoTable["DETAILSCREEN"] = (int)ScreenType.Details;
 
 			// Set definitions from Wherigo for LogMessage
-			luaState["Wherigo.LOGDEBUG"] = (int)LogLevel.Debug;
-			luaState["Wherigo.LOGCARTRIDGE"] = (int)LogLevel.Cartridge;
-			luaState["Wherigo.LOGINFO"] = (int)LogLevel.Info;
-			luaState["Wherigo.LOGWARNING"] = (int)LogLevel.Warning;
-			luaState["Wherigo.LOGERROR"] = (int)LogLevel.Error;
+			wherigoTable["LOGDEBUG"] = (int)LogLevel.Debug;
+			wherigoTable["LOGCARTRIDGE"] = (int)LogLevel.Cartridge;
+			wherigoTable["LOGINFO"] = (int)LogLevel.Info;
+			wherigoTable["LOGWARNING"] = (int)LogLevel.Warning;
+			wherigoTable["LOGERROR"] = (int)LogLevel.Error;
 
 			// Get information about the player
 			// Create table for Env, ...
-			luaState.NewTable("Env");
-			LuaTable env = luaState.GetTable("Env");
+			luaState.Globals["Env"] = luaState.CreateTable();
+			LuaTable env = (LuaTable)luaState.Globals["Env"];
 
 			// Set defaults
 			env["CartFolder"] = platformHelper.CartridgeFolder;
@@ -257,7 +260,9 @@ namespace WF.Player.Core.Engines
 				// Bye bye UI objects.
 				foreach (UIObject uiObject in uiObjects.Values)
 				{
-					uiObject.WIGTable.Dispose(disposeManagedResources);
+					// TODO: Check, if this is correct
+					//					uiObject.WIGTable.Dispose(disposeManagedResources);
+					uiObject.WIGTable.Dispose();
 				}
 				uiObjects.Clear();
 				
@@ -658,17 +663,19 @@ namespace WF.Player.Core.Engines
 			this.cartridge = cartridge;
 			cartridge.Engine = this;
 
-			luaState["Env.CartFilename"] = cartridge.Filename;
+			((LuaTable)luaState.Globals["Env"])["CartFilename"] = cartridge.Filename;
 
 			FileFormats.Load(input, cartridge);
 
 			// Set player relevant data
-			player = (LuaTable)luaState["Wherigo.Player"];
+			player = (LuaTable)((LuaTable)luaState.Globals["Wherigo"])["Player"];
+			var temp = cartridge.Player;
 			player["CompletionCode"] = cartridge.CompletionCode;
 			player["Name"] = cartridge.Player;
-			player["ObjectLocation.latitude"] = lat;
-			player["ObjectLocation.longitude"] = lon;
-			player["ObjectLocation.altitude"] = alt;
+			LuaTable objLoc = (LuaTable)player["ObjectLocation"];
+			objLoc["latitude"] = lat;
+			objLoc["longitude"] = lon;
+			objLoc["altitude"] = alt;
 
 			try
 			{
@@ -840,11 +847,11 @@ namespace WF.Player.Core.Engines
 			luaExecQueue.IsRunning = true;
 
 			// Restarts the timers.
-			IDictionaryEnumerator e = safeLuaState.SafeGetEnumerator(safeLuaState.SafeCallSelf(player, "GetActiveTimers"));
+			var e = safeLuaState.SafeGetEnumerator(safeLuaState.SafeCallSelf(player, "GetActiveTimers"));
 			while (e.MoveNext())
 			{
-				LuaTable obj = (LuaTable) e.Value;
-				
+				LuaTable obj = (LuaTable) e.Current.Value;
+
 				// Should the timer be restarted?
 				bool shouldRestart = safeLuaState.SafeGetField<bool>(safeLuaState.SafeCallSelf(obj, "Restart"), 0);
 				if (!shouldRestart)
@@ -1030,7 +1037,7 @@ namespace WF.Player.Core.Engines
 			/// This below executes in the lua exec thread, so it's fine to block.
 
 			// Gets more info about the thing.
-			object thingLoc;
+			LuaValue thingLoc;
 			lock (luaState)
 			{
 				thingLoc = t.WIGTable["ObjectLocation"];
@@ -1050,23 +1057,23 @@ namespace WF.Player.Core.Engines
 				return;
 			}
 
-			object[] ret;
+			LuaVararg ret;
 			if (isZone)
 			{
 				lock (luaState)
 				{
-					ret = luaState.GetFunction("WIGInternal.VectorToZone").Call(new object[] { player["ObjectLocation"], t.WIGTable });
+					ret = wherigo.VectorToZone(player["ObjectLocation"], t.WIGTable);
 				}
 			}
 			else
 			{
 				lock (luaState)
 				{
-					ret = luaState.GetFunction("WIGInternal.VectorToPoint").Call(new object[] { player["ObjectLocation"], thingLoc });
+					ret = wherigo.VectorToPoint(player["ObjectLocation"], thingLoc);
 				}
 			}
 
-			t.VectorFromPlayer = new LocationVector((Distance)GetTable((LuaTable)ret[0]), (double)ret[1]);
+			t.VectorFromPlayer = new LocationVector((Distance)GetTable((LuaTable)ret[0]), (double)ret[1].ToNumber());
 			RaisePropertyChangedInObject(t, "VectorFromPlayer");
 			return;
 		}
@@ -1082,11 +1089,11 @@ namespace WF.Player.Core.Engines
         /// <param name="attribute">String with the name of the attribute that has changed.</param>
 		internal void HandleAttributeChanged(LuaTable t, string attribute)
 		{
-			Table obj = GetTable(t);
+			WherigoObject obj = GetTable(t);
 			string classname;
 			lock (luaState)
 			{
-				classname = (string)t["ClassName"]; 
+				classname = (string)t["ClassName"].ToString(); 
 			}
 
 			if (obj != null) {
@@ -1146,7 +1153,7 @@ namespace WF.Player.Core.Engines
 			else if ("sync".Equals(s))
 			{
 				// Raises the event.
-				RaiseSaveRequested(cartridge, false);
+				RaiseSaveRequested(cartridge,false);
 			}
 			
 		}
@@ -1321,7 +1328,7 @@ namespace WF.Player.Core.Engines
 			List<Zone> list = new List<Zone>();
 
 			// Generates the list of zones.
-			IDictionaryEnumerator z;
+			IEnumerator<KeyValuePair<LuaValue,LuaValue>> z;
 			bool run = true;
 			lock (luaState)
 			{
@@ -1331,7 +1338,7 @@ namespace WF.Player.Core.Engines
 			while (run)
 			{
 				// Gets a zone from the table.
-				Zone zone = (Zone)GetTable((LuaTable)z.Value);
+				Zone zone = (Zone)GetTable((LuaTable)z.Current.Value);
 
 				// Performs notifications.
 				if (zone != null)
@@ -1398,7 +1405,7 @@ namespace WF.Player.Core.Engines
 			int objIndex;
 			lock (luaState)
 			{
-				objIndex = Convert.ToInt32((double)t["ObjIndex"]); 
+				objIndex = Convert.ToInt32((double)t["ObjIndex"].ToNumber()); 
 			}
 
 			// Starts a timer.
@@ -1444,7 +1451,7 @@ namespace WF.Player.Core.Engines
 			int objIndex;
 			lock (luaState)
 			{
-				objIndex = Convert.ToInt32((double)t["ObjIndex"]); 
+				objIndex = Convert.ToInt32((double)t["ObjIndex"].ToNumber()); 
 			}
 
 			// TODO: What happens if the timer is not in the dictionary?
@@ -1550,7 +1557,7 @@ namespace WF.Player.Core.Engines
         /// </summary>
         /// <param name="idx">ObjIndex for ZObject.</param>
         /// <returns>LuaTable for ZObject.</returns>
-		public Table GetObject(int idx)
+		public WherigoObject GetObject(int idx)
 		{
 			// Sanity checks
 			CheckStateForLuaAccess();
@@ -1686,7 +1693,7 @@ namespace WF.Player.Core.Engines
 			string cn;
 			lock (luaState)
 			{
-				cn = lt != null ? lt["ClassName"] as string : null; 
+				cn = lt != null ? lt["ClassName"].ToString() as string : null; 
 			}
 
 			foreach (string classname in classnames)
@@ -1706,7 +1713,7 @@ namespace WF.Player.Core.Engines
 		/// <param name="table">LuaTable to convert.</param>
 		/// <returns>A list of Table entities that corresponds to all entries of the input
 		/// table that could convert to <typeparamref name="T"/>.</returns>
-		internal List<T> GetTableListFromLuaTable<T>(LuaTable table) where T : Table
+		internal List<T> GetTableListFromLuaTable<T>(LuaTable table) where T : WherigoObject
 		{
 			if (table == null)
 				return null;
@@ -1719,7 +1726,7 @@ namespace WF.Player.Core.Engines
 
 				while (t.MoveNext())
 				{
-					T val = GetTable((LuaTable)t.Value) as T;
+					T val = GetTable((LuaTable)t.Current.Value) as T;
 					if (val != null)
 						result.Add(val);
 				}
@@ -1743,7 +1750,7 @@ namespace WF.Player.Core.Engines
 		/// </summary>
 		/// <returns>The correct object.</returns>
 		/// <param name="t">LuaTable for object.</param>
-		internal Table GetTable(LuaTable t)
+		internal WherigoObject GetTable(LuaTable t)
 		{
 			if (t == null)
 				return null;
@@ -1751,18 +1758,18 @@ namespace WF.Player.Core.Engines
 			string className;
 			lock (luaState)
 			{
-				className = (string)t["ClassName"]; 
+				className = (string)t["ClassName"].ToString(); 
 			}
 
 			// Check if object is a AllZObject
-			object oi;
+			LuaValue oi;
 			lock (luaState)
 			{
 				oi = t["ObjIndex"];
 			}
 			if (oi != null) 
 			{
-				int objIndex = Convert.ToInt32 ((double)oi);
+				int objIndex = Convert.ToInt32 ((double)oi.ToNumber());
 
 				bool uiObjectKnown;
 				lock (syncRoot)
@@ -1775,7 +1782,7 @@ namespace WF.Player.Core.Engines
 						return uiObjects[objIndex]; 
 					}
 				else {
-					Table tab = null;
+					WherigoObject tab = null;
 					// Check for objects, that have a ObjIndex, but didn't derived from UIObject
 					if (className.Equals("ZInput"))
 						return new Input(this, t);
@@ -1881,7 +1888,7 @@ namespace WF.Player.Core.Engines
 			{
 				if (LogMessageRequested != null)
 				{
-					LogMessageRequested(this, new LogMessageEventArgs(cartridge, level, message));
+						LogMessageRequested(this, new LogMessageEventArgs(cartridge, level, message));
 				}
 			});
 		}
@@ -1902,7 +1909,7 @@ namespace WF.Player.Core.Engines
 					}
 				}
 
-				InputRequested(this, new ObjectEventArgs<Input>(cartridge, input));
+					InputRequested(this, new ObjectEventArgs<Input>(cartridge, input));
 			});
 		}
 
@@ -1922,7 +1929,7 @@ namespace WF.Player.Core.Engines
 					}
 				}
 
-				ShowMessageBoxRequested(this, new MessageBoxEventArgs(cartridge, mb));
+					ShowMessageBoxRequested(this, new MessageBoxEventArgs(cartridge, mb));
 			});
 		}
 
@@ -1942,7 +1949,7 @@ namespace WF.Player.Core.Engines
 					}
 				}
 
-				PlayMediaRequested(this, new ObjectEventArgs<Media>(cartridge, media));
+					PlayMediaRequested(this, new ObjectEventArgs<Media>(cartridge, media));
 			});
 		}
 
@@ -1962,7 +1969,7 @@ namespace WF.Player.Core.Engines
 					}
 				}
 
-				ShowScreenRequested(this, new ScreenEventArgs(cartridge, kind, obj));
+					ShowScreenRequested(this, new ScreenEventArgs(cartridge, kind, obj));
 			});
 		}
 
@@ -1972,18 +1979,18 @@ namespace WF.Player.Core.Engines
 			{
 				if (InventoryChanged != null)
 				{
-					InventoryChanged(this, new InventoryChangedEventArgs(cartridge, obj, fromContainer, toContainer));
+						InventoryChanged(this, new InventoryChangedEventArgs(cartridge, obj, fromContainer, toContainer));
 				}
 			});
 		}
 
-		private void RaiseAttributeChanged(Table obj, string propName)
+		private void RaiseAttributeChanged(WherigoObject obj, string propName)
 		{
 			BeginInvokeInUIThread(() =>
 			{
 				if (AttributeChanged != null)
 				{
-					AttributeChanged(this, new AttributeChangedEventArgs(cartridge, obj, propName));
+						AttributeChanged(this, new AttributeChangedEventArgs(cartridge, obj, propName));
 				}
 			}, true);
 		}
@@ -1994,7 +2001,7 @@ namespace WF.Player.Core.Engines
 			{
 				if (CommandChanged != null)
 				{
-					CommandChanged(this, new ObjectEventArgs<Command>(cartridge, command));
+						CommandChanged(this, new ObjectEventArgs<Command>(cartridge, command));
 				}
 			});
 		}
@@ -2005,7 +2012,7 @@ namespace WF.Player.Core.Engines
 			{
 				if (CartridgeCompleted != null)
 				{
-					CartridgeCompleted(this, new WherigoEventArgs(cartridge));
+						CartridgeCompleted(this, new WherigoEventArgs(cartridge));
 				}
 			});
 		}
@@ -2026,7 +2033,7 @@ namespace WF.Player.Core.Engines
 					}
 				}
 
-				SaveRequested(this, new SavingEventArgs(cartridge, closeAfterSave));
+					SaveRequested(this, new SavingEventArgs(cartridge, closeAfterSave));
 			});
 		}
 
@@ -2036,7 +2043,7 @@ namespace WF.Player.Core.Engines
 			{
 				if (ZoneStateChanged != null)
 				{
-					ZoneStateChanged(this, new ZoneStateChangedEventArgs(cartridge, list));
+						ZoneStateChanged(this, new ZoneStateChangedEventArgs(cartridge, list));
 				}
 			});
 		}
@@ -2056,7 +2063,7 @@ namespace WF.Player.Core.Engines
 						return;
 					}
 				}
-
+		
 				StopSoundsRequested(this, new WherigoEventArgs(cartridge));
 			});
 		}
@@ -2076,7 +2083,7 @@ namespace WF.Player.Core.Engines
 						return;
 					}
 				}
-
+				
 				PlayAlertRequested(this, new WherigoEventArgs(cartridge));
 			});
 		}
@@ -2097,7 +2104,7 @@ namespace WF.Player.Core.Engines
 					}
 				}
 
-				ShowStatusTextRequested(this, new StatusTextEventArgs(cartridge, text));
+					ShowStatusTextRequested(this, new StatusTextEventArgs(cartridge, text));
 			});
 		}
 

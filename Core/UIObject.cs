@@ -20,16 +20,16 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using NLua;
 using WF.Player.Core.Utils;
 using WF.Player.Core.Engines;
+using WF.Player.Core.Lua;
 
 namespace WF.Player.Core
 {
 	/// <summary>
 	/// Base class for a game entity that notifies of changes of its properties.
 	/// </summary>
-	public class UIObject : Table, INotifyPropertyChanged
+	public class UIObject : WherigoObject, INotifyPropertyChanged
 	{
 		private string html;
 
@@ -42,16 +42,6 @@ namespace WF.Player.Core
 		#endregion
 
 		#region Properties
-
-		/// <summary>
-		/// Gets the containe, which is holding this object.
-		/// </summary>
-		/// <value>The Container holding this object.</value>
-		public UIObject Container {
-			get {
-				return GetTable("Container") as UIObject;
-			}
-		}
 
 		/// <summary>
 		/// Gets the description.

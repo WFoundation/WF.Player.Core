@@ -19,15 +19,15 @@
 
 using System;
 using System.Collections.Generic;
-using NLua;
 using WF.Player.Core.Engines;
+using WF.Player.Core.Lua;
 
 namespace WF.Player.Core
 {
 	/// <summary>
 	/// An action of the game that can be executed.
 	/// </summary>
-	public class Command : Table
+	public class Command : WherigoObject
 	{
 
 		#region Constructor

@@ -25,14 +25,14 @@ namespace WF.Player.Core
 	/// <summary>
 	/// Event arguments for a change in an attribute of a Wherigo object.
 	/// </summary>
-	public class AttributeChangedEventArgs : ObjectEventArgs<Table>
+	public class AttributeChangedEventArgs : ObjectEventArgs<WherigoObject>
 	{
 		/// <summary>
 		/// Gets the name of the attribute that changed.
 		/// </summary>
 		public string PropertyName { get; private set; }
 
-		internal AttributeChangedEventArgs(Cartridge cart, Table obj, string prop)
+		internal AttributeChangedEventArgs(Cartridge cart, WherigoObject obj, string prop)
 			: base(cart, obj)
 		{
 			PropertyName = prop;

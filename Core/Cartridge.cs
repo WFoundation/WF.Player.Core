@@ -23,10 +23,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
-using NLua;
 using System.Net;
 using Newtonsoft.Json;
 using WF.Player.Core.Engines;
+using WF.Player.Core.Lua;
 
 namespace WF.Player.Core
 {
@@ -38,7 +38,7 @@ namespace WF.Player.Core
 	/// <summary>
 	/// A particular game of Wherigo.
 	/// </summary>
-	public class Cartridge : Table, INotifyPropertyChanged
+	public class Cartridge : WherigoObject, INotifyPropertyChanged
     {
 
         #region Members
@@ -409,7 +409,7 @@ namespace WF.Player.Core
 		public string Filename 
 		{ 
 			get; 
-			internal set; 
+			set; 
 		}
 
         /// <summary>

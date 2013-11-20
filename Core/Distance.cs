@@ -18,16 +18,16 @@
 ///
 
 using System;
-using NLua;
 using System.Globalization;
 using WF.Player.Core.Engines;
+using WF.Player.Core.Lua;
 
 namespace WF.Player.Core
 {
 	/// <summary>
 	/// A distance between two objects of the game.
 	/// </summary>
-	public class Distance : Table
+	public class Distance : WherigoObject
 	{
 
 		#region Constructor

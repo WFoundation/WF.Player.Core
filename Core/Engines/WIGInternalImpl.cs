@@ -23,8 +23,8 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
-using NLua;
 using WF.Player.Core.Utils;
+using WF.Player.Core.Lua;
 
 namespace WF.Player.Core.Engines
 {
@@ -41,7 +41,7 @@ namespace WF.Player.Core.Engines
         #region Private variables
 
 		private Engine engine;
-        private Lua luaState;
+		private LuaRuntime luaState;
 		private NumberFormatInfo nfi;
 
         #endregion
@@ -57,6 +57,31 @@ namespace WF.Player.Core.Engines
 
         #endregion
 
+		#region Delegates
+
+		private delegate void LogMessageDelegate(LuaNumber level, LuaString message);
+		private delegate void MessageBoxDelegate(LuaValue text, LuaValue idxMediaObj, LuaValue btn1Label, LuaValue btn2Label, LuaValue wrapper);
+		private delegate void GetInputDelegate(LuaValue input);
+		private delegate void NotifyOSDelegate(LuaValue command);
+		private delegate void ShowScreenDelegate(LuaValue screen, LuaValue idxObj);
+		private delegate void ShowStatusTextDelegate(LuaValue text);
+
+		private delegate void AttributeChangedEventDelegate(LuaValue obj, LuaValue type);
+		private delegate void CartridgeEventDelegate(LuaValue type);
+		private delegate void CommandChangedEventDelegate(LuaValue zcmd);
+		private delegate void InventoryEventDelegate(LuaValue obj, LuaValue fromContainer, LuaValue toContainer);
+		private delegate void MediaEventDelegate(LuaValue type, LuaValue mo);
+		private delegate void TimerEventDelegate(LuaValue timer, LuaValue type);
+		private delegate void ZoneStateChangedEventDelegate(LuaValue zones);
+
+		private delegate bool IsPointInZoneDelegate(LuaValue zonePoint, LuaValue zone);
+		private delegate LuaVararg VectorToZoneDelegate(LuaValue zonePoint, LuaValue zone);
+		private delegate LuaVararg VectorToSegmentDelegate(LuaValue point, LuaValue firstLinePoint, LuaValue secondLinePoint);
+		private delegate LuaVararg VectorToPointDelegate(LuaValue from, LuaValue to);
+		private delegate LuaTable TranslatePointDelegate(LuaValue zonePoint, LuaValue distance, LuaValue bearing);
+
+		#endregion
+
         #region Constructor
 
 		/// <summary>
@@ -67,7 +92,7 @@ namespace WF.Player.Core.Engines
 		/// </remarks>
 		/// <param name="engine"></param>
 		/// <param name="luaState"></param>
-        internal WIGInternalImpl( Engine engine, Lua luaState)
+		internal WIGInternalImpl( Engine engine, LuaRuntime luaState)
         {
 			this.engine = engine;
             this.luaState = luaState;
@@ -77,39 +102,74 @@ namespace WF.Player.Core.Engines
 			nfi.NumberDecimalSeparator = ".";
 			nfi.NumberGroupSeparator = "";
 
-			luaState.NewTable ("WIGInternal");
-			LuaTable wiginternal = (LuaTable)luaState["WIGInternal"];
+			luaState.Globals["WIGInternal"] = luaState.CreateTable();
+			LuaTable wiginternal = (LuaTable)luaState.Globals["WIGInternal"];
 
-            // Internal functions
-			wiginternal["IsPointInZone"] = luaState.RegisterFunction("IsPointInZone", this, this.GetType().GetMethod("IsPointInZone"));
-            // TODO: Implement this functions in C# instead of Lua.
-			wiginternal["VectorToZone"] = luaState.RegisterFunction("VectorToZone", this, this.GetType().GetMethod("VectorToZone"));
-			wiginternal["VectorToSegment"] = luaState.RegisterFunction("VectorToSegment", this, this.GetType().GetMethod ("VectorToSegment"));
-			wiginternal["VectorToPoint"] = luaState.RegisterFunction("VectorToPoint", this, this.GetType().GetMethod("VectorToPoint"));
-			wiginternal["TranslatePoint"] = luaState.RegisterFunction("TranslatePoint", this, this.GetType().GetMethod("TranslatePoint"));
+			// Interface for GUI
+			using (var fn = luaState.CreateFunctionFromDelegate(new LogMessageDelegate(LogMessage))) {
+				wiginternal["LogMessage"] = fn;
+			}
+			using (var fn = luaState.CreateFunctionFromDelegate(new MessageBoxDelegate(MessageBox))) {
+				wiginternal["MessageBox"] = fn;
+			}
+			using (var fn = luaState.CreateFunctionFromDelegate(new GetInputDelegate(GetInput))) {
+				wiginternal["GetInput"] = fn;
+			}
+			using (var fn = luaState.CreateFunctionFromDelegate(new NotifyOSDelegate(NotifyOS))) {
+				wiginternal["NotifyOS"] = fn;
+			}
+			using (var fn = luaState.CreateFunctionFromDelegate(new ShowScreenDelegate(ShowScreen))) {
+				wiginternal["ShowScreen"] = fn;
+			}
+			using (var fn = luaState.CreateFunctionFromDelegate(new ShowStatusTextDelegate(ShowStatusText))) {
+				wiginternal["ShowStatusText"] = fn;
+			}
 
-            // Interface for GUI
-            wiginternal["LogMessage"] = luaState.RegisterFunction("LogMessage", this, this.GetType().GetMethod("LogMessage"));
-			wiginternal["MessageBox"] = luaState.RegisterFunction("MessageBox", this, this.GetType().GetMethod("MessageBox"));
-			wiginternal["GetInput"] = luaState.RegisterFunction("GetInput", this, this.GetType().GetMethod("GetInput"));
-			wiginternal["ShowStatusText"] = luaState.RegisterFunction("ShowStatusText", this, this.GetType().GetMethod("ShowStatusText"));
-			wiginternal["ShowScreen"] = luaState.RegisterFunction("ShowScreen", this, this.GetType().GetMethod("ShowScreen"));
-			wiginternal["NotifyOS"] = luaState.RegisterFunction("NotifyOS", this, this.GetType().GetMethod("NotifyOS"));
+			// Events
+			using (var fn = luaState.CreateFunctionFromDelegate(new AttributeChangedEventDelegate(AttributeChangedEvent))) {
+				wiginternal["AttributeChangedEvent"] = fn;
+			}
+			using (var fn = luaState.CreateFunctionFromDelegate(new CartridgeEventDelegate(CartridgeEvent))) {
+				wiginternal["CartridgeEvent"] = fn;
+			}
+			using (var fn = luaState.CreateFunctionFromDelegate(new CommandChangedEventDelegate(CommandChangedEvent))) {
+				wiginternal["CommandChangedEvent"] = fn;
+			}
+			using (var fn = luaState.CreateFunctionFromDelegate(new InventoryEventDelegate(InventoryEvent))) {
+				wiginternal["InventoryEvent"] = fn;
+			}
+			using (var fn = luaState.CreateFunctionFromDelegate(new MediaEventDelegate(MediaEvent))) {
+				wiginternal["MediaEvent"] = fn;
+			}
+			using (var fn = luaState.CreateFunctionFromDelegate(new TimerEventDelegate(TimerEvent))) {
+				wiginternal["TimerEvent"] = fn;
+			}
+			using (var fn = luaState.CreateFunctionFromDelegate(new ZoneStateChangedEventDelegate(ZoneStateChangedEvent))) {
+				wiginternal["ZoneStateChangedEvent"] = fn;
+			}
 
-            // Events
-			wiginternal["MediaEvent"] = luaState.RegisterFunction("MediaEvent", this, this.GetType().GetMethod("MediaEvent"));
-			wiginternal["ZoneStateChangedEvent"] = luaState.RegisterFunction("ZoneStateChangedEvent", this, this.GetType().GetMethod ("ZoneStateChangedEvent"));
-			wiginternal["InventoryEvent"] = luaState.RegisterFunction("InventoryEvent", this, this.GetType().GetMethod("InventoryEvent"));
-			wiginternal["TimerEvent"] = luaState.RegisterFunction("TimerEvent", this, this.GetType().GetMethod("TimerEvent"));
-			wiginternal["CartridgeEvent"] = luaState.RegisterFunction("CartridgeEvent", this, this.GetType().GetMethod("CartridgeEvent"));
-			wiginternal["CommandChangedEvent"] = luaState.RegisterFunction("CommandChangedEvent", this, this.GetType().GetMethod("CommandChangedEvent"));
-			wiginternal["AttributeChangedEvent"] = luaState.RegisterFunction("AttributeChangedEvent", this, this.GetType().GetMethod("AttributeChangedEvent"));
+			// Internal functions
+			using (var fn = luaState.CreateFunctionFromDelegate(new IsPointInZoneDelegate(IsPointInZone))) {
+				wiginternal["IsPointInZone"] = fn;
+			}
+			using (var fn = luaState.CreateFunctionFromDelegate(new VectorToZoneDelegate(VectorToZone))) {
+				wiginternal["VectorToZone"] = fn;
+			}
+			using (var fn = luaState.CreateFunctionFromDelegate(new VectorToSegmentDelegate(VectorToSegment))) {
+				wiginternal["VectorToSegment"] = fn;
+			}
+			using (var fn = luaState.CreateFunctionFromDelegate(new VectorToPointDelegate(VectorToPoint))) {
+				wiginternal["VectorToPoint"] = fn;
+			}
+			using (var fn = luaState.CreateFunctionFromDelegate(new TranslatePointDelegate(TranslatePoint))) {
+				wiginternal["TranslatePoint"] = fn;
+			}
 
             // Mark package WIGInternal as loaded
-			LuaTable package = (LuaTable)luaState["package"];
+			LuaTable package = (LuaTable)luaState.Globals["package"];
 			LuaTable loaded = (LuaTable)package["loaded"];
             loaded["WIGInternal"] = wiginternal;
-			package["preload.WIGInternal"] = wiginternal;
+			((LuaTable)package["preload"])["WIGInternal"] = wiginternal;
 
             // Now load Wherigo.luac
 			using (BinaryReader bw = new BinaryReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("WF.Player.Core.Resources.Wherigo.luac")))
@@ -156,10 +216,10 @@ namespace WF.Player.Core.Engines
         /// <param name="param1">Level for message. For possible values see Engine.cs in region Constants.</param>
         /// <param name="param2">Text for the message, that should be saved to the file.</param>
         /// <returns></returns>
-        public void LogMessage(object param1, string param2)
+		public void LogMessage(object param1, object param2)
         {
-            int level = param1 == null ? 0 : Convert.ToInt32 ((double)param1);
-            string message = param2 == null ? "" : (string)param2;
+			int level = param1 == null ? 0 : Convert.ToInt32 ((double)param1);
+			string message = param2 == null ? "" : (string)param2;
 
             engine.HandleLogMessage(level, message);
         }
@@ -174,10 +234,10 @@ namespace WF.Player.Core.Engines
         /// <param name="param5">Callback LuaFunction, which is called, if the user selected a button (returns text) or canceled (returns nil) the message.</param>
 		public void MessageBox(object param1, object param2, object param3, object param4, object param5)
         {
-            string text = param1 == null ? "" : (string)param1;
-            int idxMediaObj = param2 == null ? -1 : Convert.ToInt32 (param2);
-            string btn1Label = param3 == null ? "" : (string)param3;
-            string btn2Label = param4 == null ? "" : (string)param4;
+			string text = param1 == null ? "" : (string)param1;
+			int idxMediaObj = param2 == null ? -1 : Convert.ToInt32 ((double)param2);
+			string btn1Label = param3 == null ? "" : (string)param3;
+			string btn2Label = param4 == null ? "" : (string)param4;
             LuaFunction wrapper = (LuaFunction)param5;
 
 			engine.HandleShowMessage(
@@ -208,11 +268,11 @@ namespace WF.Player.Core.Engines
         /// <param name="param2">LuaTable for media object.</param>
 		public void MediaEvent(object param1, object param2)
         {
-            int type = param1 == null ? 0 : Convert.ToInt32 (param1);
+			int type = param1 == null ? 0 : Convert.ToInt32 ((double)param1);
 			double oi;
 			lock (luaState)
 			{
-				oi = (double)((LuaTable)param2)["ObjIndex"];
+				oi = (double)((LuaTable)param2)["ObjIndex"].ToNumber();
 			}
 			Media mediaObj = param2 == null ? null : engine.Cartridge.Resources[Convert.ToInt32 (oi)];
 
@@ -289,7 +349,7 @@ namespace WF.Player.Core.Engines
 		/// </summary>
 		/// <returns>An empty object array.</returns>
 		/// <param name="param1">LuaTable with a string, describing which attribute has changed.</param>
-		public object[] CartridgeEvent(object param1)
+		public void CartridgeEvent(object param1)
 		{
 			string type = param1 == null ? "" : (string)param1;
 
@@ -299,8 +359,6 @@ namespace WF.Player.Core.Engines
 
 			if (OnCartridgeChanged != null)
 				OnCartridgeChanged(type);
-
-			return new object[0];
 		}
 
 		/// <summary>
@@ -308,14 +366,12 @@ namespace WF.Player.Core.Engines
 		/// </summary>
 		/// <returns>An empty object array.</returns>
 		/// <param name="param1">LuaTable with the command that had be changed.</param>
-		public object[] CommandChangedEvent(object param1)
+		public void CommandChangedEvent(object param1)
 		{
 			LuaTable zcmd = (LuaTable)param1;
 
 			if (OnCommandChanged != null)
 				OnCommandChanged(zcmd);
-
-			return new object[0];
 		}
 
 		/// <summary>
@@ -338,7 +394,7 @@ namespace WF.Player.Core.Engines
 		/// </summary>
 		/// <returns>An empty object array.</returns>
 		/// <param name="param1">LuaTable with the timer and a string, describing the event.</param>
-		public object[] TimerEvent(object param1, object param2)
+		public void TimerEvent(object param1, object param2)
         {
 			LuaTable timer = (LuaTable)param1;
 			string type = param2 == null ? "" : (string)param2;
@@ -348,8 +404,6 @@ namespace WF.Player.Core.Engines
 
             if (type.ToLower().Equals("stop") && OnTimerStopped != null)
                 OnTimerStopped(timer);
-
-            return new object[0];
         }
 
 		/// <summary>
@@ -357,7 +411,7 @@ namespace WF.Player.Core.Engines
 		/// </summary>
 		/// <returns>An empty object array.</returns>
 		/// <param name="param1">LuaTable with zones, that changed their state.</param>
-		public object[] ZoneStateChangedEvent(object param1)
+		public void ZoneStateChangedEvent(object param1)
 		{
 			LuaTable zones;
 			lock (luaState)
@@ -367,8 +421,6 @@ namespace WF.Player.Core.Engines
 
 			if (OnZoneStateChanged != null)
 				OnZoneStateChanged(zones);
-
-			return new object[0];
 		}
 
 		#endregion
@@ -384,7 +436,7 @@ namespace WF.Player.Core.Engines
         /// <param name="param1">LuaTable for ZonePoint to check.</param>
         /// <param name="param2">LuaTable with Zone, which Points are used for the check.</param>
         /// <returns></returns>
-        public bool IsPointInZone(object param1, object param2)
+		public bool IsPointInZone(object param1, object param2)
         {
             LuaTable zonePoint;
             LuaTable zone;
@@ -408,8 +460,8 @@ namespace WF.Player.Core.Engines
 
 			lock (luaState)
 			{
-				lat = (double)zonePoint["latitude"];
-				lon = (double)zonePoint["longitude"];
+				lat = (double)zonePoint["latitude"].ToNumber();
+				lon = (double)zonePoint["longitude"].ToNumber();
 				points = (LuaTable)zone["Points"];
 				count = points.Keys.Count;
 			}
@@ -423,8 +475,8 @@ namespace WF.Player.Core.Engines
             {
 				lock (luaState)
 				{
-					lats[i] = (double)((LuaTable)points[i + 1])["latitude"];
-					lons[i] = (double)((LuaTable)points[i + 1])["longitude"]; 
+					lats[i] = (double)((LuaTable)points[i + 1])["latitude"].ToNumber();
+					lons[i] = (double)((LuaTable)points[i + 1])["longitude"].ToNumber(); 
 				}
             }
 
@@ -450,8 +502,10 @@ namespace WF.Player.Core.Engines
         /// <param name="zoneObj">LuaTable with Zone, which Points are used for the check.</param>
         /// <param name="bearing">Double value for bearing to calculated point on line.</param>
         /// <returns>LuaTable for distance to calculated nearest point of zone.</returns>
-        public LuaTable VectorToZone(object pointObj, object zoneObj, out double bearing)
+		public LuaVararg VectorToZone(object pointObj, object zoneObj)
         {
+			List<LuaValue> ret = new List<LuaValue>(2);
+
             if (!(pointObj is LuaTable))
                 throw new ArgumentException(String.Format("bad argument #1 to 'VectorToZone' (ZonePoint expected, got {0})", pointObj.GetType()));
 
@@ -465,10 +519,12 @@ namespace WF.Player.Core.Engines
             // If the point is in the zone, the distance and bearing are 0.
 			if (IsPointInZone(zonePoint, zone))
 			{
-				bearing = 0;
 				lock (luaState)
 				{
-					return (LuaTable)luaState.DoString("return Wherigo.Distance(0)")[0]; 
+					ret.Add((LuaTable)luaState.DoString("return Wherigo.Distance(0)")[0]); 
+					ret.Add(0);
+
+					return new LuaVararg(ret, true);
 				}
 			}
 
@@ -480,37 +536,40 @@ namespace WF.Player.Core.Engines
 			}
 			if (points == null)
 			{
-				bearing = double.NaN;
-				return null;
+				ret.Add(null); 
+				ret.Add(0);
+
+				return new LuaVararg(ret, true);
 			}
 
 			// Performs the computation.
 
-			double b, tb, k;
-			LuaTable td, current;
+			double k;
+			LuaVararg td, current;
 
 			lock (luaState)
 			{
-				current = VectorToSegment(pointObj, points[points.Keys.Count], points[1], out b);
+				current = VectorToSegment(pointObj, points[points.Keys.Count], points[1]);
 				var pairs = points.GetEnumerator();
 
 				while (pairs.MoveNext())
 				{
-					k = (double)pairs.Key;
+					k = (double)pairs.Current.Key.ToNumber();
 					if (k > 1)
 					{
-						td = VectorToSegment(pointObj, points[k - 1], points[k], out tb);
-						if ((double)td["value"] < (double)current["value"])
+						td = VectorToSegment(pointObj, points[k - 1], points[k]);
+						if ((double)((LuaTable)td[0])["value"].ToNumber() < (double)((LuaTable)current[0])["value"].ToNumber())
 						{
 							current = td;
-							b = tb % 360;
 						}
 					}
 				} 
 			}
 
-			bearing = b;
-			return current;
+			ret.Add(current[0]);
+			ret.Add((double)current[1].ToNumber() % 360);
+
+			return new LuaVararg(ret,true);
         }
 
         /// <summary>
@@ -521,25 +580,25 @@ namespace WF.Player.Core.Engines
         /// <param name="secondLinePointObj">LuaTable for second ZonePoint of line.</param>
         /// <param name="bearing">Double value for bearing to calculated point on line.</param>
         /// <returns>LuaTable for distance to calculated point on line.</returns>
-        public LuaTable VectorToSegment(object pointObj, object firstLinePointObj, object secondLinePointObj, out double bearing)
+		public LuaVararg VectorToSegment(object pointObj, object firstLinePointObj, object secondLinePointObj)
         {
-			double b1, bs;
+			LuaVararg d1 = VectorToPoint(firstLinePointObj, pointObj);
+			double b1 = (double)d1[1].ToNumber();
+			double dd1 = PI_180 * ((Distance)engine.GetTable((LuaTable)d1[0])).ValueAs(DistanceUnit.NauticalMiles) / 60;
 
-			LuaTable d1 = VectorToPoint(firstLinePointObj, pointObj, out b1);
-			double dd1 = PI_180 * ((Distance)engine.GetTable(d1)).ValueAs(DistanceUnit.NauticalMiles) / 60;
-
-			LuaTable ds = VectorToPoint(firstLinePointObj, secondLinePointObj, out bs);
-			double dds = PI_180 * ((Distance)engine.GetTable(ds)).ValueAs(DistanceUnit.NauticalMiles) / 60;
+			LuaVararg ds = VectorToPoint(firstLinePointObj, secondLinePointObj);
+			double bs = (double)ds[1].ToNumber();
+			double dds = PI_180 * ((Distance)engine.GetTable((LuaTable)ds[0])).ValueAs(DistanceUnit.NauticalMiles) / 60;
 
 			var dist = Math.Asin(Math.Sin(dd1) * Math.Sin(PI_180 * (b1 - bs)));
 			var dat = Math.Acos(Math.Cos(dd1) / Math.Cos(dist));
 			if (dat <= 0)
 			{
-				return VectorToPoint(pointObj, firstLinePointObj, out bearing);
+				return VectorToPoint(pointObj, firstLinePointObj);
 			}
 			else if (dat >= PI_180 * dds)
 			{
-				return VectorToPoint(pointObj, secondLinePointObj, out bearing);
+				return VectorToPoint(pointObj, secondLinePointObj);
 			}
 
 			LuaTable intersect;
@@ -549,7 +608,7 @@ namespace WF.Player.Core.Engines
 				intersect = TranslatePoint(firstLinePointObj, luaState.DoString(String.Format("return Wherigo.Distance({0}, 'nauticalmiles')", (dat * 60).ToString(nfi)))[0], bs); 
 			}
 
-			return VectorToPoint(pointObj, intersect, out bearing);
+			return VectorToPoint(pointObj, intersect);
 		}
 
         /// <summary>
@@ -559,32 +618,36 @@ namespace WF.Player.Core.Engines
         /// <param name="param2">LuaTable for second ZonePoint</param>
         /// <param name="bearing">Double value for bearing from first point to second point.</param>
         /// <returns></returns>
-        public LuaTable VectorToPoint(object param1, object param2, out double bearing)
+		public LuaVararg VectorToPoint(object param1, object param2)
         {
+			List<LuaValue> ret = new List<LuaValue>(2);
+
             LuaTable zonePoint1 = (LuaTable)param1;
             LuaTable zonePoint2 = (LuaTable)param2;
 
 			double lat1, lon1, lat2, lon2;
 			lock (luaState)
 			{
-				lat1 = (double)zonePoint1["latitude"];
-				lon1 = (double)zonePoint1["longitude"];
-				lat2 = (double)zonePoint2["latitude"];
-				lon2 = (double)zonePoint2["longitude"]; 
+				lat1 = (double)zonePoint1["latitude"].ToNumber();
+				lon1 = (double)zonePoint1["longitude"].ToNumber();
+				lat2 = (double)zonePoint2["latitude"].ToNumber();
+				lon2 = (double)zonePoint2["longitude"].ToNumber(); 
 			}
 
-            double distance;
+			double distance, bearing;
 
             double mx = Math.Abs(CoreLat2M(lat1 - lat2));
             double my = Math.Abs(CoreLon2M(lat2, lon1 - lon2));
 
             distance = Math.Sqrt(mx * mx + my * my);
-
             bearing = (Math.Atan2(CoreLat2M(lat2 - lat1), CoreLon2M(lat2, lon2 - lon1)) + Math.PI / 2) * (180.0 / Math.PI);
 
 			lock (luaState)
 			{
-				return (LuaTable)luaState.DoString(String.Format("return Wherigo.Distance({0},'m')", distance.ToString(nfi)))[0]; 
+				ret.Add((LuaTable)luaState.DoString(String.Format("return Wherigo.Distance({0},'m')", distance.ToString(nfi)))[0]); 
+				ret.Add(bearing);
+
+				return new LuaVararg(ret, true);
 			}
         }
 
@@ -595,19 +658,19 @@ namespace WF.Player.Core.Engines
         /// <param name="param2">LuaTable for distance.</param>
         /// <param name="param3">Double value for bearing</param>
         /// <returns></returns>
-        public LuaTable TranslatePoint(object param1, object param2, object param3)
+		public LuaTable TranslatePoint(object param1, object param2, object param3)
         {
             LuaTable zonePoint = (LuaTable)param1;
             LuaTable distance = (LuaTable)param2;
-            double bearing = (double)param3;
+			double bearing = (double)param3;
 
 			double lat, lon, alt, dist;
 			lock (luaState)
 			{
-				lat = (double)zonePoint["latitude"];
-				lon = (double)zonePoint["longitude"];
-				alt = (double)zonePoint["altitude.value"];
-				dist = (double)distance["value"]; 
+				lat = (double)zonePoint["latitude"].ToNumber();
+				lon = (double)zonePoint["longitude"].ToNumber();
+				alt = (double)zonePoint["altitude.value"].ToNumber();
+				dist = (double)distance["value"].ToNumber(); 
 			}
 
             double rad = CoreAzimuth2Angle(bearing);

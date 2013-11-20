@@ -19,8 +19,8 @@
 
 using System;
 using System.Collections.Generic;
-using NLua;
 using System.Threading;
+using WF.Player.Core.Lua;
 
 namespace WF.Player.Core.Utils.Threading
 {
@@ -78,7 +78,7 @@ namespace WF.Player.Core.Utils.Threading
 		/// <param name="obj">LuaTable that contains the function.</param>
 		/// <param name="func">Field name in <paramref name="obj"/> that corresponds to the function to call.</param>
 		/// <param name="parameters">Optional parameters to pass to the function.</param>
-		public void BeginCall(LuaTable obj, string func, params object[] parameters)
+		public void BeginCall(LuaTable obj, string func, params LuaValue[] parameters)
 		{
 			// Conforms the parameters and enqueues a job.
 			AcceptJob(GetJob(obj, func, ConformParameters(parameters)));
@@ -92,7 +92,7 @@ namespace WF.Player.Core.Utils.Threading
 		/// <param name="func">Field name in the underlying LuaTable of <paramref name="obj"/> that corresponds to the 
 		/// function to call.</param>
 		/// <param name="parameters">Optional parameters to pass to the function.</param>
-		public void BeginCall(Table obj, string func, params object[] parameters)
+		public void BeginCall(WherigoObject obj, string func, params LuaValue[] parameters)
 		{
 			// Conforms the parameters and enqueues a job.
 			AcceptJob(GetJob(obj.WIGTable, func, ConformParameters(parameters)));
@@ -104,7 +104,7 @@ namespace WF.Player.Core.Utils.Threading
 		/// <remarks>This method returns once the call job is queued.</remarks>
 		/// <param name="func">LuaFunction to call.</param>
 		/// <param name="parameters">Optional parameters to pass to the function.</param>
-		public void BeginCall(LuaFunction func, params object[] parameters)
+		public void BeginCall(LuaFunction func, params LuaValue[] parameters)
 		{
 			// Conforms the parameters and enqueues a job.
 			AcceptJob(GetJob(func, ConformParameters(parameters)));
@@ -118,7 +118,7 @@ namespace WF.Player.Core.Utils.Threading
 		/// <param name="func">Field name in <paramref name="obj"/> that corresponds to the function to call.</param>
 		/// <param name="parameters">Optional parameters to pass to the function. <paramref name="obj"/> is automatically
 		/// added as first parameter.</param>
-		public void BeginCallSelf(LuaTable obj, string func, params object[] parameters)
+		public void BeginCallSelf(LuaTable obj, string func, params LuaValue[] parameters)
 		{
 			// Conforms the parameters and enqueues a job.
 			AcceptJob(GetJob(obj, func, ConformParameters(parameters, obj)));
@@ -133,7 +133,7 @@ namespace WF.Player.Core.Utils.Threading
 		/// self-function to call.</param>
 		/// <param name="parameters">Optional parameters to pass to the function. <paramref name="obj"/> is automatically
 		/// added as first parameter.</param>
-		public void BeginCallSelf(Table obj, string func, params object[] parameters)
+		public void BeginCallSelf(WherigoObject obj, string func, params LuaValue[] parameters)
 		{
 			// Conforms the parameters and enqueues a job.
 			AcceptJob(GetJob(obj.WIGTable, func, ConformParameters(parameters, obj.WIGTable)));
@@ -199,23 +199,23 @@ namespace WF.Player.Core.Utils.Threading
 
 		#region Job Creation
 
-		private Action GetJob(LuaTable obj, string func, object[] parameters)
+		private Action GetJob(LuaTable obj, string func, LuaValue[] parameters)
 		{
 			return new Action(() => RunCall(obj, func, parameters));
 		}
 
-		private Action GetJob(LuaFunction func, object[] parameters)
+		private Action GetJob(LuaFunction func, LuaValue[] parameters)
 		{
 			return new Action(() => RunCall(func, parameters));
 		}
 
-		private object[] ConformParameters(object[] parameters)
+		private LuaValue[] ConformParameters(LuaValue[] parameters)
 		{
 			// Null parameters are replaced with an empty array.
-			return parameters ?? new object[] { };
+			return parameters ?? new LuaValue[] { };
 		}
 
-		private object[] ConformParameters(object[] parameters, object firstParam)
+		private LuaValue[] ConformParameters(LuaValue[] parameters, LuaValue firstParam)
 		{
 			// Conforms the parameters and then concats the first param.
 			return ConformParameters(parameters).ConcatBefore(firstParam);
@@ -225,7 +225,7 @@ namespace WF.Player.Core.Utils.Threading
 
 		#region Job Processing
 
-		private void RunCall(LuaTable obj, string func, object[] parameters)
+		private void RunCall(LuaTable obj, string func, LuaValue[] parameters)
 		{
 			// This executes in the job thread.
 
@@ -243,7 +243,7 @@ namespace WF.Player.Core.Utils.Threading
 			luaState.SafeCallRaw(lf, parameters);
 		}
 
-		private void RunCall(LuaFunction func, object[] parameters)
+		private void RunCall(LuaFunction func, LuaValue[] parameters)
 		{
 			// This executes in the job thread.
 

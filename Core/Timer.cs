@@ -18,15 +18,15 @@
 ///
 
 using System;
-using NLua;
 using WF.Player.Core.Engines;
+using WF.Player.Core.Lua;
 
 namespace WF.Player.Core
 {
 	/// <summary>
 	/// A timer clock relevant to the game.
 	/// </summary>
-	public class Timer : Table
+	public class Timer : WherigoObject
 	{		
 		#region Constructor
 

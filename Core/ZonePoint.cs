@@ -18,15 +18,15 @@
 ///
 
 using System;
-using NLua;
 using WF.Player.Core.Engines;
+using WF.Player.Core.Lua;
 
 namespace WF.Player.Core
 {
 	/// <summary>
 	/// A defining point of a Zone.
 	/// </summary>
-	public class ZonePoint : Table
+	public class ZonePoint : WherigoObject
 	{
 
 		#region Constructor

@@ -5,9 +5,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Android", "Core\Core.A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Newtonsoft.Json.MonoDroid", "..\Newtonsoft.Json\Newtonsoft.Json\Newtonsoft.Json.MonoDroid.csproj", "{E6C3413C-919B-486D-8B6C-225CBD921B98}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLua.Android", "NLua\Core\NLua\NLua.Android.csproj", "{420205BB-ABE3-4FDD-B5D4-BE96611BF0D5}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeraLua.Android", "NLua\Core\KeraLua\src\KeraLua.Android.csproj", "{3C46A05D-49FC-4361-BC68-E0D3C38C9983}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KopiLua.Android", "KopiLua\KopiLua\KopiLua.Android.csproj", "{15166620-0EDC-4F70-8551-590818DF7C67}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,14 +13,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{3C46A05D-49FC-4361-BC68-E0D3C38C9983}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3C46A05D-49FC-4361-BC68-E0D3C38C9983}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3C46A05D-49FC-4361-BC68-E0D3C38C9983}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3C46A05D-49FC-4361-BC68-E0D3C38C9983}.Release|Any CPU.Build.0 = Release|Any CPU
-		{420205BB-ABE3-4FDD-B5D4-BE96611BF0D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{420205BB-ABE3-4FDD-B5D4-BE96611BF0D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{420205BB-ABE3-4FDD-B5D4-BE96611BF0D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{420205BB-ABE3-4FDD-B5D4-BE96611BF0D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15166620-0EDC-4F70-8551-590818DF7C67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15166620-0EDC-4F70-8551-590818DF7C67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15166620-0EDC-4F70-8551-590818DF7C67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15166620-0EDC-4F70-8551-590818DF7C67}.Release|Any CPU.Build.0 = Release|Any CPU
 		{47C98C7A-1A47-457B-9A22-6D621F344B56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{47C98C7A-1A47-457B-9A22-6D621F344B56}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47C98C7A-1A47-457B-9A22-6D621F344B56}.Release|Any CPU.ActiveCfg = Release|Any CPU

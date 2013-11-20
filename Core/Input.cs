@@ -19,16 +19,16 @@
 
 using System;
 using System.Collections.Generic;
-using NLua;
 using WF.Player.Core.Utils;
 using WF.Player.Core.Engines;
+using WF.Player.Core.Lua;
 
 namespace WF.Player.Core
 {
 	/// <summary>
 	/// An input requested of the player.
 	/// </summary>
-	public class Input : Table
+	public class Input : WherigoObject
 	{
 		#region Constructor
 
@@ -47,7 +47,13 @@ namespace WF.Player.Core
 		{
 			get 
 			{
-				return GetList<string>("Choices");
+				var list = GetList<LuaString>("Choices");
+				List<string> ret = new List<string>(list.Count);
+
+				foreach(LuaString s in list)
+					ret.Add((string)s.ToString());
+
+				return ret;
 			}
 		}
 
