@@ -48,7 +48,7 @@ namespace WF.Player.Core
 		internal WherigoObject(Engine e, LuaTable t)
 		{
 			engine = e;
-			wigTable = t;
+			wigTable = t == null ? null : (LuaTable)t.CopyReference();
 		} 
 
 		#endregion
