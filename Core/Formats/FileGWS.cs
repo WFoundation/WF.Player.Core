@@ -186,7 +186,7 @@ namespace WF.Player.Core.Formats
 
 			if (obj != null)
 			{
-				className = luaState.SafeGetField<string>(obj, "ClassName");
+				className = luaState.SafeGetField<LuaString>(obj, "ClassName");
 				if (className != null)
 					rawset = luaState.SafeGetField<LuaFunction>(obj, "rawset");
 			}
@@ -322,7 +322,7 @@ namespace WF.Player.Core.Formats
 			}
 
 			LuaTable obj = engine.Player.WIGTable;
-			className = Encoding.UTF8.GetBytes(luaState.SafeGetField<string>(obj, "ClassName"));
+			className = Encoding.UTF8.GetBytes(luaState.SafeGetField<LuaString>(obj, "ClassName"));
 			output.Write(className.Length);
 			output.Write(className);
 			LuaTable data = (LuaTable)luaState.SafeCallSelf(obj, "serialize")[0];
@@ -331,7 +331,7 @@ namespace WF.Player.Core.Formats
 			for (int i = 0; i < numAllZObjects; i++)
 			{
 				obj = luaState.SafeGetInnerField<LuaTable>(cartridge.WIGTable, "AllZObjects", i);
-				className = Encoding.UTF8.GetBytes(luaState.SafeGetField<string>(obj, "ClassName"));
+				className = Encoding.UTF8.GetBytes(luaState.SafeGetField<LuaString>(obj, "ClassName"));
 				output.Write(className.Length);
 				output.Write(className);
 				data = (LuaTable)luaState.SafeCallSelf(obj, "serialize")[0];
@@ -407,7 +407,7 @@ namespace WF.Player.Core.Formats
 				}
 				if (entry.Current.Value is LuaTable)
 				{
-					string className = luaState.SafeGetField<string>((LuaTable)entry.Current.Value, "ClassName");
+					string className = luaState.SafeGetField<LuaString>((LuaTable)entry.Current.Value, "ClassName");
 
 					if (className != null && (className.Equals("Distance") || className.Equals("ZonePoint") || className.Equals("ZCommand") || className.Equals("ZReciprocalCommand")))
 					{
@@ -422,7 +422,7 @@ namespace WF.Player.Core.Formats
 						className.Equals("ZMedia") || className.Equals("Zone") || className.Equals("ZTask") || className.Equals("ZTimer")))
 					{
 						output.Write((byte)7);
-						output.Write(Convert.ToInt16(luaState.SafeGetField<object>((LuaTable)entry.Current.Value, "ObjIndex")));
+						output.Write(Convert.ToInt16(luaState.SafeGetField<LuaNumber>((LuaTable)entry.Current.Value, "ObjIndex")));
 					}
 					else
 					{
