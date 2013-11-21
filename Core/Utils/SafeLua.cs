@@ -257,7 +257,7 @@ namespace WF.Player.Core.Utils
 				}
 			}
 
-			return (o != null && o is T) ? (T)o : default(T);
+			return (o != null && o is T) ? (T)(object)o : default(T);
 		}
 
 		/// <summary>
@@ -269,7 +269,7 @@ namespace WF.Player.Core.Utils
 		/// <param name="parameters">Parameters for the function. The table will be added
 		/// as first parameter.</param>
 		/// <returns>The inner LuaTable contained in the result, or null.</returns>
-		public LuaTable SafeCallSelf(LuaTable table, string func, params LuaValue[] parameters)
+		public LuaVararg SafeCallSelf(LuaTable table, string func, params LuaValue[] parameters)
 		{
 			lock (luaState)
 			{
@@ -279,7 +279,7 @@ namespace WF.Player.Core.Utils
 				}
 				catch (Exception e)
 				{
-					return HandleException(e, null) as LuaTable;
+					return HandleException(e, null) as LuaVararg;
 				}
 			}
 		}
@@ -452,7 +452,7 @@ namespace WF.Player.Core.Utils
 			{
 				try
 				{
-					return luaState.EmptyTable();
+					return luaState.CreateTable();
 				}
 				catch (Exception e)
 				{

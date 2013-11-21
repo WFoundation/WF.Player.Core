@@ -238,7 +238,7 @@ namespace WF.Player.Core.Engines
 			int idxMediaObj = param2 == null ? -1 : Convert.ToInt32 ((double)param2);
 			string btn1Label = param3 == null ? "" : (string)param3;
 			string btn2Label = param4 == null ? "" : (string)param4;
-            LuaFunction wrapper = (LuaFunction)param5;
+			LuaFunction wrapper = (LuaFunction)((LuaValue)param5).CopyReference();
 
 			engine.HandleShowMessage(
 				text, 
@@ -669,7 +669,7 @@ namespace WF.Player.Core.Engines
 			{
 				lat = (double)zonePoint["latitude"].ToNumber();
 				lon = (double)zonePoint["longitude"].ToNumber();
-				alt = (double)zonePoint["altitude.value"].ToNumber();
+				alt = (double)((LuaTable)zonePoint["altitude"])["value"].ToNumber();
 				dist = (double)distance["value"].ToNumber(); 
 			}
 

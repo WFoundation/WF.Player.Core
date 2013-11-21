@@ -62,7 +62,7 @@ namespace WF.Player.Core
 		/// <param name="key">Key as string for the entry.</param>
 		protected bool GetBool(string key)
 		{
-			return engine.SafeLuaState.SafeGetField<bool>(wigTable, key);
+			return engine.SafeLuaState.SafeGetField<LuaBoolean>(wigTable, key).ToBoolean();
 		}
 
 		/// <summary>
@@ -72,7 +72,7 @@ namespace WF.Player.Core
 		/// <param name="key">Key as number for the entry.</param>
 		protected bool GetBool(double key)
 		{
-			return engine.SafeLuaState.SafeGetField<bool>(wigTable, key);
+			return engine.SafeLuaState.SafeGetField<LuaBoolean>(wigTable, key).ToBoolean();
         }
 
 		/// <summary>
@@ -82,7 +82,7 @@ namespace WF.Player.Core
 		/// <param name="key">Key as string for the entry.</param>
 		protected double GetDouble(string key)
 		{
-			return engine.SafeLuaState.SafeGetField<double>(wigTable, key);
+			return (double)engine.SafeLuaState.SafeGetField<LuaNumber>(wigTable, key).ToNumber();
 		}
 
 		/// <summary>
@@ -92,7 +92,7 @@ namespace WF.Player.Core
 		/// <param name="key">Key as number for the entry.</param>
 		protected double GetDouble(double key)
 		{
-			return engine.SafeLuaState.SafeGetField<double>(wigTable, key);
+			return (double)engine.SafeLuaState.SafeGetField<LuaNumber>(wigTable, key).ToNumber();
         }
 
 		/// <summary>
@@ -102,7 +102,7 @@ namespace WF.Player.Core
 		/// <param name="key">Key as string for the entry.</param>
 		protected int GetInt(string key)
 		{
-			return Convert.ToInt32(engine.SafeLuaState.SafeGetField<double>(wigTable, key));
+			return Convert.ToInt32((double)engine.SafeLuaState.SafeGetField<LuaNumber>(wigTable, key).ToNumber());
 		}
 
 		/// <summary>
@@ -112,7 +112,7 @@ namespace WF.Player.Core
 		/// <param name="key">Key as number for the entry.</param>
 		protected int GetInt(double key)
 		{
-			return Convert.ToInt32(engine.SafeLuaState.SafeGetField<double>(wigTable, key));
+			return Convert.ToInt32((double)engine.SafeLuaState.SafeGetField<LuaNumber>(wigTable, key).ToNumber());
         }
 
 		/// <summary>
@@ -122,7 +122,7 @@ namespace WF.Player.Core
 		/// <param name="key">Key as string for the entry.</param>
 		protected string GetString(string key)
 		{
-			return engine.SafeLuaState.SafeGetField<string>(wigTable, key);
+			return engine.SafeLuaState.SafeGetField<LuaString>(wigTable, key);
 		}
 
 		/// <summary>
@@ -132,7 +132,7 @@ namespace WF.Player.Core
 		/// <param name="key">Key as number for the entry.</param>
 		protected string GetString(double key)
 		{
-			return engine.SafeLuaState.SafeGetField<string>(wigTable, key);
+			return engine.SafeLuaState.SafeGetField<LuaString>(wigTable, key);
 		}
 
 		/// <summary>
@@ -276,7 +276,7 @@ namespace WF.Player.Core
 		/// <paramref name="T"/>.</returns>
 		protected List<T> GetTableFuncList<T>(string key, params LuaValue[] parameters) where T : WherigoObject
 		{
-			return engine.GetTableListFromLuaTable<T>(engine.SafeLuaState.SafeCallSelf(wigTable, key, parameters));
+			return engine.GetTableListFromLuaTable<T>((LuaTable)engine.SafeLuaState.SafeCallSelf(wigTable, key, parameters)[0]);
 		}
 
 		/// <summary>
@@ -293,7 +293,7 @@ namespace WF.Player.Core
 				return null;
 			}
 
-			int objIndex = Convert.ToInt32((double)engine.SafeLuaState.SafeGetField<object>(media, "ObjIndex"));
+			int objIndex = Convert.ToInt32((double)engine.SafeLuaState.SafeGetField<LuaNumber>(media, "ObjIndex"));
 
 			return engine.GetMedia(objIndex);
 		}
@@ -312,7 +312,7 @@ namespace WF.Player.Core
 				return null;
 			}
 
-			int objIndex = Convert.ToInt32((double)engine.SafeLuaState.SafeGetField<object>(media, "ObjIndex"));
+			int objIndex = Convert.ToInt32((double)engine.SafeLuaState.SafeGetField<LuaNumber>(media, "ObjIndex"));
 
 			return engine.GetMedia(objIndex);
 		}

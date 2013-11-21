@@ -847,13 +847,13 @@ namespace WF.Player.Core.Engines
 			luaExecQueue.IsRunning = true;
 
 			// Restarts the timers.
-			var e = safeLuaState.SafeGetEnumerator(safeLuaState.SafeCallSelf(player, "GetActiveTimers"));
+			var e = safeLuaState.SafeGetEnumerator((LuaTable)safeLuaState.SafeCallSelf(player, "GetActiveTimers")[0]);
 			while (e.MoveNext())
 			{
 				LuaTable obj = (LuaTable) e.Current.Value;
 
 				// Should the timer be restarted?
-				bool shouldRestart = safeLuaState.SafeGetField<bool>(safeLuaState.SafeCallSelf(obj, "Restart"), 0);
+				bool shouldRestart = safeLuaState.SafeGetField<bool>((LuaTable)safeLuaState.SafeCallSelf(obj, "Restart")[0], 0);
 				if (!shouldRestart)
 				{
 					continue;
@@ -940,7 +940,7 @@ namespace WF.Player.Core.Engines
 			// This executes in the lua exec thread, so it's fine to block.
 			lock (luaState)
 			{
-				ActiveVisibleTasks = GetTableListFromLuaTable<Task>(player.CallSelf("GetActiveVisibleTasks")); 
+				ActiveVisibleTasks = GetTableListFromLuaTable<Task>((LuaTable)player.CallSelf("GetActiveVisibleTasks")[0]); 
 			}
 		}
 
@@ -965,7 +965,7 @@ namespace WF.Player.Core.Engines
 			// This executes in the lua exec thread, so it's fine to block.
 			lock (luaState)
 			{
-				ActiveVisibleZones = GetTableListFromLuaTable<Zone>(player.CallSelf("GetActiveVisibleZones")); 
+				ActiveVisibleZones = GetTableListFromLuaTable<Zone>((LuaTable)player.CallSelf("GetActiveVisibleZones")[0]); 
 			}
 		}
 
@@ -990,7 +990,7 @@ namespace WF.Player.Core.Engines
 			// This executes in the lua exec thread, so it's fine to block.
 			lock (luaState)
 			{
-				VisibleInventory = GetTableListFromLuaTable<Thing>(player.CallSelf("GetVisibleInventory")); 
+				VisibleInventory = GetTableListFromLuaTable<Thing>((LuaTable)player.CallSelf("GetVisibleInventory")[0]); 
 			}
 		}
 
@@ -1015,7 +1015,7 @@ namespace WF.Player.Core.Engines
 			// This executes in the lua exec thread, so it's fine to block.
 			lock (luaState)
 			{
-				VisibleObjects = GetTableListFromLuaTable<Thing>(player.CallSelf("GetVisibleObjects")); 
+				VisibleObjects = GetTableListFromLuaTable<Thing>((LuaTable)player.CallSelf("GetVisibleObjects")[0]); 
 			}
 		}
 
@@ -1488,16 +1488,16 @@ namespace WF.Player.Core.Engines
 			LuaTable t = GetObject(objIndex).WIGTable;
 
 			// Gets the ZTimer's properties.
-			object elapsedRaw;
-			object remainingRaw; 
+			LuaValue elapsedRaw;
+			LuaValue remainingRaw; 
 			lock (luaState)
 			{
 				elapsedRaw = t["Elapsed"];
 				remainingRaw = t["Remaining"]; 
 			}
-			if (elapsedRaw == null)
+			if (elapsedRaw == null || elapsedRaw is LuaNil)
 				elapsedRaw = 0.0d;
-			if (remainingRaw == null)
+			if (remainingRaw == null || remainingRaw is LuaNil)
 			{
 				lock (luaState)
 				{
@@ -1505,8 +1505,8 @@ namespace WF.Player.Core.Engines
 				}
 			}
 
-			double elapsed = (double)elapsedRaw * internalTimerDuration;
-			double remaining = (double)remainingRaw * internalTimerDuration;
+			double elapsed = (double)(LuaNumber)elapsedRaw.ToNumber() * internalTimerDuration;
+			double remaining = (double)(LuaNumber)remainingRaw.ToNumber() * internalTimerDuration;
 
 			// Updates the ZTimer properties and considers if it should tick.
 			elapsed += internalTimerDuration;
@@ -1765,9 +1765,9 @@ namespace WF.Player.Core.Engines
 			LuaValue oi;
 			lock (luaState)
 			{
-				oi = t["ObjIndex"];
+				t.TryGetValue("ObjIndex",out oi);
 			}
-			if (oi != null) 
+			if (oi != null && !(oi is LuaNil)) 
 			{
 				int objIndex = Convert.ToInt32 ((double)oi.ToNumber());
 

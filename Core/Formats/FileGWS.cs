@@ -19,12 +19,12 @@
 
 using System;
 using System.IO;
-using NLua;
 using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using WF.Player.Core.Utils;
 using WF.Player.Core.Engines;
+using WF.Player.Core.Lua;
 
 namespace WF.Player.Core.Formats
 {
@@ -182,7 +182,7 @@ namespace WF.Player.Core.Formats
 			string className = "unknown";
 			LuaFunction rawset = null;
 			LuaTable tab;
-			object key = 1;
+			LuaValue key = 1;
 
 			if (obj != null)
 			{
@@ -219,50 +219,48 @@ namespace WF.Player.Core.Formats
 					case 1:
 						if (className != null)
 							luaState.SafeCallRaw(rawset, obj, key, input.ReadByte() == 0 ? false : true);
-							
 						else
-							luaState.SafeSetField(obj, key, input.ReadByte() == 0 ? false : true);
-							
+							luaState.SafeSetField(obj, (LuaValue)key, input.ReadByte() == 0 ? false : true);
 						break;
 					case 2:
 						if (className != null)
 							luaState.SafeCallRaw(rawset, obj, key, input.ReadDouble());
 						else
-							luaState.SafeSetField(obj, key, input.ReadDouble());
+							luaState.SafeSetField(obj, (LuaValue)key, input.ReadDouble());
 						break;
 					case 3:
 						if (className != null)
 							luaState.SafeCallRaw(rawset, obj, key, readString(input));
 						else
-							luaState.SafeSetField(obj, key, readString(input));
+							luaState.SafeSetField(obj, (LuaValue)key, readString(input));
 						break;
 					case 4:
 						byte[] chunk = input.ReadBytes(input.ReadInt32());
 						if (className != null)
 							luaState.SafeCallRaw(rawset, obj, key, (LuaFunction)luaState.SafeLoadString(chunk, key.ToString()));
 						else
-							luaState.SafeSetField(obj, key, (LuaFunction)luaState.SafeLoadString(chunk, key.ToString()));
+							luaState.SafeSetField(obj, (LuaValue)key, (LuaFunction)luaState.SafeLoadString(chunk, key.ToString()));
 						break;
 					case 5:
 						tab = luaState.SafeEmptyTable();
 						if (className != null)
 							luaState.SafeCallRaw(rawset, obj, key, tab);
 						else
-							luaState.SafeSetField(obj, key, tab);
-						readTable(input, luaState.SafeGetField<LuaTable>(obj, key));
+							luaState.SafeSetField(obj, (LuaValue)key, tab);
+						readTable(input, luaState.SafeGetField<LuaTable>(obj, (LuaValue)key));
 						break;
 					case 7:
 						if (className != null)
 							luaState.SafeCallRaw(rawset, obj, key, luaState.SafeGetInnerField<LuaTable>(cartridge.WIGTable, "AllZObjects", input.ReadInt16()));
 						else
-							luaState.SafeSetField(obj, key, luaState.SafeGetInnerField<LuaTable>(cartridge.WIGTable, "AllZObjects", input.ReadInt16()));
+							luaState.SafeSetField(obj, (LuaValue)key, luaState.SafeGetInnerField<LuaTable>(cartridge.WIGTable, "AllZObjects", input.ReadInt16()));
 						break;
 					case 8:
 						tab = (LuaTable)luaState.SafeDoString("return Wherigo." + readString(input) + "()", "")[0];
 						if (className != null)
 							luaState.SafeCallRaw(rawset, obj, key, tab);
 						else
-							luaState.SafeSetField(obj, key, tab);
+							luaState.SafeSetField(obj, (LuaValue)key, tab);
 
 						// After an object, there is always a table with the content
 						input.ReadByte();
@@ -318,7 +316,7 @@ namespace WF.Player.Core.Formats
 
 			for (int i = 1; i < numAllZObjects; i++)
 			{
-				className = Encoding.UTF8.GetBytes(luaState.SafeGetInnerField<string>(cartridge.WIGTable, "AllZObjects", i, "ClassName"));
+				className = Encoding.UTF8.GetBytes(luaState.SafeGetInnerField<LuaString>(cartridge.WIGTable, "AllZObjects", i, "ClassName").ToString());
 				output.Write(className.Length);
 				output.Write(className);
 			}
@@ -327,7 +325,7 @@ namespace WF.Player.Core.Formats
 			className = Encoding.UTF8.GetBytes(luaState.SafeGetField<string>(obj, "ClassName"));
 			output.Write(className.Length);
 			output.Write(className);
-			LuaTable data = luaState.SafeCallSelf(obj, "serialize");
+			LuaTable data = (LuaTable)luaState.SafeCallSelf(obj, "serialize")[0];
 			writeTable(output, data);
 
 			for (int i = 0; i < numAllZObjects; i++)
@@ -336,7 +334,7 @@ namespace WF.Player.Core.Formats
 				className = Encoding.UTF8.GetBytes(luaState.SafeGetField<string>(obj, "ClassName"));
 				output.Write(className.Length);
 				output.Write(className);
-				data = luaState.SafeCallSelf(obj, "serialize");
+				data = (LuaTable)luaState.SafeCallSelf(obj, "serialize")[0];
 				writeTable(output, data);
 			}
 
@@ -357,47 +355,47 @@ namespace WF.Player.Core.Formats
 			while (entry.MoveNext())
 			{
 				// Save key
-				if (entry.Key is bool)
+				if (entry.Current.Key is LuaBoolean)
 				{
 					output.Write((byte)1);
-					output.Write((bool)entry.Key ? (byte)1 : (byte)0);
+					output.Write((bool)entry.Current.Key.ToBoolean() ? (byte)1 : (byte)0);
 				}
-				if (entry.Key is double)
+				if (entry.Current.Key is LuaNumber)
 				{
 					output.Write((byte)2);
-					output.Write((double)entry.Key);
+					output.Write((double)entry.Current.Key.ToNumber());
 				}
-				if (entry.Key is string)
+				if (entry.Current.Key is LuaString)
 				{
 					output.Write((byte)3);
-					byte[] array = Encoding.UTF8.GetBytes((string)entry.Key);
+					byte[] array = Encoding.UTF8.GetBytes((string)entry.Current.Key.ToString());
 					output.Write(array.Length);
 					output.Write(array);
 				}
 
 				// Save value
-				if (entry.Value is bool)
+				if (entry.Current.Value is LuaBoolean)
 				{
 					output.Write((byte)1);
-					output.Write((bool)entry.Value ? (byte)1 : (byte)0);
+					output.Write((bool)entry.Current.Value.ToBoolean() ? (byte)1 : (byte)0);
 				}
-				if (entry.Value is double)
+				if (entry.Current.Value is LuaNumber)
 				{
 					output.Write((byte)2);
-					output.Write((double)entry.Value);
+					output.Write((double)entry.Current.Value.ToNumber());
 				}
-				if (entry.Value is string)
+				if (entry.Current.Value is LuaString)
 				{
 					output.Write((byte)3);
-					byte[] array = toArray((string)entry.Value);
+					byte[] array = toArray((string)entry.Current.Value.ToString());
 					output.Write(array.Length);
 					output.Write(array);
 				}
-				if (entry.Value is LuaFunction)
+				if (entry.Current.Value is LuaFunction)
 				{
 					output.Write((byte)4);
 					//byte[] array = toArray((string)luaState.GetFunction("string.dump").Call((LuaFunction)entry.Value)[0]);
-					byte[] array = toArray((string)luaState.SafeCallRaw("string.dump", entry.Value)[0]);
+					byte[] array = toArray((string)luaState.SafeCallRaw("string.dump", (LuaFunction)entry.Current.Value)[0].ToString());
 					// TODO: Delete
 					//					string path = Environment.GetFolderPath (Environment.SpecialFolder.Personal);
 					//					string filePath = Path.Combine(path, "out.txt");
@@ -407,9 +405,9 @@ namespace WF.Player.Core.Formats
 					output.Write(array.Length);
 					output.Write(array);
 				}
-				if (entry.Value is LuaTable)
+				if (entry.Current.Value is LuaTable)
 				{
-					string className = luaState.SafeGetField<string>((LuaTable)entry.Value, "ClassName");
+					string className = luaState.SafeGetField<string>((LuaTable)entry.Current.Value, "ClassName");
 
 					if (className != null && (className.Equals("Distance") || className.Equals("ZonePoint") || className.Equals("ZCommand") || className.Equals("ZReciprocalCommand")))
 					{
@@ -417,21 +415,21 @@ namespace WF.Player.Core.Formats
 						byte[] array = Encoding.UTF8.GetBytes(className);
 						output.Write(array.Length);
 						output.Write(array);
-						LuaTable data = luaState.SafeCallSelf((LuaTable)entry.Value, "serialize");
+						LuaTable data = (LuaTable)luaState.SafeCallSelf((LuaTable)entry.Current.Value, "serialize")[0];
 						writeTable(output, data);
 					}
 					else if (className != null && (className.Equals("ZCartridge") || className.Equals("ZCharacter") || className.Equals("ZInput") || className.Equals("ZItem") ||
 						className.Equals("ZMedia") || className.Equals("Zone") || className.Equals("ZTask") || className.Equals("ZTimer")))
 					{
 						output.Write((byte)7);
-						output.Write(Convert.ToInt16(luaState.SafeGetField<object>((LuaTable)entry.Value, "ObjIndex")));
+						output.Write(Convert.ToInt16(luaState.SafeGetField<object>((LuaTable)entry.Current.Value, "ObjIndex")));
 					}
 					else
 					{
-						LuaTable data = (LuaTable)entry.Value;
-						LuaFunction lf = luaState.SafeGetField<LuaFunction>((LuaTable)entry.Value, "serialize");
+						LuaTable data = (LuaTable)entry.Current.Value;
+						LuaFunction lf = luaState.SafeGetField<LuaFunction>((LuaTable)entry.Current.Value, "serialize");
 						if (lf != null)
-							data = luaState.SafeCallSelf((LuaTable)entry.Value, "serialize"); //().CallSelf("serialize");
+							data = (LuaTable)luaState.SafeCallSelf((LuaTable)entry.Current.Value, "serialize")[0]; //().CallSelf("serialize");
 						writeTable(output, data);
 					}
 				}
