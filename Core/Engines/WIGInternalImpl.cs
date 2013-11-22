@@ -582,6 +582,15 @@ namespace WF.Player.Core.Engines
         /// <returns>LuaTable for distance to calculated point on line.</returns>
 		public LuaVararg VectorToSegment(object pointObj, object firstLinePointObj, object secondLinePointObj)
         {
+			if (pointObj is LuaNil || firstLinePointObj is LuaNil || secondLinePointObj is LuaNil) {
+				List<LuaValue> ret = new List<LuaValue>(2);
+
+				ret.Add (LuaNil.Instance);
+				ret.Add (LuaNil.Instance);
+
+				return new LuaVararg(ret, true);
+			}
+
 			LuaVararg d1 = VectorToPoint(firstLinePointObj, pointObj);
 			double b1 = (double)d1[1].ToNumber();
 			double dd1 = PI_180 * ((Distance)engine.GetTable((LuaTable)d1[0])).ValueAs(DistanceUnit.NauticalMiles) / 60;
@@ -621,6 +630,13 @@ namespace WF.Player.Core.Engines
 		public LuaVararg VectorToPoint(object param1, object param2)
         {
 			List<LuaValue> ret = new List<LuaValue>(2);
+
+			if (param1 is LuaNil || param2 is LuaNil) {
+				ret.Add (LuaNil.Instance);
+				ret.Add (LuaNil.Instance);
+
+				return new LuaVararg(ret, true);
+			}
 
             LuaTable zonePoint1 = (LuaTable)param1;
             LuaTable zonePoint2 = (LuaTable)param2;

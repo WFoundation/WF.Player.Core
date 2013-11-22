@@ -82,7 +82,7 @@ namespace WF.Player.Core.Engines
         #region Engine version
 
         public static readonly string CorePlatform = "WF.Player.Core";
-        public static readonly string CoreVersion = "0.2.0";
+        public static readonly string CoreVersion = "0.3.0";
 
         #endregion
 
@@ -235,6 +235,7 @@ namespace WF.Player.Core.Engines
 					cartridge.Engine = null;
 					cartridge = null;
 				}
+
 				player = null;
 
 				// Unhooks WIGInternal.
@@ -407,6 +408,7 @@ namespace WF.Player.Core.Engines
 					return null;
 				}
 
+				// TODO: Strange, shouldn't it be p instead of player?
 				return (Character)GetTable(player); 
 			} 
 		}
@@ -669,7 +671,6 @@ namespace WF.Player.Core.Engines
 
 			// Set player relevant data
 			player = (LuaTable)((LuaTable)luaState.Globals["Wherigo"])["Player"];
-			var temp = cartridge.Player;
 			player["CompletionCode"] = cartridge.CompletionCode;
 			player["Name"] = cartridge.Player;
 			LuaTable objLoc = (LuaTable)player["ObjectLocation"];
@@ -757,10 +758,13 @@ namespace WF.Player.Core.Engines
 
 			DisposeTimers();
 
-			HandleNotifyOS ("StopSound");
-
 			LuaExecQueue.BeginCallSelf(cartridge.WIGTable, "Stop");
 			LuaExecQueue.WaitEmpty();
+
+			// The last one stops the sound ;)
+			// Should be done immediately before the handler is gone
+			if (StopSoundsRequested != null)
+				StopSoundsRequested(this, new WherigoEventArgs(cartridge));
 
 			GameState = EngineGameState.Initialized;
 		}
@@ -1080,8 +1084,11 @@ namespace WF.Player.Core.Engines
 				}
 			}
 
-			t.VectorFromPlayer = new LocationVector((Distance)GetTable((LuaTable)ret[0]), (double)ret[1].ToNumber());
-			RaisePropertyChangedInObject(t, "VectorFromPlayer");
+			if (!(ret [0] is LuaNil) && !(ret [1] is LuaNil)) {
+				t.VectorFromPlayer = new LocationVector ((Distance)GetTable ((LuaTable)ret [0]), (double)ret [1].ToNumber ());
+				RaisePropertyChangedInObject (t, "VectorFromPlayer");
+			}
+
 			return;
 		}
 
@@ -1215,14 +1222,14 @@ namespace WF.Player.Core.Engines
 				RaisePropertyChangedInObject((UIObject)to, "Inventory");
 
 			// Check for player inventory changes.
-			if (player.Equals(ltTo) || player.Equals(ltFrom))
+			if (Player.ObjIndex == to.ObjIndex || Player.ObjIndex == from.ObjIndex)
 			{
 				// Recomputes the visible inventory and raises the property changed event.
 				RefreshVisibleInventoryAsync();
 			}
 
 			// Check for visible objects changes.
-			if (IsZone(from) || IsZone(ltTo))
+			if (IsZone(from) || IsZone(to))
 			{
 				// Recomputes the visible objects and raises the property changed event.
 				RefreshVisibleObjectsAsync();
