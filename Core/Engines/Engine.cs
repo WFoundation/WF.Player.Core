@@ -90,13 +90,13 @@ namespace WF.Player.Core.Engines
 
 		public event EventHandler<AttributeChangedEventArgs> AttributeChanged;
 		public event EventHandler<WherigoEventArgs> CartridgeCompleted;
-		public event EventHandler<SavingEventArgs> SaveRequested;
 		public event EventHandler<ObjectEventArgs<Command>> CommandChanged;
 		public event EventHandler<ObjectEventArgs<Input>> InputRequested;
 		public event EventHandler<InventoryChangedEventArgs> InventoryChanged;
 		public event EventHandler<LogMessageEventArgs> LogMessageRequested;
 		public event EventHandler<ObjectEventArgs<Media>> PlayMediaRequested;
 		public event EventHandler<WherigoEventArgs> PlayAlertRequested;
+		public event EventHandler<SavingEventArgs> SaveRequested;
 		public event EventHandler<MessageBoxEventArgs> ShowMessageBoxRequested;
 		public event EventHandler<ScreenEventArgs> ShowScreenRequested;
 		public event EventHandler<StatusTextEventArgs> ShowStatusTextRequested;
@@ -868,6 +868,13 @@ namespace WF.Player.Core.Engines
 			GameState = EngineGameState.Playing;
 		}
 
+		public void FreeMemory()
+		{
+			lock (luaState) {
+				luaState.DoString ("collectgarbage(\"collect\")");
+			}
+		}
+
 		#endregion
 
         #region User Input (Refresh)
@@ -1142,7 +1149,7 @@ namespace WF.Player.Core.Engines
 		{
 			string ls = s == null ? "" : s.ToLower();
 
-			if ("complete".Equals(s))
+			if ("complete".Equals(ls))
 			{
 				// Marks the cartridge as completed.
 				cartridge.Complete = true;
@@ -1150,7 +1157,7 @@ namespace WF.Player.Core.Engines
 				// Raises the event.
 				RaiseCartridgeCompleted(cartridge);
 			}
-			else if ("sync".Equals(s))
+			else if ("sync".Equals(ls))
 			{
 				// Raises the event.
 				RaiseSaveRequested(cartridge,false);
