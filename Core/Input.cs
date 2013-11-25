@@ -20,8 +20,6 @@
 using System;
 using System.Collections.Generic;
 using WF.Player.Core.Utils;
-using WF.Player.Core.Engines;
-using WF.Player.Core.Lua;
 
 namespace WF.Player.Core
 {
@@ -30,10 +28,24 @@ namespace WF.Player.Core
 	/// </summary>
 	public class Input : WherigoObject
 	{
+		#region Delegates
+
+		internal delegate void RunOnGetInput(string result);
+
+		#endregion
+
+		#region Members
+
+		private RunOnGetInput _runOnGetInput;
+
+		#endregion
+		
 		#region Constructor
 
-		internal Input (Engine e, LuaTable t) : base (e, t)
+		internal Input(WF.Player.Core.Data.IDataContainer data, RunOnGetInput onGetInput)
+			: base(data)
 		{
+			_runOnGetInput = onGetInput;
 		}
 
 		#endregion
@@ -43,17 +55,11 @@ namespace WF.Player.Core
 		/// <summary>
 		/// Gets a list of possible choices for the answer.
 		/// </summary>
-		public List<string> Choices 
+		public IEnumerable<string> Choices 
 		{
 			get 
 			{
-				var list = GetList<LuaString>("Choices");
-				List<string> ret = new List<string>(list.Count);
-
-				foreach(LuaString s in list)
-					ret.Add((string)s.ToString());
-
-				return ret;
+				return DataContainer.GetList<string>("Choices");
 			}
 		}
 
@@ -64,7 +70,7 @@ namespace WF.Player.Core
 		public InputType InputType {
 			get 
 			{
-				return GetEnum<InputType>("InputType", InputType.Unknown);
+				return DataContainer.GetEnum<InputType>("InputType", InputType.Unknown).Value;
 			}
 		}
 
@@ -74,7 +80,7 @@ namespace WF.Player.Core
 		/// <value>The text.</value>
 		public string HTML {
 			get {
-				return "<html><body><center>" + GetString ("Text").ReplaceHTMLScriptMarkup().ReplaceMarkdown() + "</center></body></html>";
+				return "<html><body><center>" + DataContainer.GetString("Text").ReplaceHTMLScriptMarkup().ReplaceMarkdown() + "</center></body></html>";
 			}
 		}
 
@@ -85,7 +91,7 @@ namespace WF.Player.Core
 		public Media Image {
 			get 
 			{
-				return GetMedia("Media");
+				return DataContainer.GetWherigoObject<Media>("Media");
 			}
 		}
 
@@ -95,7 +101,7 @@ namespace WF.Player.Core
 		/// <value>The name.</value>
 		public string Name {
 			get {
-				return GetString ("Name");
+				return DataContainer.GetString("Name");
 			}
 		}
 
@@ -105,7 +111,7 @@ namespace WF.Player.Core
 		/// <value>The index of the object.</value>
 		public int ObjIndex {
 			get {
-				return GetInt ("ObjIndex");
+                return DataContainer.GetInt("ObjIndex").Value;
 			}
 		}
 
@@ -115,7 +121,7 @@ namespace WF.Player.Core
 		/// <value>The text.</value>
 		public string Text {
 			get {
-				return GetString ("Text").ReplaceHTMLMarkup();
+				return DataContainer.GetString("Text").ReplaceHTMLMarkup();
 			}
 		}
 
@@ -125,7 +131,7 @@ namespace WF.Player.Core
 		/// <value><c>true</c> if visible; otherwise, <c>false</c>.</value>
 		public bool Visible {
 			get {
-				return GetBool ("Visible");
+                return DataContainer.GetBool("Visible").Value;
 			}
 		}
 
@@ -139,7 +145,8 @@ namespace WF.Player.Core
 		/// <param name="result">The answer. If null, the input is considered to be cancelled.</param>
 		public void GiveResult(string result)
 		{
-			engine.LuaExecQueue.BeginCallSelf(this, "OnGetInput", result);
+			//engine.LuaExecQueue.BeginCallSelf(this, "OnGetInput", result);
+			_runOnGetInput(result);
 		}
 
 		/// <summary>

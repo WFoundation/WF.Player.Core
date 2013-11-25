@@ -27,7 +27,47 @@ namespace WF.Player.Core.Utils
 	/// </summary>
 	public static class Utils
 	{
-		/// <summary>
+        /// <summary>
+        /// Parses an Enum of a particular type and value.
+        /// </summary>
+        /// <typeparam name="T">Type of the Enum to get.</typeparam>
+        /// <param name="fieldName">The string name of the enum value.</param>
+        /// <param name="defaultValue">Default value for the enum if the field is not found. If null,
+        /// an exception is thrown in place of returning the default value.</param>
+        /// <param name="retValue">The returned value of the enum.</param>
+        /// <returns>True if the enum field was found, false otherwise. If false,
+        /// the value of <paramref name="retValue"/> is equal to <paramref name="defaultValue"/>.</returns>
+        public static bool TryParseEnum<T>(string fieldName, T? defaultValue, out T? retValue) where T : struct, IConvertible
+        {
+            if (!typeof(T).IsEnum || string.IsNullOrEmpty(fieldName))
+            {
+                retValue = defaultValue;
+                return false;
+            }
+
+#if SILVERLIGHT
+            foreach (FieldInfo fi in typeof(T).GetFields(BindingFlags.Static | BindingFlags.Public))
+            {
+                string name = fi.Name;
+                T item = (T)Enum.Parse(typeof(T), name, false);
+#else
+			foreach (T item in Enum.GetValues(typeof(T)))
+			{
+				string name = item.ToString();
+#endif
+
+                if (String.Equals(name, fieldName.Trim(), StringComparison.InvariantCultureIgnoreCase))
+                {
+                    retValue = item;
+                    return true;
+                }
+            }
+
+            retValue = defaultValue;
+            return false;
+        }
+        
+        /// <summary>
 		/// Parses an Enum of a particular type and value.
 		/// </summary>
 		/// <typeparam name="T">Type of the Enum to get.</typeparam>

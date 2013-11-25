@@ -24,7 +24,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>Bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;TRACE;SILVERLIGHT;WINDOWS_PHONE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;SILVERLIGHT;WINDOWS_PHONE</DefineConstants>
     <NoStdLib>true</NoStdLib>
     <NoConfig>true</NoConfig>
     <ErrorReport>prompt</ErrorReport>
@@ -55,18 +55,25 @@
     <Reference Include="mscorlib.extensions" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\IDataContainer.cs" />
+    <Compile Include="Data\IDataFactory.cs" />
+    <Compile Include="Data\IDataProvider.cs" />
+    <Compile Include="Data\Lua\LuaDataContainer.cs" />
+    <Compile Include="Data\Lua\LuaDataExtensions.cs" />
+    <Compile Include="Data\Lua\LuaDataFactory.cs" />
+    <Compile Include="Data\Lua\LuaDataProvider.cs" />
     <Compile Include="Engines\DefaultPlatformHelper.cs" />
     <Compile Include="Engines\IPlatformHelper.cs" />
     <Compile Include="Engines\WinPhonePlatformHelper.cs" />
     <Compile Include="Formats\ICartridgeLoader.cs" />
     <Compile Include="Utils\MarkdownSharp.cs" />
-    <Compile Include="Utils\Threading\ActionPump.cs" />
-    <Compile Include="Utils\Threading\JobQueue.cs" />
-    <Compile Include="Utils\SafeLua.cs" />
+    <Compile Include="Threading\ActionPump.cs" />
+    <Compile Include="Threading\JobQueue.cs" />
+    <Compile Include="Data\Lua\SafeLua.cs" />
     <Compile Include="Formats\FileGWS.cs" />
     <Compile Include="Utils\Utils.cs" />
     <Compile Include="Utils\Extensions.cs" />
-    <Compile Include="Utils\Threading\LuaExecutionQueue.cs" />
+    <Compile Include="Threading\ExecutionQueue.cs" />
     <Compile Include="Live\Reference.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -87,12 +94,13 @@
     <Compile Include="MessageBox.cs" />
     <Compile Include="Timer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Table.cs" />
     <Compile Include="Task.cs" />
     <Compile Include="Thing.cs" />
     <Compile Include="UIObject.cs" />
     <Compile Include="Engines\WIGInternalImpl.cs" />
+    <Compile Include="WherigoCollection.cs" />
     <Compile Include="WherigoHelper.cs" />
+    <Compile Include="WherigoObject.cs" />
     <Compile Include="Zone.cs" />
     <Compile Include="ZonePoint.cs" />
   </ItemGroup>
@@ -100,17 +108,21 @@
     <EmbeddedResource Include="Resources\Wherigo.luac" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NLua\Core\NLua\NLua.WP7.csproj">
-      <Project>{380F9E4E-274F-4355-90C1-D196E785F751}</Project>
-      <Name>NLua.WP7</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages-wp7.config" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Mangatome\Eluant\Eluant\Eluant-wp7.csproj">
+      <Project>{C389118D-8F19-4C8D-9493-DAD568BA2E7A}</Project>
+      <Name>Eluant-wp7</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.$(TargetFrameworkProfile).Overrides.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.CSharp.targets" />
   <ProjectExtensions />

@@ -20,7 +20,6 @@
 using System.Text;
 using System;
 using System.Text.RegularExpressions;
-using WF.Player.Core.Lua;
 
 namespace WF.Player.Core.Utils
 {
@@ -163,66 +162,5 @@ namespace WF.Player.Core.Utils
 		{
 			return new MarkdownSharp.Markdown().Transform(s);
 		}
-
-		/// <summary>
-		/// Create an empty table. Not thread-safe.
-		/// </summary>
-		/// <returns>A new empty LuaTable object.</returns>
-		internal static LuaTable EmptyTable(this LuaRuntime luaState)
-		{
-			return (LuaTable)luaState.CreateTable();
-		}
-
-		/// <summary>
-		/// Calls a lua function contained by a LuaTable. Not thread-safe.
-		/// </summary>
-		/// <param name="table">Table to query.</param>
-		/// <param name="funcName">Function name that belongs to the LuaTable.</param>
-		/// <param name="parameters">Optional parameters to pass to the LuaFunction.</param>
-		/// <returns>Returned inner value of the function: null or first field as LuaTable.</returns>
-		internal static LuaTable Call(this LuaTable table, string funcName, params LuaValue[] parameters)
-		{
-			// Checks if the function exists.
-			if (!(table[funcName] is LuaFunction))
-			{
-				throw new Exception(funcName + " is not a LuaFunction.");
-			}
-
-			// Conforms parameters: the array must be non-null.
-			if (parameters == null)
-			{
-				parameters = new LuaValue[] { };
-			}
-
-			// Calls the function and returns its result.
-			LuaVararg ret = ((LuaFunction)table[funcName]).Call(parameters);
-			return ret != null && ret.Count > 0 ? (LuaTable)ret[0] : null;
-		}
-
-		/// <summary>
-		/// Calls a lua method contained by a LuaTable, and which takes as first parameter
-		/// the LuaTable itself. Not thread-safe.
-		/// </summary>
-		/// <param name="table">Table to query.</param>
-		/// <param name="funcName">Function name that belongs to the LuaTable.</param>
-		/// <param name="parameters">Optional parameters to pass to the LuaFunction. The first "self"
-		/// parameter is added by this method.</param>
-		/// <returns>Returned value of the function: null or first field as LuaTable.</returns>
-		internal static LuaVararg CallSelf(this LuaTable table, string funcName, params LuaValue[] parameters)
-		{
-			// Checks if the function exists.
-			if (!(table[funcName] is LuaFunction))
-			{
-				throw new Exception(funcName + " is not a LuaFunction.");
-			}
-
-			// Conforms parameters: the array must be non-null, and its first parameter, self.
-			parameters = (parameters ?? new LuaValue[] { }).ConcatBefore(table);
-
-			// Calls the function and returns its result.
-			LuaVararg ret = ((LuaFunction)table[funcName]).Call(parameters);
-			return ret != null && ret.Count > 0 ? ret : null;
-		}
-
 	}
 }

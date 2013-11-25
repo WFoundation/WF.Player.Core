@@ -41,14 +41,21 @@ namespace WF.Player.Core
 			return new Engine(platform);
 		}
 
-		public static Cartridge InitAndStartCartridge(Engine engine, Stream cartridgeStream, long firstLat, long firstLon, long firstAlt)
+		public static Cartridge InitAndStartCartridge(Engine engine, Stream cartridgeStream, string filename, long firstLat, long firstLon, long firstAlt, long accuracy)
 		{
-			throw new NotImplementedException();
-		}
+			// Boot Time: inits the cartridge and process position.
+			Cartridge cart = new Cartridge(filename);
 
-		public static Cartridge InitAndStartCartridgeAsync(Engine engine, Stream cartridgeStream, long firstLat, long firstLon, long firstAlt)
-		{
-			throw new NotImplementedException();
+			engine.Init(cartridgeStream, cart);
+
+			engine.RefreshLocation(firstLat, firstLon, firstAlt, accuracy);
+			engine.RefreshHeading(0);
+
+			// Run Time: the game starts.
+
+			engine.Start();
+
+			return cart;
 		}
 	}
 }

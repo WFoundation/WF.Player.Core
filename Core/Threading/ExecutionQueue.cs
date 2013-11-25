@@ -20,18 +20,22 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using WF.Player.Core.Lua;
+//using Eluant;
+using WF.Player.Core.Data;
+using WF.Player.Core.Data.Lua;
 
-namespace WF.Player.Core.Utils.Threading
+namespace WF.Player.Core.Threading
 {
 	/// <summary>
-	/// A thread-safe queue that sequentializes access to a Lua execution environment.
+	/// A thread-safe queue that sequentializes access to an execution environment.
 	/// </summary>
-	internal class LuaExecutionQueue : JobQueue
+	internal class ExecutionQueue : JobQueue
 	{
 		#region Members
 
-		private SafeLua luaState;
+        //private SafeLua _luaState;
+
+        //private LuaDataFactory _dataFactory;
 
 		#endregion
 
@@ -60,9 +64,11 @@ namespace WF.Player.Core.Utils.Threading
 		/// Creates a new execution queue for a Lua state.
 		/// </summary>
 		/// <param name="lua"></param>
-		public LuaExecutionQueue(SafeLua lua)
+		/// <param name="dataFactory"></param>
+		public ExecutionQueue()//LuaDataFactory dataFactory)
 		{
-			luaState = lua;
+            //_luaState = lua;
+            //_dataFactory = dataFactory;
 
 			// JobQueue configuration.
 			IsActive = true;
@@ -75,10 +81,10 @@ namespace WF.Player.Core.Utils.Threading
 		/// Executes asynchronously a call to a Lua function on the thread this LuaExecutionQueue is associated with.
 		/// </summary>
 		/// <remarks>This method returns once the call job is queued.</remarks>
-		/// <param name="obj">LuaTable that contains the function.</param>
+		/// <param name="obj">IDataContainer that contains the function.</param>
 		/// <param name="func">Field name in <paramref name="obj"/> that corresponds to the function to call.</param>
 		/// <param name="parameters">Optional parameters to pass to the function.</param>
-		public void BeginCall(LuaTable obj, string func, params LuaValue[] parameters)
+		public void BeginCall(IDataContainer obj, string func, params object[] parameters)
 		{
 			// Conforms the parameters and enqueues a job.
 			AcceptJob(GetJob(obj, func, ConformParameters(parameters)));
@@ -89,58 +95,59 @@ namespace WF.Player.Core.Utils.Threading
 		/// </summary>
 		/// <remarks>This method returns once the call job is queued.</remarks>
 		/// <param name="obj">Table entity that contains the function.</param>
-		/// <param name="func">Field name in the underlying LuaTable of <paramref name="obj"/> that corresponds to the 
+		/// <param name="func">Field name in the underlying IDataContainer of <paramref name="obj"/> that corresponds to the 
 		/// function to call.</param>
 		/// <param name="parameters">Optional parameters to pass to the function.</param>
-		public void BeginCall(WherigoObject obj, string func, params LuaValue[] parameters)
+		public void BeginCall(WherigoObject obj, string func, params object[] parameters)
 		{
 			// Conforms the parameters and enqueues a job.
-			AcceptJob(GetJob(obj.WIGTable, func, ConformParameters(parameters)));
+			AcceptJob(GetJob(obj.DataContainer, func, ConformParameters(parameters)));
 		}
 
-		/// <summary>
-		/// Executes asynchronously a call to a Lua function on the thread this LuaExecutionQueue is associated with.
-		/// </summary>
-		/// <remarks>This method returns once the call job is queued.</remarks>
-		/// <param name="func">LuaFunction to call.</param>
-		/// <param name="parameters">Optional parameters to pass to the function.</param>
-		public void BeginCall(LuaFunction func, params LuaValue[] parameters)
-		{
-			// Conforms the parameters and enqueues a job.
-			AcceptJob(GetJob(func, ConformParameters(parameters)));
-		}
+        /// <summary>
+        /// Executes asynchronously a call to a Lua function on the thread this LuaExecutionQueue is associated with.
+        /// </summary>
+        /// <remarks>This method returns once the call job is queued.</remarks>
+        /// <param name="func">Function to call.</param>
+        /// <param name="parameters">Optional parameters to pass to the function.</param>
+        public void BeginCall(IDataProvider func, params object[] parameters)
+        {
+            // Conforms the parameters and enqueues a job.
+            AcceptJob(GetJob(func, ConformParameters(parameters)));
+        }
 
 		/// <summary>
 		/// Executes asynchronously a call to a Lua self-function on the thread this LuaExecutionQueue is associated with.
 		/// </summary>
 		/// <remarks>This method returns once the call job is queued.</remarks>
-		/// <param name="obj">LuaTable that contains the self-function.</param>
+		/// <param name="obj">IDataContainer that contains the self-function.</param>
 		/// <param name="func">Field name in <paramref name="obj"/> that corresponds to the function to call.</param>
 		/// <param name="parameters">Optional parameters to pass to the function. <paramref name="obj"/> is automatically
 		/// added as first parameter.</param>
-		public void BeginCallSelf(LuaTable obj, string func, params LuaValue[] parameters)
+		public void BeginCallSelf(IDataContainer obj, string func, params object[] parameters)
 		{
 			// Conforms the parameters and enqueues a job.
-			AcceptJob(GetJob(obj, func, ConformParameters(parameters, obj)));
+			AcceptJob(GetJob(obj, func, ConformParameters(parameters), true));
 		}
 
 		/// <summary>
 		/// Executes asynchronously a call to a Lua self-function on the thread this LuaExecutionQueue is associated with.
 		/// </summary>
 		/// <remarks>This method returns once the call job is queued.</remarks>
-		/// <param name="obj">Table entity that contains the self-function.</param>
+		/// <param name="obj">Entity that contains the self-function.</param>
 		/// <param name="func">Field name in underlying LuaTable of <paramref name="obj"/> that corresponds to the 
 		/// self-function to call.</param>
 		/// <param name="parameters">Optional parameters to pass to the function. <paramref name="obj"/> is automatically
 		/// added as first parameter.</param>
-		public void BeginCallSelf(WherigoObject obj, string func, params LuaValue[] parameters)
+		public void BeginCallSelf(WherigoObject obj, string func, params object[] parameters)
 		{
 			// Conforms the parameters and enqueues a job.
-			AcceptJob(GetJob(obj.WIGTable, func, ConformParameters(parameters, obj.WIGTable)));
+            IDataContainer cont = obj.DataContainer;
+            AcceptJob(GetJob(cont, func, ConformParameters(parameters), true));
 		}
 
 		/// <summary>
-		/// Blocks the caller thread until this LuaExecutionQueue has completed all the jobs 
+		/// Blocks the caller thread until this ExecutionQueue has completed all the jobs 
 		/// in the queue and goes to sleep.
 		/// </summary>
 		public void WaitEmpty()
@@ -159,7 +166,7 @@ namespace WF.Player.Core.Utils.Threading
 				EventHandler onBusyChanged = new EventHandler((o, e) =>
 				{
 					// Wakes the thread.
-					LuaExecutionQueue leq = (LuaExecutionQueue)o;
+					ExecutionQueue leq = (ExecutionQueue)o;
 					if (!leq.IsBusy && leq.QueueCount == 0)
 					{
 						// Time to wake the thread up!
@@ -199,33 +206,62 @@ namespace WF.Player.Core.Utils.Threading
 
 		#region Job Creation
 
-		private Action GetJob(LuaTable obj, string func, LuaValue[] parameters)
+        private Action GetJob(IDataContainer obj, string func, object[] parameters, bool isSelf)
+        {
+            return new Action(() => RunCall(obj, func, parameters, isSelf));
+        }
+
+		private Action GetJob(IDataContainer obj, string func, object[] parameters)
 		{
 			return new Action(() => RunCall(obj, func, parameters));
 		}
 
-		private Action GetJob(LuaFunction func, LuaValue[] parameters)
-		{
-			return new Action(() => RunCall(func, parameters));
-		}
+        private Action GetJob(IDataProvider func, object[] parameters)
+        {
+            return new Action(() => RunCall(func, parameters));
+        }
 
-		private LuaValue[] ConformParameters(LuaValue[] parameters)
+		private object[] ConformParameters(object[] parameters)
 		{
 			// Null parameters are replaced with an empty array.
-			return parameters ?? new LuaValue[] { };
+			return parameters ?? new object[] { };
 		}
 
-		private LuaValue[] ConformParameters(LuaValue[] parameters, LuaValue firstParam)
-		{
-			// Conforms the parameters and then concats the first param.
-			return ConformParameters(parameters).ConcatBefore(firstParam);
-		}
+        //private LuaValue[] ConformParameters(LuaValue[] parameters, LuaValue firstParam)
+        //{
+        //    // Conforms the parameters and then concats the first param.
+        //    return ConformParameters(parameters).ConcatBefore(firstParam);
+        //}
 
 		#endregion
 
 		#region Job Processing
 
-		private void RunCall(LuaTable obj, string func, LuaValue[] parameters)
+        private void RunCall(IDataContainer obj, string func, object[] parameters, bool isSelf)
+        {
+            // This executes in the job thread.
+
+            // Checks if this is still alive. 
+            if (IsDisposed)
+                return;
+
+            // Checks if the function still exists.
+            //LuaFunction lf = _luaState.SafeGetField<LuaFunction>(obj, func);
+            LuaDataContainer dc = obj as LuaDataContainer;
+            if (dc == null)
+                return;
+
+            IDataProvider lf = dc.GetProvider(func, isSelf);            
+
+            if (lf == null)
+                return;
+
+            // Calls the function.
+            //_luaState.SafeCallRaw(lf, parameters);
+            lf.Execute(parameters);
+        }
+
+		private void RunCall(IDataContainer obj, string func, object[] parameters)
 		{
 			// This executes in the job thread.
 
@@ -234,26 +270,29 @@ namespace WF.Player.Core.Utils.Threading
 				return;
 
 			// Checks if the function still exists.
-			LuaFunction lf = luaState.SafeGetField<LuaFunction>(obj, func);
+            //LuaFunction lf = _luaState.SafeGetField<LuaFunction>(obj, func);
+            IDataProvider lf = obj.GetProvider(func);
 
 			if (lf == null)
 				return;
 
 			// Calls the function.
-			luaState.SafeCallRaw(lf, parameters);
+            //_luaState.SafeCallRaw(lf, parameters);
+            lf.Execute(parameters);
 		}
 
-		private void RunCall(LuaFunction func, LuaValue[] parameters)
-		{
-			// This executes in the job thread.
+        private void RunCall(IDataProvider func, object[] parameters)
+        {
+            // This executes in the job thread.
 
-			// Checks if this is still alive. 
-			if (IsDisposed)
-				return;
+            // Checks if this is still alive. 
+            if (IsDisposed)
+                return;
 
-			// Calls the function.
-			luaState.SafeCallRaw(func, parameters);
-		}
+            // Calls the function.
+            //_luaState.SafeCallRaw(func, parameters);
+            func.Execute(parameters);
+        }
 
 		#endregion
 	}

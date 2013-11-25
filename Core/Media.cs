@@ -29,12 +29,12 @@ namespace WF.Player.Core
     #if MONOTOUCH
 	    [MonoTouch.Foundation.Preserve(AllMembers=true)]
     #endif
-    public class Media
+    public class Media : WherigoObject
     {
 
         #region Constructor
 
-        internal Media()
+        internal Media() : base(null)
         {
         }
 
@@ -67,16 +67,69 @@ namespace WF.Player.Core
         /// </summary>
 		public int MediaId { get; internal set; }
 
-		/// <summary>
-		/// Gets the name of the media.
-		/// </summary>
-		/// <value>The name.</value>
-		public string Name { get; internal set; }
-
         /// <summary>
         /// Gets the type of the media.
         /// </summary>
 		public MediaType Type { get; internal set; }
+
+        /// <summary>
+        /// Gets the name of the media in the game.
+        /// </summary>
+        public string Name
+        {
+            get
+            {
+                return IsBound ? DataContainer.GetString("Name") : null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the description of the media.
+        /// </summary>
+        public string Description
+        {
+            get
+            {
+                return IsBound ? DataContainer.GetString("Description") : null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the alternative text for the media if it cannot be displayed.
+        /// </summary>
+        public string AltText
+        {
+            get
+            {
+                return IsBound ? DataContainer.GetString("AltText") : null;
+            }
+        }
+
+        // TODO: check if value is the same as FileName
+        public string MediaFilename
+        {
+            get
+            {
+                return IsBound ? DataContainer.GetContainer("Resources").GetString("Filename") : null;
+            }
+        }
+
+        // TODO: check values.
+        public IEnumerable<string> Directives
+        {
+            get
+            {
+                return IsBound ? DataContainer.GetContainer("Resources").GetList<string>("Directives") : null;
+            }
+        }
+
+        private bool IsBound
+        {
+            get
+            {
+                return DataContainer != null;
+            }
+        }
 
         #endregion
 

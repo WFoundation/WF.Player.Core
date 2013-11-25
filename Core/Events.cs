@@ -196,9 +196,9 @@ namespace WF.Player.Core
 		/// <summary>
 		/// Gets the list of active zones.
 		/// </summary>
-		public IList<Zone> Zones { get; private set; }
+		public IEnumerable<Zone> Zones { get; private set; }
 
-		internal ZoneStateChangedEventArgs(Cartridge cart, List<Zone> z)
+		internal ZoneStateChangedEventArgs(Cartridge cart, IEnumerable<Zone> z)
 			: base(cart)
 		{
 			Zones = z;

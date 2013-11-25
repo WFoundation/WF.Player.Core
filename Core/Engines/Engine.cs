@@ -23,14 +23,13 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
-using System.Windows;
 using System.Collections;
 using WF.Player.Core.Utils;
-using WF.Player.Core.Utils.Threading;
+using WF.Player.Core.Threading;
 using WF.Player.Core.Formats;
-using WF.Player.Core.Lua;
+using WF.Player.Core.Data;
+using WF.Player.Core.Data.Lua;
 
 namespace WF.Player.Core.Engines
 {
@@ -44,31 +43,66 @@ namespace WF.Player.Core.Engines
     #endif
     public class Engine : IDisposable, INotifyPropertyChanged
     {
+        #region Nested Classes
+
+        private class LuaDataFactoryHelper : LuaDataFactory.IHelper
+        {
+            private Engine _engine;
+
+            public ExecutionQueue LuaExecutionQueue
+            {
+                get { return _engine.luaExecQueue; }
+            }
+
+            public Character Player
+            {
+                get { return _engine.player; }
+            }
+
+            public Cartridge Cartridge
+            {
+                get { return _engine.cartridge; }
+            }
+
+            internal LuaDataFactoryHelper(Engine engine)
+            {
+                this._engine = engine;
+            }
+        }  
+
+        #endregion
 
         #region Private variables
 
 		private IPlatformHelper platformHelper;
+
 		private Cartridge cartridge;
+		private Character player;
+
 		private double lat = 0;
 		private double lon = 0;
 		private double alt = 0;
 		private double accuracy = 0;
 		private double heading = 0;
-		private List<Thing> visibleInventory;
-		private List<Thing> visibleObjects;
-		private List<Zone> activeVisibleZones;
-		private List<Task> activeVisibleTasks;
+
+        private WherigoCollection<Thing> visibleInventory;
+        private WherigoCollection<Thing> visibleObjects;
+        private WherigoCollection<Zone> activeVisibleZones;
+        private WherigoCollection<Task> activeVisibleTasks;
+
 		private EngineGameState gameState;
 		private bool isReady;
 		private bool isBusy;
-		private LuaRuntime luaState;
-		private SafeLua safeLuaState;
-		private LuaExecutionQueue luaExecQueue;
+
+		private ExecutionQueue luaExecQueue;
 		private ActionPump uiDispatchPump;
+
         private WIGInternalImpl wherigo;
-        private LuaTable player;
+
 		private Dictionary<int, System.Threading.Timer> timers;
-		private Dictionary<int,UIObject> uiObjects;
+
+		private LuaDataFactory dataFactory;
+
 		private object syncRoot = new object();
 
         #endregion
@@ -76,10 +110,6 @@ namespace WF.Player.Core.Engines
 		#region Constants
 
 		private const int internalTimerDuration = 1000;
-
-		#endregion
-
-        #region Engine version
 
         public static readonly string CorePlatform = "WF.Player.Core";
         public static readonly string CoreVersion = "0.3.0";
@@ -127,6 +157,7 @@ namespace WF.Player.Core.Engines
 			InitInstance(platform);
 		}
 
+        //[DirectLuaUsage(ShouldBeRefactored=true)]
 		private void InitInstance(IPlatformHelper platform)
 		{
 			if (platform == null)
@@ -135,68 +166,85 @@ namespace WF.Player.Core.Engines
 			// Base objects.
 			platformHelper = platform;
 
-			luaState = new LuaRuntime();
+			//luaState = new LuaRuntime();
 
-			safeLuaState = new Utils.SafeLua(luaState)
-			{
-				RethrowsExceptions = true,
-				RethrowsDisposedLuaExceptions = false
-			};
+			//safeLuaState = new Utils.SafeLua(luaState)
+            //safeLuaState = new Utils.SafeLua()
+            //{
+            //    RethrowsExceptions = true,
+            //    RethrowsDisposedLuaExceptions = false
+            //};
 
 			timers = new Dictionary<int, System.Threading.Timer>();
-			uiObjects = new Dictionary<int, UIObject>();
+
+			//uiObjects = new Dictionary<int, UIObject>();
+            dataFactory = new LuaDataFactory(new LuaDataFactoryHelper(this));
 
 			// Create Wherigo environment
-			wherigo = new WIGInternalImpl(this, luaState);
-
-			// Register events
-			wherigo.OnTimerStarted += HandleTimerStarted;
-			wherigo.OnTimerStopped += HandleTimerStopped;
-			wherigo.OnCartridgeChanged += HandleCartridgeChanged;
-			wherigo.OnZoneStateChanged += HandleZoneStateChanged;
-			wherigo.OnInventoryChanged += HandleInventoryChanged;
-			wherigo.OnAttributeChanged += HandleAttributeChanged;
-			wherigo.OnCommandChanged += HandleCommandChanged;
+			wherigo = new WIGInternalImpl(this, dataFactory);
 
 			// Set definitions from Wherigo for ShowScreen
-			LuaTable wherigoTable = (LuaTable)luaState.Globals["Wherigo"];
-			wherigoTable["MAINSCREEN"] = (int)ScreenType.Main;
-			wherigoTable["LOCATIONSCREEN"] = (int)ScreenType.Locations;
-			wherigoTable["ITEMSCREEN"] = (int)ScreenType.Items;
-			wherigoTable["INVENTORYSCREEN"] = (int)ScreenType.Inventory;
-			wherigoTable["TASKSCREEN"] = (int)ScreenType.Tasks;
-			wherigoTable["DETAILSCREEN"] = (int)ScreenType.Details;
+            //LuaTable wherigoTable = safeLuaState.SafeGetGlobal<LuaTable>("Wherigo");
+            LuaDataContainer wherigoTable = dataFactory.GetContainerAt("Wherigo");
+            //safeLuaState.SafeSetField(wherigoTable, "MAINSCREEN", (int)ScreenType.Main);
+            //safeLuaState.SafeSetField(wherigoTable, "LOCATIONSCREEN", (int)ScreenType.Locations);
+            //safeLuaState.SafeSetField(wherigoTable, "ITEMSCREEN", (int)ScreenType.Items);
+            //safeLuaState.SafeSetField(wherigoTable, "INVENTORYSCREEN", (int)ScreenType.Inventory);
+            //safeLuaState.SafeSetField(wherigoTable, "TASKSCREEN", (int)ScreenType.Tasks);
+            //safeLuaState.SafeSetField(wherigoTable, "DETAILSCREEN", (int)ScreenType.Details);
+            wherigoTable["MAINSCREEN"] = (int)ScreenType.Main;
+            wherigoTable["LOCATIONSCREEN"] = (int)ScreenType.Locations;
+            wherigoTable["ITEMSCREEN"] = (int)ScreenType.Items;
+            wherigoTable["INVENTORYSCREEN"] = (int)ScreenType.Inventory;
+            wherigoTable["TASKSCREEN"] = (int)ScreenType.Tasks;
+            wherigoTable["DETAILSCREEN"] = (int)ScreenType.Details;
 
 			// Set definitions from Wherigo for LogMessage
-			wherigoTable["LOGDEBUG"] = (int)LogLevel.Debug;
-			wherigoTable["LOGCARTRIDGE"] = (int)LogLevel.Cartridge;
-			wherigoTable["LOGINFO"] = (int)LogLevel.Info;
-			wherigoTable["LOGWARNING"] = (int)LogLevel.Warning;
-			wherigoTable["LOGERROR"] = (int)LogLevel.Error;
+            wherigoTable["LOGDEBUG"] = (int)LogLevel.Debug;
+            wherigoTable["LOGCARTRIDGE"] = (int)LogLevel.Cartridge;
+            wherigoTable["LOGINFO"] = (int)LogLevel.Info;
+            wherigoTable["LOGWARNING"] = (int)LogLevel.Warning;
+            wherigoTable["LOGERROR"] = (int)LogLevel.Error;
+            //safeLuaState.SafeSetField(wherigoTable, "LOGDEBUG", (int)LogLevel.Debug);
+            //safeLuaState.SafeSetField(wherigoTable, "LOGCARTRIDGE", (int)LogLevel.Cartridge);
+            //safeLuaState.SafeSetField(wherigoTable, "LOGINFO", (int)LogLevel.Info);
+            //safeLuaState.SafeSetField(wherigoTable, "LOGWARNING", (int)LogLevel.Warning);
+            //safeLuaState.SafeSetField(wherigoTable, "LOGERROR", (int)LogLevel.Error);
 
 			// Get information about the player
 			// Create table for Env, ...
-			luaState.Globals["Env"] = luaState.CreateTable();
-			LuaTable env = (LuaTable)luaState.Globals["Env"];
+            ////luaState.Globals["Env"] = luaState.CreateTable();
+            ////LuaTable env = (LuaTable)luaState.Globals["Env"];
+            //LuaTable env = safeLuaState.SafeCreateTable();
+            //safeLuaState.SafeSetGlobal("Env", env);
+            LuaDataContainer env = dataFactory.CreateContainerAt("Env");
 
 			// Set defaults
-			env["CartFolder"] = platformHelper.CartridgeFolder;
-			env["SyncFolder"] = platformHelper.SavegameFolder;
-			env["LogFolder"] = platformHelper.LogFolder;
-			env["PathSep"] = platformHelper.PathSeparator;
-			env["Downloaded"] = 0.0;
-			env["Platform"] = String.Format("{0} ({1})", CorePlatform, platformHelper.Platform);
-			env["Device"] = platformHelper.Device;
-			env["DeviceID"] = platformHelper.DeviceId;
-			//env["Version"] = uiVersion + " (" + CorePlatform + " " + CoreVersion + ")";
-			env["Version"] = String.Format("{0} ({1} {2})", platformHelper.ClientVersion, CorePlatform, CoreVersion);
+            env["CartFolder"] = platformHelper.CartridgeFolder;
+            env["SyncFolder"] = platformHelper.SavegameFolder;
+            env["LogFolder"] = platformHelper.LogFolder;
+            env["PathSep"] = platformHelper.PathSeparator;
+            env["Downloaded"] = 0.0;
+            env["Platform"] = String.Format("{0} ({1})", CorePlatform, platformHelper.Platform);
+            env["Device"] = platformHelper.Device;
+            env["DeviceID"] = platformHelper.DeviceId;
+            env["Version"] = String.Format("{0} ({1} {2})", platformHelper.ClientVersion, CorePlatform, CoreVersion);
+            //safeLuaState.SafeSetField(env, "CartFolder", platformHelper.CartridgeFolder);
+            //safeLuaState.SafeSetField(env, "SyncFolder", platformHelper.SavegameFolder);
+            //safeLuaState.SafeSetField(env, "LogFolder", platformHelper.LogFolder);
+            //safeLuaState.SafeSetField(env, "PathSep", platformHelper.PathSeparator);
+            //safeLuaState.SafeSetField(env, "Downloaded", 0.0);
+            //safeLuaState.SafeSetField(env, "Platform", String.Format("{0} ({1})", CorePlatform, platformHelper.Platform));
+            //safeLuaState.SafeSetField(env, "Device", platformHelper.Device);
+            //safeLuaState.SafeSetField(env, "DeviceID", platformHelper.DeviceId);
+            //safeLuaState.SafeSetField(env, "Version", String.Format("{0} ({1} {2})", platformHelper.ClientVersion, CorePlatform, CoreVersion));
 
-			// Creates job queues that runs in another thread.
-			luaExecQueue = new LuaExecutionQueue(safeLuaState);
-			uiDispatchPump = new ActionPump();
+            // Creates job queues that runs in another thread.
+            luaExecQueue = new ExecutionQueue();
+            uiDispatchPump = new ActionPump();
 
 			// Sets some event handlers for the job queues.
-			luaExecQueue.IsBusyChanged += new EventHandler(HandleLuaExecQueueIsBusyChanged);
+			luaExecQueue.IsBusyChanged += new EventHandler(HandleluaExecQueueIsBusyChanged);
 			uiDispatchPump.IsBusyChanged += new EventHandler(HandleUIDispatchPumpIsBusyChanged);
 
 			// Sets the game state.
@@ -227,29 +275,31 @@ namespace WF.Player.Core.Engines
 				}
 
 				// Safe lua goes into disposal mode.
-				safeLuaState.RethrowsExceptions = false;
+				dataFactory.LuaStateRethrowsExceptions = false;
 			 
 				// Clears some members set by Init().
 				if (cartridge != null)
 				{
-					cartridge.Engine = null;
+					cartridge.DataContainer = null;
 					cartridge = null;
 				}
-
-				player = null;
+				if (player != null)
+				{
+					player.DataContainer = null;
+					player = null;
+				}
 
 				// Unhooks WIGInternal.
 				if (wherigo != null)
 				{
-					wherigo.OnTimerStarted -= HandleTimerStarted;
-					wherigo.OnTimerStopped -= HandleTimerStopped;
-					wherigo.OnCartridgeChanged -= HandleCartridgeChanged;
-					wherigo.OnZoneStateChanged -= HandleZoneStateChanged;
-					wherigo.OnInventoryChanged -= HandleInventoryChanged;
-					wherigo.OnAttributeChanged -= HandleAttributeChanged;
-					wherigo.OnCommandChanged -= HandleCommandChanged;
 					wherigo = null;
 				}
+
+                // Clears the different lists.
+                ActiveVisibleTasks = null;
+                ActiveVisibleZones = null;
+                VisibleInventory = null;
+                VisibleObjects = null;
 			}
 
 			// Cleans managed resources in here.
@@ -259,18 +309,18 @@ namespace WF.Player.Core.Engines
 				DisposeTimers();
 
 				// Bye bye UI objects.
-				foreach (UIObject uiObject in uiObjects.Values)
-				{
-					// TODO: Check, if this is correct
-					//					uiObject.WIGTable.Dispose(disposeManagedResources);
-					uiObject.WIGTable.Dispose();
-				}
-				uiObjects.Clear();
+				//foreach (UIObject uiObject in uiObjects.Values)
+				//{
+				//    // TODO: Check, if this is correct
+				//    //					uiObject.WIGTable.Dispose(disposeManagedResources);
+				//    uiObject.WIGTable.Dispose();
+				//}
+				//uiObjects.Clear();
 				
 				// Bye bye threads.
 				if (luaExecQueue != null)
 				{
-					luaExecQueue.IsBusyChanged -= new EventHandler(HandleLuaExecQueueIsBusyChanged);					
+					luaExecQueue.IsBusyChanged -= new EventHandler(HandleluaExecQueueIsBusyChanged);					
 					luaExecQueue.Dispose();
 					lock (syncRoot)
 					{
@@ -289,15 +339,20 @@ namespace WF.Player.Core.Engines
 				}
 
 				// Disposes the underlying objects.
-				if (luaState != null)
-				{
-					lock (luaState)
-					{
-						luaState.Dispose();
-					}
-					luaState = null;
-					safeLuaState = null;
-				} 
+                ////if (luaState != null)
+                ////{
+                ////    lock (luaState)
+                ////    {
+                ////        luaState.Dispose();
+                ////    }
+                ////    luaState = null;
+                ////    safeLuaState = null;
+                ////}
+                //if (safeLuaState != null)
+                //{
+                //    safeLuaState.Dispose();
+                //}
+                dataFactory.Dispose();
 			}
 
 			if (!noStateChange)
@@ -397,29 +452,20 @@ namespace WF.Player.Core.Engines
 		{ 
 			get 
 			{
-				LuaTable p;
 				lock (syncRoot)
 				{
-					p = player;
+					return player;
 				}
-
-				if (p == null)
-				{
-					return null;
-				}
-
-				// TODO: Strange, shouldn't it be p instead of player?
-				return (Character)GetTable(player); 
 			} 
 		}
 
-		public List<Task> ActiveVisibleTasks
+		public WherigoCollection<Task> ActiveVisibleTasks
 		{
 			get
 			{
 				lock (syncRoot)
 				{
-					return activeVisibleTasks ?? new List<Task>();
+                    return activeVisibleTasks ?? new WherigoCollection<Task>();
 				}
 			}
 
@@ -443,13 +489,13 @@ namespace WF.Player.Core.Engines
 			}
 		}
 
-		public List<Zone> ActiveVisibleZones
+        public WherigoCollection<Zone> ActiveVisibleZones
 		{
 			get
 			{
 				lock (syncRoot)
 				{
-					return activeVisibleZones ?? new List<Zone>();
+                    return activeVisibleZones ?? new WherigoCollection<Zone>();
 				}
 			}
 
@@ -473,13 +519,13 @@ namespace WF.Player.Core.Engines
 			}
 		}
 
-		public List<Thing> VisibleInventory
+        public WherigoCollection<Thing> VisibleInventory
 		{
 			get
 			{
 				lock (syncRoot)
 				{
-					return visibleInventory ?? new List<Thing>();
+                    return visibleInventory ?? new WherigoCollection<Thing>();
 				}
 			}
 
@@ -503,13 +549,13 @@ namespace WF.Player.Core.Engines
 			}
 		}
 
-		public List<Thing> VisibleObjects
+        public WherigoCollection<Thing> VisibleObjects
 		{
 			get
 			{
 				lock (syncRoot)
 				{
-					return visibleObjects ?? new List<Thing>();
+                    return visibleObjects ?? new WherigoCollection<Thing>();
 				}
 			}
 
@@ -640,9 +686,11 @@ namespace WF.Player.Core.Engines
 
 		#region Internal
 
-		internal LuaExecutionQueue LuaExecQueue { get { return luaExecQueue; } }
+		//private LuaExecutionQueue LuaExecQueue { get { return luaExecQueue; } }
 
-		internal SafeLua SafeLuaState { get { return safeLuaState; } }
+		//internal SafeLua SafeLuaState { get { return safeLuaState; } }
+
+		//internal IDataFactory<LuaTable> DataFactory { get { return dataFactory; } }
 
 		#endregion
 
@@ -660,45 +708,62 @@ namespace WF.Player.Core.Engines
 			// Sanity checks.
 			CheckStateIs(EngineGameState.Uninitialized, "The engine cannot be initialized in this state", true);
 
+			// State change.
 			GameState = EngineGameState.Initializing;
 
+			// Various sets.
 			this.cartridge = cartridge;
-			cartridge.Engine = this;
+            ////((LuaTable)luaState.Globals["Env"])["CartFilename"] = cartridge.Filename;
+            //safeLuaState.SafeSetGlobal("Env.CartFilename", cartridge.Filename);
+            dataFactory.GetContainerAt("Env")["CartFilename"] = cartridge.Filename;
 
-			((LuaTable)luaState.Globals["Env"])["CartFilename"] = cartridge.Filename;
-
+			// Loads the cartridge code.
 			FileFormats.Load(input, cartridge);
 
 			// Set player relevant data
-			player = (LuaTable)((LuaTable)luaState.Globals["Wherigo"])["Player"];
-			player["CompletionCode"] = cartridge.CompletionCode;
-			player["Name"] = cartridge.Player;
-			LuaTable objLoc = (LuaTable)player["ObjectLocation"];
-			objLoc["latitude"] = lat;
-			objLoc["longitude"] = lon;
-			objLoc["altitude"] = alt;
+            ////playerTable = (LuaTable)((LuaTable)luaState.Globals["Wherigo"])["Player"];
+            ////playerTable["CompletionCode"] = cartridge.CompletionCode;
+            ////playerTable["Name"] = cartridge.Player;
+            //playerTable = safeLuaState.SafeGetGlobal<LuaTable>("Wherigo.Player");
+            //safeLuaState.SafeSetField(playerTable, "CompletionCode", cartridge.CompletionCode);
+            //safeLuaState.SafeSetField(playerTable, "Name", cartridge.Player);
+            player = dataFactory.GetWherigoObjectAt<Character>("Wherigo.Player");
+            LuaDataContainer playerTable = (LuaDataContainer) player.DataContainer;
+            playerTable["CompletionCode"] = cartridge.CompletionCode;
+            playerTable["Name"] = cartridge.Player;
 
-			try
-			{
-				// Now start Lua binary chunk
-				byte[] luaBytes = cartridge.Resources[0].Data;
+            ////LuaTable objLoc = (LuaTable)playerTable["ObjectLocation"];
+            ////objLoc["latitude"] = lat;
+            ////objLoc["longitude"] = lon;
+            ////objLoc["altitude"] = alt;
+            //LuaTable objLoc = safeLuaState.SafeGetField<LuaTable>(playerTable, "ObjectLocation");
+            //safeLuaState.SafeSetField(objLoc, "latitude", lat);
+            //safeLuaState.SafeSetField(objLoc, "longitude", lon);
+            //safeLuaState.SafeSetField(objLoc, "altitude", alt);
+            LuaDataContainer objLoc = playerTable.GetContainer("ObjectLocation");
+            objLoc["latitude"] = lat;
+            objLoc["longitude"] = lon;
+            objLoc["altitude"] = alt;
 
-				// TODO: Asynchronize this!
-				cartridge.WIGTable = (LuaTable)luaState.DoString(luaBytes, cartridge.Filename)[0];
-				player["Cartridge"] = cartridge.WIGTable;
+            // Now start Lua binary chunk
+            byte[] luaBytes = cartridge.Resources[0].Data;
 
-				GameState = EngineGameState.Initialized;
+            // TODO: Asynchronize below!
 
-			}
-			catch (Exception e)
-			{
-				// TODO
-				// Rethrow exception
-				Console.WriteLine(e.Message);
+            // Runs the init code and stores the Cartridge container.
+            ////cartridgeTable = (LuaTable)luaState.DoString(luaBytes, cartridge.Filename)[0];
+            ////playerTable["Cartridge"] = cartridgeTable;
+            //cartridgeTable = (LuaTable)safeLuaState.SafeDoString(luaBytes, Cartridge.Filename)[0];
+            //safeLuaState.SafeSetField(playerTable, "Cartridge", cartridgeTable);
+            //cartridge = dataFactory.GetWherigoObject<Cartridge>(cartridgeTable);
 
-				GameState = EngineGameState.Uninitialized;
-			}
+            // Runs the init code.
+            LuaDataContainer cartridgeTable = dataFactory.LoadProvider(luaBytes, cartridge.Filename).FirstContainerOrDefault();
+            playerTable["Cartridge"] = cartridgeTable;
+            cartridge.DataContainer = cartridgeTable;
 
+            // State change.
+            GameState = EngineGameState.Initialized;
 		}
 
 		public void Reset()
@@ -732,8 +797,8 @@ namespace WF.Player.Core.Engines
 			GameState = EngineGameState.Starting;
 
 			// Starts the game.
-			LuaExecQueue.BeginCallSelf(cartridge.WIGTable, "Start");
-			LuaExecQueue.WaitEmpty();
+			luaExecQueue.BeginCallSelf(cartridge, "Start");
+			luaExecQueue.WaitEmpty();
 
 			// Refreshes the values.
 			RefreshActiveVisibleTasksAsync();
@@ -758,8 +823,8 @@ namespace WF.Player.Core.Engines
 
 			DisposeTimers();
 
-			LuaExecQueue.BeginCallSelf(cartridge.WIGTable, "Stop");
-			LuaExecQueue.WaitEmpty();
+			luaExecQueue.BeginCallSelf(cartridge, "Stop");
+			luaExecQueue.WaitEmpty();
 
 			// The last one stops the sound ;)
 			// Should be done immediately before the handler is gone
@@ -782,10 +847,15 @@ namespace WF.Player.Core.Engines
 			
 			GameState = EngineGameState.Restoring;
 
-			new FileGWS(this).Load(stream);
+			new FileGWS(
+				cartridge,
+				player,
+				platformHelper,
+				dataFactory
+			).Load(stream);
 
-			LuaExecQueue.BeginCallSelf(cartridge.WIGTable, "OnRestore");
-			LuaExecQueue.WaitEmpty();
+			luaExecQueue.BeginCallSelf(cartridge, "OnRestore");
+			luaExecQueue.WaitEmpty();
 
 			GameState = EngineGameState.Playing;
         }
@@ -803,11 +873,16 @@ namespace WF.Player.Core.Engines
 			GameState = EngineGameState.Saving;
 
 			// Informs the cartridge that saving starts.
-			LuaExecQueue.BeginCallSelf(cartridge.WIGTable, "OnSync");
-			LuaExecQueue.WaitEmpty();
+			luaExecQueue.BeginCallSelf(cartridge, "OnSync");
+			luaExecQueue.WaitEmpty();
 
             // Serialize all objects
-			new FileGWS(this).Save(stream);
+            new FileGWS(
+                cartridge,
+                player,
+                platformHelper,
+                dataFactory
+            ).Save(stream);
 
 			// State change.
 			GameState = EngineGameState.Playing;
@@ -851,21 +926,29 @@ namespace WF.Player.Core.Engines
 			luaExecQueue.IsRunning = true;
 
 			// Restarts the timers.
-			var e = safeLuaState.SafeGetEnumerator((LuaTable)safeLuaState.SafeCallSelf(player, "GetActiveTimers")[0]);
-			while (e.MoveNext())
+			//var e = safeLuaState.SafeGetEnumerator((LuaTable)safeLuaState.SafeCallSelf(playerTable, "GetActiveTimers")[0]);
+			//while (e.MoveNext())
+			//{
+			//    LuaTable obj = (LuaTable) e.Current.Value;
+
+			//    // Should the timer be restarted?
+			//    bool shouldRestart = safeLuaState.SafeGetField<bool>((LuaTable)safeLuaState.SafeCallSelf(obj, "Restart")[0], 0);
+			//    if (!shouldRestart)
+			//    {
+			//        continue;
+			//    }
+
+			//    // Creates the internal timer.
+			//    int objIndex = safeLuaState.SafeGetField<int>(obj, "ObjIndex");
+			//    CreateAndStartInternalTimer(objIndex);
+			//}
+
+			// Restarts the timers.
+			var timers = player.DataContainer.GetListFromProvider<IDataContainer>("GetActiveTimers");
+			foreach (var timer in timers.Where(t => !t.GetBool("Restart").GetValueOrDefault()))
 			{
-				LuaTable obj = (LuaTable) e.Current.Value;
-
-				// Should the timer be restarted?
-				bool shouldRestart = safeLuaState.SafeGetField<bool>((LuaTable)safeLuaState.SafeCallSelf(obj, "Restart")[0], 0);
-				if (!shouldRestart)
-				{
-					continue;
-				}
-
 				// Creates the internal timer.
-				int objIndex = safeLuaState.SafeGetField<int>(obj, "ObjIndex");
-				CreateAndStartInternalTimer(objIndex);
+				CreateAndStartInternalTimer(timer.GetInt("ObjIndex").Value);
 			}
 
 			// State change.
@@ -874,12 +957,53 @@ namespace WF.Player.Core.Engines
 
 		public void FreeMemory()
 		{
-			lock (luaState) {
-				luaState.DoString ("collectgarbage(\"collect\")");
-			}
+            ////lock (luaState) {
+            ////    luaState.DoString ("collectgarbage(\"collect\")");
+            ////}
+            //safeLuaState.SafeDoString("collectgarbage(\"collect\")");
+            dataFactory.RunScript("collectgarbage(\"collect\")");
 		}
 
 		#endregion
+
+        #region Model Queries
+
+        /// <summary>
+        /// Gets a Wherigo object that has a certain id.
+        /// </summary>
+        /// <typeparam name="T">Type of the object to expect, subclass of WherigoObject.</typeparam>
+        /// <param name="id">Id of the object to get.</param>
+        /// <returns>A wherigo object of the expected type.</returns>
+        /// <exception cref="InvalidOperationException">No object with such Id exists, or the object is not of the
+        /// required type.</exception>
+        public T GetWherigoObject<T>(int id) where T : WherigoObject
+        {
+            return dataFactory.GetWherigoObject<T>(id);
+        }
+
+        /// <summary>
+        /// Gets a Wherigo object that has a certain id.
+        /// </summary>
+        /// <typeparam name="T">Type of the object to expect, subclass of WherigoObject.</typeparam>
+        /// <param name="id">Id of the object to get.</param>
+        /// <param name="wObj">A wherigo object of the expected type, or null if it wasn't found or is not
+        /// of the expected type.</param>
+        /// <returns>True if the method returned, false otherwise.</returns>
+        public bool TryGetWherigoObject<T>(int id, out T wObj) where T : WherigoObject
+        {
+            try
+            {
+                wObj = dataFactory.GetWherigoObject<T>(id) as T;
+            }
+            catch (Exception)
+            {
+                wObj = null;
+            }
+
+            return wObj != null;
+        }
+
+        #endregion
 
         #region User Input (Refresh)
 
@@ -900,7 +1024,7 @@ namespace WF.Player.Core.Engines
 			this.alt = alt;
 			this.accuracy = accuracy;
 
-			LuaExecQueue.BeginCallSelf(player, "ProcessLocation", lat, lon, alt, accuracy);
+			luaExecQueue.BeginCallSelf(player, "ProcessLocation", lat, lon, alt, accuracy);
         }
 
         /// <summary>
@@ -939,9 +1063,9 @@ namespace WF.Player.Core.Engines
 			}
 
 			// If we're not in the lua exec thread, be in it!
-			if (!LuaExecQueue.IsSameThread)
+			if (!luaExecQueue.IsSameThread)
 			{
-				LuaExecQueue.BeginAction(RefreshActiveVisibleTasksAsync);
+				luaExecQueue.BeginAction(RefreshActiveVisibleTasksAsync);
 				return;
 			}
 
@@ -949,10 +1073,7 @@ namespace WF.Player.Core.Engines
 				ActiveVisibleTasks = null;
 
 			// This executes in the lua exec thread, so it's fine to block.
-			lock (luaState)
-			{
-				ActiveVisibleTasks = GetTableListFromLuaTable<Task>((LuaTable)player.CallSelf("GetActiveVisibleTasks")[0]); 
-			}
+			ActiveVisibleTasks = player.DataContainer.GetWherigoObjectListFromProvider<Task>("GetActiveVisibleTasks");
 		}
 
 		private void RefreshActiveVisibleZonesAsync()
@@ -964,9 +1085,9 @@ namespace WF.Player.Core.Engines
 			}
 
 			// If we're not in the lua exec thread, be in it!
-			if (!LuaExecQueue.IsSameThread)
+			if (!luaExecQueue.IsSameThread)
 			{
-				LuaExecQueue.BeginAction(RefreshActiveVisibleZonesAsync);
+				luaExecQueue.BeginAction(RefreshActiveVisibleZonesAsync);
 				return;
 			}
 
@@ -974,10 +1095,7 @@ namespace WF.Player.Core.Engines
 				ActiveVisibleZones = null;
 
 			// This executes in the lua exec thread, so it's fine to block.
-			lock (luaState)
-			{
-				ActiveVisibleZones = GetTableListFromLuaTable<Zone>((LuaTable)player.CallSelf("GetActiveVisibleZones")[0]); 
-			}
+			ActiveVisibleZones = player.DataContainer.GetWherigoObjectListFromProvider<Zone>("GetActiveVisibleZones");
 		}
 
 		private void RefreshVisibleInventoryAsync()
@@ -989,9 +1107,9 @@ namespace WF.Player.Core.Engines
 			}
 
 			// If we're not in the lua exec thread, be in it!
-			if (!LuaExecQueue.IsSameThread)
+			if (!luaExecQueue.IsSameThread)
 			{
-				LuaExecQueue.BeginAction(RefreshVisibleInventoryAsync);
+				luaExecQueue.BeginAction(RefreshVisibleInventoryAsync);
 				return;
 			}
 
@@ -999,10 +1117,7 @@ namespace WF.Player.Core.Engines
 				VisibleInventory = null;
 
 			// This executes in the lua exec thread, so it's fine to block.
-			lock (luaState)
-			{
-				VisibleInventory = GetTableListFromLuaTable<Thing>((LuaTable)player.CallSelf("GetVisibleInventory")[0]); 
-			}
+			VisibleInventory = player.DataContainer.GetWherigoObjectListFromProvider<Thing>("GetVisibleInventory");
 		}
 
 		private void RefreshVisibleObjectsAsync()
@@ -1014,9 +1129,9 @@ namespace WF.Player.Core.Engines
 			}
 
 			// If we're not in the lua exec thread, be in it!
-			if (!LuaExecQueue.IsSameThread)
+			if (!luaExecQueue.IsSameThread)
 			{
-				LuaExecQueue.BeginAction(RefreshVisibleObjectsAsync);
+				luaExecQueue.BeginAction(RefreshVisibleObjectsAsync);
 				return;
 			}
 
@@ -1024,10 +1139,7 @@ namespace WF.Player.Core.Engines
 				VisibleObjects = null;
 
 			// This executes in the lua exec thread, so it's fine to block.
-			lock (luaState)
-			{
-				VisibleObjects = GetTableListFromLuaTable<Thing>((LuaTable)player.CallSelf("GetVisibleObjects")[0]); 
-			}
+			VisibleObjects = player.DataContainer.GetWherigoObjectListFromProvider<Thing>("GetVisibleObjects");
 		}
 
 		private void RefreshThingVectorFromPlayerAsync(Thing t)
@@ -1039,55 +1151,64 @@ namespace WF.Player.Core.Engines
 			}
 
 			// If we're not in the lua exec thread, be in it!
-			if (!LuaExecQueue.IsSameThread)
+			if (!luaExecQueue.IsSameThread)
 			{
-				LuaExecQueue.BeginAction(() => RefreshThingVectorFromPlayerAsync(t));
+				luaExecQueue.BeginAction(() => RefreshThingVectorFromPlayerAsync(t));
 				return;
 			}
 
 			/// This below executes in the lua exec thread, so it's fine to block.
 
 			// Gets more info about the thing.
-			LuaValue thingLoc;
-			lock (luaState)
-			{
-				thingLoc = t.WIGTable["ObjectLocation"];
-			}
+			//LuaValue thingLoc;
+			//lock (luaState)
+			//{
+			//    thingLoc = t.WIGTable["ObjectLocation"];
+			//}
+			ZonePoint thingLoc = t.ObjectLocation;
 			bool isZone = t is Zone;
 
 			// If the Thing is not a zone and has no location, consider it is close to the player.
 			if (!isZone && thingLoc == null)
 			{
-				LuaTable lt;
-				lock (luaState)
-				{
-					lt = (LuaTable)luaState.DoString("return Wherigo.Distance(0)")[0];
-				}
-				t.VectorFromPlayer = new LocationVector((Distance)GetTable(lt), 0);
+				t.VectorFromPlayer = new LocationVector(dataFactory.CreateWherigoObject<Distance>(), 0);
+				
 				RaisePropertyChangedInObject(t, "VectorFromPlayer");
 				return;
 			}
 
-			LuaVararg ret;
+			//LuaVararg ret;
+			//if (isZone)
+			//{
+			//    lock (luaState)
+			//    {
+			//        ret = wherigo.VectorToZone(playerTable["ObjectLocation"], t.WIGTable);
+			//    }
+			//}
+			//else
+			//{
+			//    lock (luaState)
+			//    {
+			//        ret = wherigo.VectorToPoint(playerTable["ObjectLocation"], thingLoc);
+			//    }
+			//}
+			LocationVector ret;
 			if (isZone)
 			{
-				lock (luaState)
-				{
-					ret = wherigo.VectorToZone(player["ObjectLocation"], t.WIGTable);
-				}
+				ret = wherigo.VectorToZone(player.ObjectLocation, (Zone)t);
 			}
 			else
 			{
-				lock (luaState)
-				{
-					ret = wherigo.VectorToPoint(player["ObjectLocation"], thingLoc);
-				}
+				ret = wherigo.VectorToPoint(player.ObjectLocation, thingLoc);
 			}
 
-			if (!(ret [0] is LuaNil) && !(ret [1] is LuaNil)) {
-				t.VectorFromPlayer = new LocationVector ((Distance)GetTable ((LuaTable)ret [0]), (double)ret [1].ToNumber ());
-				RaisePropertyChangedInObject (t, "VectorFromPlayer");
-			}
+			//if (!(ret [0] is LuaNil) && !(ret [1] is LuaNil)) {
+			//    t.VectorFromPlayer = new LocationVector ((Distance)GetTable ((LuaTable)ret [0]), (double)ret [1].ToNumber ());
+			//    RaisePropertyChangedInObject (t, "VectorFromPlayer");
+			//}
+
+			t.VectorFromPlayer = ret;
+			RaisePropertyChangedInObject(t, "VectorFromPlayer");
 
 			return;
 		}
@@ -1099,38 +1220,51 @@ namespace WF.Player.Core.Engines
 		/// <summary>
         /// Event, which is called, if the attribute of an object has changed.
         /// </summary>
-        /// <param name="t">LuaTable for object, which attribute has changed.</param>
+        /// <param name="obj">Object, which attribute has changed.</param>
         /// <param name="attribute">String with the name of the attribute that has changed.</param>
-		internal void HandleAttributeChanged(LuaTable t, string attribute)
+		internal void HandleAttributeChanged(WherigoObject obj, string attribute)
 		{
-			WherigoObject obj = GetTable(t);
-			string classname;
-			lock (luaState)
-			{
-				classname = (string)t["ClassName"].ToString(); 
-			}
+            if (cartridge == null)
+                return;
+            
+            //WherigoObject obj = dataFactory.GetWherigoObject(t);
+            ////string classname;
+            ////lock (luaState)
+            ////{
+            ////    classname = (string)t["ClassName"].ToString(); 
+            ////}
 
 			if (obj != null) {
 				
 				// Raises the NotifyPropertyChanged event if this is a UIObject.
-				if (IsUIObject(obj))
+				if (obj is UIObject)
 					RaisePropertyChangedInObject((UIObject)obj, attribute);
 
 				// Refreshes the zone in order to make it fire its events.
-				if (cartridge.WIGTable != null && ("Zone".Equals(classname) && "Active".Equals(attribute)))
-					lock (luaState)
-					{
-						player.CallSelf("ProcessLocation", lat, lon, alt, accuracy); 
-					}
+				if ((obj is Zone && "Active".Equals(attribute)))
+				{
+					//lock (luaState)
+					//{
+					//    player.CallSelf("ProcessLocation", lat, lon, alt, accuracy);
+					//}
+                    
+                    //player.Call("ProcessLocation", lat, lon, alt, accuracy);
+                    //player.CallSelf("ProcessLocation", lat, lon, alt, accuracy);
+
+                    // If ProcessLocation is called during initialization, Lua crashes. 
+                    // But we still need the call to happen. That is why we defer the call 
+                    // to later, thanks to the execution queue.
+                    luaExecQueue.BeginCallSelf(player, "ProcessLocation", lat, lon, alt, accuracy);
+				}
 
 				// Checks if an engine property has changed.
 				bool isAttributeVisibleOrActive = "Active".Equals(attribute) || "Visible".Equals(attribute);
-				if (isAttributeVisibleOrActive && "ZTask".Equals(classname))
+				if (isAttributeVisibleOrActive && obj is Task)
 				{
 					// Recomputes active visible tasks and raises the property changed event.
 					RefreshActiveVisibleTasksAsync();
 				}
-				else if (isAttributeVisibleOrActive && "Zone".Equals(classname))
+				else if (isAttributeVisibleOrActive && obj is Zone)
 				{
 					// Recomputes active visible zones and raises the property changed event.
 					RefreshActiveVisibleZonesAsync();
@@ -1142,7 +1276,7 @@ namespace WF.Player.Core.Engines
 			} else {
 
 				// Raises the NotifyPropertyChanged event if this is a Cartridge.
-				if ("ZCartridge".Equals(classname))
+				if (obj is Cartridge)
 					RaisePropertyChangedInObject(cartridge, attribute);
 
 			}
@@ -1175,20 +1309,17 @@ namespace WF.Player.Core.Engines
         /// <summary>
         /// Event, which is called, if a command has changed.
         /// </summary>
-        /// <param name="c">LuaTable for command, that has changed.</param>
-		internal void HandleCommandChanged(LuaTable ltCommand)
+		internal void HandleCommandChanged(Command command)
 		{
-			Command c = (Command)GetTable (ltCommand);
-
 			// Raises PropertyChanged on the command's owner.
-			if (c.Owner != null && IsUIObject (c.Owner))
-				RaisePropertyChangedInObject((UIObject)(c.Owner), "Commands");
+			if (command.Owner != null)
+                RaisePropertyChangedInObject(command.Owner, "Commands");
 
 			// TODO: Reciprocal commands need to raise PropertyChanged on the targets too.
 
 
 			// Raises the event.
-			RaiseCommandChanged(c);
+            RaiseCommandChanged(command);
 		}
 
 		/// <summary>
@@ -1204,14 +1335,11 @@ namespace WF.Player.Core.Engines
 		/// <summary>
 		/// Event, which is called, if the inventory has changed.
 		/// </summary>
-		/// <param name="t">LuaTable for item/character object.</param>
-		/// <param name="from">LuaTable for container, there the object was.</param>
-		/// <param name="to">LuaTable for container, to which the object goes.</param>
-		internal void HandleInventoryChanged(LuaTable ltThing, LuaTable ltFrom, LuaTable ltTo)
+        internal void HandleInventoryChanged(Thing obj, Thing from, Thing to)
 		{
-			Thing obj = (Thing)GetTable (ltThing);
-			Thing from = (Thing)GetTable (ltFrom);
-			Thing to = (Thing)GetTable (ltTo);
+            //Thing obj = dataFactory.GetWherigoObject<Thing>(ltThing);
+            //Thing from = dataFactory.GetWherigoObject<Thing>(ltFrom);
+            //Thing to = dataFactory.GetWherigoObject<Thing>(ltTo);
 
 			// Raises the PropertyChanged events on the objects.
 			if (obj != null)
@@ -1222,14 +1350,14 @@ namespace WF.Player.Core.Engines
 				RaisePropertyChangedInObject((UIObject)to, "Inventory");
 
 			// Check for player inventory changes.
-			if (Player.ObjIndex == to.ObjIndex || Player.ObjIndex == from.ObjIndex)
+			if (Player.Equals(to) || Player.Equals(from))
 			{
 				// Recomputes the visible inventory and raises the property changed event.
 				RefreshVisibleInventoryAsync();
 			}
 
 			// Check for visible objects changes.
-			if (IsZone(from) || IsZone(to))
+			if (from is Zone || to is Zone)
 			{
 				// Recomputes the visible objects and raises the property changed event.
 				RefreshVisibleObjectsAsync();
@@ -1244,7 +1372,7 @@ namespace WF.Player.Core.Engines
 		/// </summary>
 		/// <param name="level">Level of the message.</param>
 		/// <param name="message">Text of the message.</param>
-		internal void HandleLogMessage (int level, string message)
+		internal void HandleLogMessage(int level, string message)
 		{
 			// Raise the event.
 			RaiseLogMessageRequested((LogLevel)Enum.ToObject(typeof(LogLevel), level), message);
@@ -1254,7 +1382,7 @@ namespace WF.Player.Core.Engines
 		/// Notifies the user interface about a special command, which is sent from Lua.
 		/// </summary>
 		/// <param name="command">Name of command.</param>
-		internal void HandleNotifyOS (string command)
+		internal void HandleNotifyOS(string command)
 		{
 			if ("SaveClose".Equals(command))
 			{
@@ -1280,9 +1408,8 @@ namespace WF.Player.Core.Engines
 		/// </summary>
 		/// <param name="type">Type of media.</param>
 		/// <param name="mediaObj">Media object itself.</param>
-		internal void HandlePlayMedia (int type, Media mediaObj)
+		internal void HandlePlayMedia(int type, Media mediaObj)
 		{
-			
 			// The Groundspeak engine only should give 1 as a type.
 			if (type != 1)
 			{
@@ -1300,11 +1427,16 @@ namespace WF.Player.Core.Engines
 		/// <param name="media">Media which belongs to the message.</param>
 		/// <param name="btn1Label">Button1 label.</param>
 		/// <param name="btn2Label">Button2 label.</param>
-		/// <param name="par">Callback function, which is called, if one of the buttons is pressed or the message is abondend.</param>
-		internal void HandleShowMessage (string text, Media media, string btn1Label, string btn2Label, Action<string> par)
+		/// <param name="provider">Callback function, which is called, if one of the buttons is pressed or the message is cancelled.</param>
+		internal void HandleShowMessage(string text, Media media, string btn1Label, string btn2Label, IDataProvider provider)
 		{
 			// Raise the event.
-			RaiseMessageBoxRequested(new MessageBox(text, media, btn1Label, btn2Label, par));
+            RaiseMessageBoxRequested(new MessageBox(
+                text,
+                media,
+                btn1Label,
+                btn2Label,
+                (retValue) => luaExecQueue.BeginCall(provider, retValue)));
 		}
 
 		/// <summary>
@@ -1312,11 +1444,11 @@ namespace WF.Player.Core.Engines
 		/// </summary>
 		/// <param name="screen">Screen number to show.</param>
 		/// <param name="idxObj">Index of the object to show.</param>
-		internal void HandleShowScreen (int screen, int idxObj)
+		internal void HandleShowScreen(int screen, int idxObj)
 		{
 			// Gets the event parameters.
 			ScreenType st = (ScreenType)Enum.ToObject(typeof(ScreenType), screen);
-			UIObject obj = st == ScreenType.Details && idxObj > -1 ? (UIObject)GetObject(idxObj) : null;
+			UIObject obj = st == ScreenType.Details && idxObj > -1 ? dataFactory.GetWherigoObject<UIObject>(idxObj) : null;
 
 			// Raise the event.
 			RaiseScreenRequested(st, obj);
@@ -1326,7 +1458,7 @@ namespace WF.Player.Core.Engines
 		/// Shows the status text via user interface.
 		/// </summary>
 		/// <param name="text">Text to show.</param>
-		internal void HandleShowStatusText (string text)
+		internal void HandleShowStatusText(string text)
 		{
 			// Raise the event.
 			RaiseShowStatusTextRequested(text);
@@ -1336,58 +1468,63 @@ namespace WF.Player.Core.Engines
 		/// <summary>
 		/// Event, which is called, if the state of a zone has changed.
 		/// </summary>
-		/// <param name="z">LuaTable for zone object.</param>
-		internal void HandleZoneStateChanged(LuaTable zones)
+		internal void HandleZoneStateChanged(IEnumerable<Zone> zones)
 		{
-			List<Zone> list = new List<Zone>();
+			//List<Zone> list = new List<Zone>();
+
+			//// Generates the list of zones.
+			//IEnumerator<KeyValuePair<LuaValue,LuaValue>> z;
+			//bool run = true;
+			//lock (luaState)
+			//{
+			//    z = zones.GetEnumerator();
+			//    run = z.MoveNext();
+			//}
+			//while (run)
+			//{
+			//    // Gets a zone from the table.
+			//    Zone zone = (Zone)GetTable((LuaTable)z.Current.Value);
+
+			//    // Performs notifications.
+			//    if (zone != null)
+			//    {
+			//        RaisePropertyChangedInObject((UIObject)zone, "State");
+			//        RefreshThingVectorFromPlayerAsync(zone);
+			//    }
+
+			//    // Adds the zone to the list.
+			//    list.Add(zone);
+
+			//    // Keep on running?
+			//    lock (luaState)
+			//    {
+			//        run = z.MoveNext();
+			//    }
+			//}
 
 			// Generates the list of zones.
-			IEnumerator<KeyValuePair<LuaValue,LuaValue>> z;
-			bool run = true;
-			lock (luaState)
+			foreach (var zone in zones)
 			{
-				z = zones.GetEnumerator();
-				run = z.MoveNext();
+				RaisePropertyChangedInObject(zone, "State");
+				RefreshThingVectorFromPlayerAsync(zone);
 			}
-			while (run)
-			{
-				// Gets a zone from the table.
-				Zone zone = (Zone)GetTable((LuaTable)z.Current.Value);
-
-				// Performs notifications.
-				if (zone != null)
-				{
-					RaisePropertyChangedInObject((UIObject)zone, "State");
-					RefreshThingVectorFromPlayerAsync(zone);
-				}
-
-				// Adds the zone to the list.
-				list.Add(zone);
-
-				// Keep on running?
-				lock (luaState)
-				{
-					run = z.MoveNext();
-				}
-			}
-
 
 			// The list of zones and objects has changed.
 			RefreshActiveVisibleZonesAsync();
 			RefreshVisibleObjectsAsync();
 
 			// Notifies all visible objects that their distances have changed.
-			VisibleObjects.ForEach(t => RefreshThingVectorFromPlayerAsync(t));
+			VisibleObjects.ToList().ForEach(t => RefreshThingVectorFromPlayerAsync(t));
 
 			// Raise the event.
-			RaiseZoneStateChanged(list);
+			RaiseZoneStateChanged(zones);
 		}
 
         #endregion
 
 		#region Internal Event Handlers
 
-		private void HandleLuaExecQueueIsBusyChanged(object sender, EventArgs e)
+		private void HandleluaExecQueueIsBusyChanged(object sender, EventArgs e)
 		{
 			bool leqIsBusy = luaExecQueue.IsBusy;
 
@@ -1412,24 +1549,26 @@ namespace WF.Player.Core.Engines
         /// <summary>
 		/// Starts an OS timer corresponding to a Wherigo ZTimer.
         /// </summary>
-        /// <param name="t">Timer to start.</param>
-        internal void HandleTimerStarted(LuaTable t)
+        internal void HandleTimerStarted(Timer timer)
         {
+			
 			// Gets the object index of the Timer that started.
-			int objIndex;
-			lock (luaState)
-			{
-				objIndex = Convert.ToInt32((double)t["ObjIndex"].ToNumber()); 
-			}
+			//int objIndex;
+			//lock (luaState)
+			//{
+			//    objIndex = Convert.ToInt32((double)t["ObjIndex"].ToNumber()); 
+			//}
 
 			// Starts a timer.
-			CreateAndStartInternalTimer(objIndex);
+			CreateAndStartInternalTimer(timer.ObjIndex);
 
 			// Call OnStart of this timer
-			lock (luaState)
-			{
-				t.CallSelf("Start"); 
-			}
+			//lock (luaState)
+			//{
+			//    t.CallSelf("Start");
+			//}
+            //timer.Call("Start");
+            timer.CallSelf("Start");
         }
 
 		/// <summary>
@@ -1459,25 +1598,26 @@ namespace WF.Player.Core.Engines
         /// <summary>
         /// Stops an OS timer corresponding to a Wherigo ZTimer.
         /// </summary>
-        /// <param name="t">Timer to stop.</param>
-        internal void HandleTimerStopped(LuaTable t)
+        internal void HandleTimerStopped(Timer timerEntity)
         {
-			int objIndex;
-			lock (luaState)
-			{
-				objIndex = Convert.ToInt32((double)t["ObjIndex"].ToNumber()); 
-			}
+			//int objIndex;
+			//lock (luaState)
+			//{
+			//    objIndex = Convert.ToInt32((double)t["ObjIndex"].ToNumber()); 
+			//}
+            //Timer timerEntity = dataFactory.GetWherigoObject<Timer>(t);
+			int objIndex = timerEntity.ObjIndex;
 
 			// TODO: What happens if the timer is not in the dictionary?
 			bool shouldRemove = false;
 			lock (syncRoot)
 			{
-				shouldRemove = timers.ContainsKey (objIndex);
+				shouldRemove = timers.ContainsKey(objIndex);
 			}
 			if (shouldRemove) {
-				System.Threading.Timer timer = timers [objIndex];
+				System.Threading.Timer timer = timers[objIndex];
 
-				timer.Dispose ();
+				timer.Dispose();
 				lock (syncRoot)
 				{
 					timers.Remove(objIndex); 
@@ -1485,10 +1625,12 @@ namespace WF.Player.Core.Engines
 			}
 
 			// Call OnStop of this timer
-			lock (luaState)
-			{
-				t.CallSelf("Stop");
-			}
+			//lock (luaState)
+			//{
+			//    t.CallSelf("Stop");
+			//}
+            //timerEntity.Call("Stop");
+            timerEntity.CallSelf("Stop");
         }
 
         /// <summary>
@@ -1499,28 +1641,37 @@ namespace WF.Player.Core.Engines
         {
 			int objIndex = (int)source;
 
-			LuaTable t = GetObject(objIndex).WIGTable;
+            ////LuaTable t = GetObject(objIndex).WIGTable;
+            //LuaTable t = dataFactory.GetNativeContainer(objIndex);
+            LuaDataContainer t = dataFactory.GetContainer(objIndex);
 
 			// Gets the ZTimer's properties.
-			LuaValue elapsedRaw;
-			LuaValue remainingRaw; 
-			lock (luaState)
+            //LuaValue elapsedRaw = safeLuaState.SafeGetField<LuaValue>(t, "Elapsed");
+            //LuaValue remainingRaw = safeLuaState.SafeGetField<LuaValue>(t, "Remaining");
+            ////lock (luaState)
+            ////{
+            ////    elapsedRaw = t["Elapsed"];
+            ////    remainingRaw = t["Remaining"]; 
+            ////}
+            //if (elapsedRaw == null || elapsedRaw is LuaNil)
+            //    elapsedRaw = 0.0d;
+            double elapsedRaw = t.GetDouble("Elapsed").GetValueOrDefault();
+            double? remainingRaw = t.GetDouble("Remaining");
+            //if (remainingRaw == null || remainingRaw is LuaNil)
+            if (remainingRaw == null)
 			{
-				elapsedRaw = t["Elapsed"];
-				remainingRaw = t["Remaining"]; 
-			}
-			if (elapsedRaw == null || elapsedRaw is LuaNil)
-				elapsedRaw = 0.0d;
-			if (remainingRaw == null || remainingRaw is LuaNil)
-			{
-				lock (luaState)
-				{
-					remainingRaw = t["Duration"];
-				}
+                ////lock (luaState)
+                ////{
+                ////    remainingRaw = t["Duration"];
+                ////}
+                //remainingRaw = safeLuaState.SafeGetField<LuaValue>(t, "Duration");
+                remainingRaw = t.GetDouble("Duration").GetValueOrDefault();
 			}
 
-			double elapsed = (double)(LuaNumber)elapsedRaw.ToNumber() * internalTimerDuration;
-			double remaining = (double)(LuaNumber)remainingRaw.ToNumber() * internalTimerDuration;
+            //double elapsed = (double)(LuaNumber)elapsedRaw.ToNumber() * internalTimerDuration;
+            //double remaining = (double)(LuaNumber)remainingRaw.ToNumber() * internalTimerDuration;
+            double elapsed = elapsedRaw * internalTimerDuration;
+            double remaining = remainingRaw.Value * internalTimerDuration;
 
 			// Updates the ZTimer properties and considers if it should tick.
 			elapsed += internalTimerDuration;
@@ -1534,11 +1685,15 @@ namespace WF.Player.Core.Engines
 				shoudTimerTick = true;
 			}
 
-			lock (luaState)
-			{
-				t["Elapsed"] = elapsed / internalTimerDuration;
-				t["Remaining"] = remaining / internalTimerDuration; 
-			}
+            ////lock (luaState)
+            ////{
+            ////    t["Elapsed"] = elapsed / internalTimerDuration;
+            ////    t["Remaining"] = remaining / internalTimerDuration; 
+            ////}
+            //safeLuaState.SafeSetField(t, "Elapsed", elapsed / internalTimerDuration);
+            //safeLuaState.SafeSetField(t, "Remaining", remaining / internalTimerDuration);
+            t["Elapsed"] = elapsed / internalTimerDuration;
+            t["Remaining"] = remaining / internalTimerDuration;
 
 			// Call only, if timer still exists.
 			// It could be, that function is called from thread, even if the timer didn't exists anymore.
@@ -1558,282 +1713,10 @@ namespace WF.Player.Core.Engines
 				}
 
 				// Call OnTick of this timer
-				LuaExecQueue.BeginCallSelf(GetObject(objIndex).WIGTable, "Tick");
+				luaExecQueue.BeginCallSelf(t, "Tick");
 			}
         }
 
-        #endregion
-
-        #region Retrive data from cartridge
-
-        /// <summary>
-        /// Get ZObject for given ObjIndex idx.
-        /// </summary>
-        /// <param name="idx">ObjIndex for ZObject.</param>
-        /// <returns>LuaTable for ZObject.</returns>
-		public WherigoObject GetObject(int idx)
-		{
-			// Sanity checks
-			CheckStateForLuaAccess();
-
-			LuaTable lt;
-			lock (luaState)
-			{
-				lt = (LuaTable)((LuaTable)cartridge.WIGTable["AllZObjects"])[idx]; 
-			}
-
-			return idx == -1 ? null : GetTable (lt);
-		}
-		
-        #endregion
-
-		#region Wherigo Objects Type Checkers
-		/// <summary>
-		/// Check, if the given object is a ZCartridge object.
-		/// </summary>
-		/// <returns><c>true</c> if obj is a ZCartridge object; otherwise, <c>false</c>.</returns>
-		/// <param name="obj">LuaTable with object to check.</param>
-		private bool IsCartridge(object obj)
-		{
-			return obj is Cartridge || IsLuaTableWithClassName(obj, "ZCartridge");
-		}
-
-		/// <summary>
-		/// Check, if the given object is a ZCharacter object.
-		/// </summary>
-		/// <returns><c>true</c> if obj is a ZCharacter object; otherwise, <c>false</c>.</returns>
-		/// <param name="obj">LuaTable with object to check.</param>
-		private bool IsCharacter(object obj)
-		{
-			return obj is Character || IsLuaTableWithClassName(obj, "ZCharacter");
-		}
-
-		/// <summary>
-		/// Check, if the given object is a Distance object.
-		/// </summary>
-		/// <returns><c>true</c> if obj is a Distance object; otherwise, <c>false</c>.</returns>
-		/// <param name="obj">LuaTable with object to check.</param>
-		private bool IsDistance(object obj)
-		{
-			return obj is Distance || IsLuaTableWithClassName(obj, "Distance");
-		}
-
-		/// <summary>
-		/// Check, if the given element is in the Inventory.
-		/// </summary>
-		/// <returns><c>true</c> if obj is in the Inventory of player; otherwise, <c>false</c>.</returns>
-		/// <param name="obj">LuaTable with object to check.</param>
-		public bool IsInInventory(Thing obj)
-		{
-			if (player == null)
-				return false;
-
-			return Player.Inventory.Contains(obj);
-		}
-
-		/// <summary>
-		/// Check, if the given object is a ZItem object.
-		/// </summary>
-		/// <returns><c>true</c> if obj is a ZItem object; otherwise, <c>false</c>.</returns>
-		/// <param name="obj">LuaTable with object to check.</param>
-		private bool IsItem(object obj)
-		{
-			return obj is Item || IsLuaTableWithClassName(obj, "ZItem");
-		}
-
-		/// <summary>
-		/// Check, if the given object is a ZTask object.
-		/// </summary>
-		/// <returns><c>true</c> if obj is a ZTask object; otherwise, <c>false</c>.</returns>
-		/// <param name="obj">LuaTable with object to check.</param>
-		private bool IsTask(object obj)
-		{
-			return obj is Task || IsLuaTableWithClassName(obj, "ZTask");
-		}
-
-		/// <summary>
-		/// Check, if the given object is a Thing object.
-		/// </summary>
-		/// <returns><c>true</c> if obj is a Thing object; otherwise, <c>false</c>.</returns>
-		/// <param name="obj">LuaTable with object to check.</param>
-		private bool IsThing(object obj)
-		{
-			return obj is Thing || IsLuaTableWithClassName(obj, new string[] { "Zone", "ZCharacter", "ZItem" });
-		}
-
-		/// <summary>
-		/// Check, if the given object is a UIObject.
-		/// </summary>
-		/// <returns><c>true</c> if obj is a UIObject; otherwise, <c>false</c>.</returns>
-		/// <param name="obj">LuaTable with object to check.</param>
-		private bool IsUIObject(object obj)
-		{
-			return obj is UIObject || IsLuaTableWithClassName(obj, new string[] { "Zone", "ZTask", "ZCharacter", "ZItem" });
-		}
-
-		/// <summary>
-		/// Check, if the given object is a Zone object.
-		/// </summary>
-		/// <returns><c>true</c> if obj is a Zone object; otherwise, <c>false</c>.</returns>
-		/// <param name="obj">LuaTable with object to check.</param>
-		private bool IsZone(object obj)
-		{
-			return obj is Zone || IsLuaTableWithClassName(obj, "Zone");
-		}
-
-		/// <summary>
-		/// Checks if an object is a LuaTable with a specific ClassName.
-		/// </summary>
-		/// <param name="obj">Object to check.</param>
-		/// <param name="classname">ClassName to check for.</param>
-		/// <returns>True if and only if <paramref name="obj"/> is a <code>LuaTable</code>
-		/// whose <code>ClassName</code> field is equals to <paramref name="classname"/>.</returns>
-		private bool IsLuaTableWithClassName(object obj, string classname)
-		{
-			return IsLuaTableWithClassName(obj, new string[] { classname });
-		}
-
-		/// <summary>
-		/// Checks if an object is a LuaTable with a specific ClassName.
-		/// </summary>
-		/// <param name="obj">Object to check.</param>
-		/// <param name="classname">ClassNames to check for.</param>
-		/// <returns>True if and only if <paramref name="obj"/> is a <code>LuaTable</code>
-		/// whose <code>ClassName</code> field is equals to one of the string of
-		/// <paramref name="classnames"/>.</returns>
-		private bool IsLuaTableWithClassName(object obj, IEnumerable<string> classnames)
-		{
-			LuaTable lt = obj as LuaTable;
-			string cn;
-			lock (luaState)
-			{
-				cn = lt != null ? lt["ClassName"].ToString() as string : null; 
-			}
-
-			foreach (string classname in classnames)
-				if (String.Equals(cn, classname))
-					return true;
-
-			return false;
-		}
-		#endregion
-
-        #region Helpers
-
-		/// <summary>
-		/// Gets a list of Table entities from a LuaTable.
-		/// </summary>
-		/// <typeparam name="T">Type of entities.</typeparam>
-		/// <param name="table">LuaTable to convert.</param>
-		/// <returns>A list of Table entities that corresponds to all entries of the input
-		/// table that could convert to <typeparamref name="T"/>.</returns>
-		internal List<T> GetTableListFromLuaTable<T>(LuaTable table) where T : WherigoObject
-		{
-			if (table == null)
-				return null;
-
-			List<T> result = new List<T>();
-
-			lock (luaState)
-			{
-				var t = table.GetEnumerator();
-
-				while (t.MoveNext())
-				{
-					T val = GetTable((LuaTable)t.Current.Value) as T;
-					if (val != null)
-						result.Add(val);
-				}
-			}
-
-			return result;
-		}
-
-		/// <summary>
-		/// Get Media for given ObjIndex idx.
-		/// </summary>
-		/// <param name="idx">ObjIndex for media.</param>
-		/// <returns>Media for ObjIndex.</returns>
-		internal Media GetMedia(int idx)
-		{
-			return idx == -1 ? null : cartridge.Resources[idx];
-		}
-
-		/// <summary>
-		/// Convert given LuaTable t into a valid object.
-		/// </summary>
-		/// <returns>The correct object.</returns>
-		/// <param name="t">LuaTable for object.</param>
-		internal WherigoObject GetTable(LuaTable t)
-		{
-			if (t == null)
-				return null;
-
-			string className;
-			lock (luaState)
-			{
-				className = (string)t["ClassName"].ToString(); 
-			}
-
-			// Check if object is a AllZObject
-			LuaValue oi;
-			lock (luaState)
-			{
-				t.TryGetValue("ObjIndex",out oi);
-			}
-			if (oi != null && !(oi is LuaNil)) 
-			{
-				int objIndex = Convert.ToInt32 ((double)oi.ToNumber());
-
-				bool uiObjectKnown;
-				lock (syncRoot)
-				{
-					uiObjectKnown = uiObjects.ContainsKey (objIndex);
-				}
-				if (uiObjectKnown)
-					lock (syncRoot)
-					{
-						return uiObjects[objIndex]; 
-					}
-				else {
-					WherigoObject tab = null;
-					// Check for objects, that have a ObjIndex, but didn't derived from UIObject
-					if (className.Equals("ZInput"))
-						return new Input(this, t);
-					else if (className.Equals("ZTimer"))
-						return new Timer(this, t);
-					// Now check for UIObjects
-					else if (className.Equals("ZCharacter"))
-						tab = new Character (this, t);
-					else if (className.Equals("ZItem"))
-						tab = new Item (this, t);
-					else if (className.Equals("ZTask"))
-						tab = new Task (this, t);
-					else if (className.Equals("Zone"))
-						tab = new Zone (this, t);
-					// Save UIObject for later use
-					if (tab != null)
-						lock (syncRoot)
-						{
-							uiObjects.Add(objIndex, (UIObject)tab); 
-						}
-					return tab;
-				}
-			}
-			else {
-				//TODO: Delete
-				if (className.Equals ("ZonePoint"))
-					return new ZonePoint (this, t);
-				if (className.Equals ("ZCommand"))
-					return new Command (this, t);
-				if (className.Equals ("ZReciprocalCommand"))
-					return new Command (this, t);
-				if (className.Equals("Distance"))
-					return new Distance (this, t);
-				return null;
-			}
-		}
-		
         #endregion
 
 		#region Event Raisers
@@ -1860,7 +1743,7 @@ namespace WF.Player.Core.Engines
 			if (usePump)
 			{
 				// Adds a sync request action to the action pump.
-				uiDispatchPump.AcceptAction(new Action(() => platformHelper.BeginDispatchOnUIThread(action))); 
+				uiDispatchPump.AcceptAction(new Action(() => platformHelper.BeginDispatchOnUIThread(action)));
 			}
 			else
 			{
@@ -2051,7 +1934,7 @@ namespace WF.Player.Core.Engines
 			});
 		}
 
-		private void RaiseZoneStateChanged(List<Zone> list)
+		private void RaiseZoneStateChanged(IEnumerable<Zone> list)
 		{
 			BeginInvokeInUIThread(() =>
 			{

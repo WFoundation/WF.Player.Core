@@ -19,8 +19,6 @@
 
 using System;
 using System.Collections.Generic;
-using WF.Player.Core.Engines;
-using WF.Player.Core.Lua;
 
 namespace WF.Player.Core
 {
@@ -32,7 +30,8 @@ namespace WF.Player.Core
 
 		#region Constructor
 
-		internal Zone (Engine e, LuaTable t) : base (e, t)
+		internal Zone(WF.Player.Core.Data.IDataContainer data, RunOnClick runOnClick)
+			: base(data, runOnClick)
 		{
 		}
 
@@ -47,7 +46,7 @@ namespace WF.Player.Core
 		public bool Active {
 			get 
 			{
-				return GetBool ("Active");
+                return DataContainer.GetBool("Active").Value;
 			}
 		}
 
@@ -55,21 +54,23 @@ namespace WF.Player.Core
 		/// Gets the original point.
 		/// </summary>
 		/// <value>The original point as ZonePoint.</value>
-		public ZonePoint OriginalPoint {
-			get 
-			{
-				return GetTable("OriginalPoint") as ZonePoint;
-			}
-		}
+        public ZonePoint OriginalPoint
+        {
+            get
+            {
+                return DataContainer.GetWherigoObject<ZonePoint>("OriginalPoint");
+            }
+        }
 
 		/// <summary>
 		/// Gets the point defining the zone.
 		/// </summary>
 		/// <value>The inventory.</value>
-		public List<ZonePoint> Points {
+        public WherigoCollection<ZonePoint> Points
+        {
 			get 
 			{
-				return GetTableList<ZonePoint>("Points");
+				return DataContainer.GetWherigoObjectList<ZonePoint>("Points");
 			}
 		}
 
@@ -80,7 +81,7 @@ namespace WF.Player.Core
 		{
 			get
 			{
-				return GetEnum<PlayerZoneState>("State");
+				return DataContainer.GetEnum<PlayerZoneState>("State").Value;
 			}
 		}
 

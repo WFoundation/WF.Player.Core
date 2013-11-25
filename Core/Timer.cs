@@ -18,8 +18,6 @@
 ///
 
 using System;
-using WF.Player.Core.Engines;
-using WF.Player.Core.Lua;
 
 namespace WF.Player.Core
 {
@@ -30,8 +28,8 @@ namespace WF.Player.Core
 	{		
 		#region Constructor
 
-		internal Timer(Engine e, LuaTable t)
-			: base(e, t)
+		internal Timer(WF.Player.Core.Data.IDataContainer data)
+			: base(data)
 		{
 		}
 
@@ -40,13 +38,25 @@ namespace WF.Player.Core
 		#region Properties
 
 		/// <summary>
+		/// Gets the index of the object.
+		/// </summary>
+		/// <value>The index of the object.</value>
+		public int ObjIndex
+		{
+			get
+			{
+				return DataContainer.GetInt("ObjIndex").Value;
+			}
+		}
+
+		/// <summary>
 		/// Gets the type of the Timer.
 		/// </summary>
 		public TimerType Type
 		{
 			get
 			{
-				return GetEnum<TimerType>("Type");
+				return DataContainer.GetEnum<TimerType>("Type").Value;
 			}
 		}
 
@@ -88,7 +98,7 @@ namespace WF.Player.Core
 
 		private TimeSpan SecondsFieldToTimeSpan(string field)
 		{
-			return new TimeSpan(0, 0, Convert.ToInt32(GetDouble(field)));
+			return new TimeSpan(0, 0, Convert.ToInt32(DataContainer.GetDouble(field).Value));
 		}
 	}
 }

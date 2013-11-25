@@ -22,7 +22,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using WF.Player.Core.Utils;
 using WF.Player.Core.Engines;
-using WF.Player.Core.Lua;
 
 namespace WF.Player.Core
 {
@@ -31,12 +30,26 @@ namespace WF.Player.Core
 	/// </summary>
 	public class UIObject : WherigoObject, INotifyPropertyChanged
 	{
-		private string html;
+		#region Delegates
+
+		internal delegate void RunOnClick();
+
+		#endregion
+		
+		#region Members
+
+		private string _html;
+
+		private RunOnClick _runOnClick;
+
+		#endregion
 
 		#region Constructor
 
-		internal UIObject (Engine e, LuaTable t) : base (e, t)
+		internal UIObject(WF.Player.Core.Data.IDataContainer data, RunOnClick runOnClick)
+			: base(data)
 		{
+			_runOnClick = runOnClick;
 		}
 
 		#endregion
@@ -49,7 +62,7 @@ namespace WF.Player.Core
 		/// <value>The description.</value>
 		public string Description {
 			get {
-				return GetString ("Description").ReplaceHTMLMarkup();
+				return DataContainer.GetString("Description").ReplaceHTMLMarkup();
 			}
 		}
 
@@ -61,7 +74,7 @@ namespace WF.Player.Core
 		{
 			get
 			{
-				return (this.GetLuaFunc("OnClick") != null);
+				return DataContainer.GetProvider("OnClick") != null;
 			}
 		}
 		
@@ -71,10 +84,10 @@ namespace WF.Player.Core
 		/// <value>The description.</value>
 		public string HTML {
 			get {
-				if (html == null) {
-					html = "<html><body><center>" + GetString("Description").ReplaceHTMLScriptMarkup().ReplaceMarkdown() +"</center></body></html>";
+				if (_html == null) {
+					_html = "<html><body><center>" + DataContainer.GetString("Description").ReplaceHTMLScriptMarkup().ReplaceMarkdown() + "</center></body></html>";
 				}
-				return html;
+				return _html;
 			}
 		}
 
@@ -85,7 +98,7 @@ namespace WF.Player.Core
 		public Media Icon {
 			get 
 			{
-                return GetMedia("Icon");
+				return DataContainer.GetWherigoObject<Media>("Icon");
 			}
 		}
 
@@ -96,7 +109,7 @@ namespace WF.Player.Core
 		public Media Image {
 			get 
 			{
-				return GetMedia("Media");
+                return DataContainer.GetWherigoObject<Media>("Media");
 			}
 		}
 
@@ -107,7 +120,7 @@ namespace WF.Player.Core
 		public string Name {
 			get 
 			{
-				return GetString ("Name");
+				return DataContainer.GetString("Name");
 			}
 		}
 
@@ -118,7 +131,7 @@ namespace WF.Player.Core
 		public int ObjIndex {
 			get 
 			{
-				return GetInt ("ObjIndex");
+                return DataContainer.GetInt("ObjIndex").Value;
 			}
 		}
 
@@ -129,7 +142,7 @@ namespace WF.Player.Core
 		public bool Visible {
 			get 
 			{
-				return GetBool ("Visible");
+                return DataContainer.GetBool("Visible").Value;
 			}
 		}
 
@@ -140,7 +153,7 @@ namespace WF.Player.Core
 		{
 			get
 			{
-				return GetTable("ObjectLocation") as ZonePoint;
+				return DataContainer.GetWherigoObject<ZonePoint>("ObjectLocation");
 			}
 		}
 
@@ -153,7 +166,19 @@ namespace WF.Player.Core
 		/// </summary>
 		public void CallOnClick()
 		{
-			engine.LuaExecQueue.BeginCallSelf(this, "OnClick");
+			//engine.LuaExecQueue.BeginCallSelf(this, "OnClick");
+			_runOnClick();
+		}
+
+		/// <summary>
+		/// Determines if two objects are equal.
+		/// </summary>
+		/// <param name="obj">An object to compare.</param>
+		/// <returns>True if <paramref name="obj"/> is a UIObject
+		/// and has the same <code>ObjIndex</code> as the current object.</returns>
+		public override bool Equals(object obj)
+		{
+			return obj != null && obj.GetType().Equals(GetType()) && ((UIObject)obj).ObjIndex == ObjIndex;
 		}
 
 		#endregion
@@ -165,7 +190,7 @@ namespace WF.Player.Core
 		internal void NotifyPropertyChanged(string propName)
 		{
 			if (propName.Equals ("Description"))
-				html = null;
+				_html = null;
 
 			if (PropertyChanged != null)
 			{

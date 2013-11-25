@@ -21,7 +21,7 @@ using System;
 using System.Threading;
 using System.Collections.Generic;
 
-namespace WF.Player.Core.Utils.Threading
+namespace WF.Player.Core.Threading
 {
 	/// <summary>
 	/// An base class for a thread-safe, customizable queue of jobs.

@@ -20,7 +20,7 @@
 using System;
 using System.Collections.Generic;
 using WF.Player.Core.Engines;
-using WF.Player.Core.Lua;
+using WF.Player.Core.Data;
 
 namespace WF.Player.Core
 {
@@ -29,11 +29,29 @@ namespace WF.Player.Core
 	/// </summary>
 	public class Command : WherigoObject
 	{
+		#region Delegates
+
+		internal delegate WherigoCollection<Thing> CalcTargetObjects();
+
+		internal delegate void ExecuteCommand(Thing target);
+
+		#endregion
+
+		#region Members
+
+		private CalcTargetObjects _calcTargetObjects;
+
+		private ExecuteCommand _executeCommand;
+
+		#endregion
 
 		#region Constructor
 
-		internal Command (Engine e, LuaTable t) : base (e, t)
+		internal Command(IDataContainer data, CalcTargetObjects calcTargetObjs, ExecuteCommand execCommand)
+			: base (data)
 		{
+			_calcTargetObjects = calcTargetObjs;
+			_executeCommand = execCommand;
 		}
 
 		#endregion
@@ -46,7 +64,7 @@ namespace WF.Player.Core
 		/// <value><c>true</c> if command works with other objects; otherwise, <c>false</c>.</value>
 		public bool CmdWith {
 			get {
-				return GetBool ("CmdWith");
+                return DataContainer.GetBool("CmdWith").Value;
 			}
 		}
 
@@ -56,7 +74,7 @@ namespace WF.Player.Core
 		/// <value>The empty target list text.</value>
 		public string EmptyTargetListText {
 			get {
-				return GetString ("EmptyTargetListText");
+				return DataContainer.GetString("EmptyTargetListText");
 			}
 		}
 
@@ -66,7 +84,7 @@ namespace WF.Player.Core
 		/// <value><c>true</c> if enabled; otherwise, <c>false</c>.</value>
 		public bool Enabled {
 			get {
-				return GetBool ("Enabled");
+                return DataContainer.GetBool("Enabled").Value;
 			}
 		}
 
@@ -77,25 +95,18 @@ namespace WF.Player.Core
 		public Thing Owner {
 			get 
             {
-				return GetTable("Owner") as Thing;
+				return DataContainer.GetWherigoObject<Thing>("Owner");
             }
 		}
 
 		/// <summary>
 		/// Gets a list if objects that this command can use as targets.
 		/// </summary>
-		public List<Thing> TargetObjects {
+		public WherigoCollection<Thing> TargetObjects {
 			get 
 			{
-				List<Thing> result = new List<Thing> ();
-
 				// Works this command with targets?
-				if (CmdWith)
-				{
-					result.AddRange(GetTableFuncList<Thing>("CalcTargetObjects", engine.Cartridge.WIGTable, engine.Player.WIGTable));
-				} 
-
-				return result;
+				return CmdWith ? _calcTargetObjects() : new WherigoCollection<Thing>();
 			}
 		}
 
@@ -106,7 +117,7 @@ namespace WF.Player.Core
 		public string Text {
 			get 
 			{
-				return GetString ("Text");
+				return DataContainer.GetString("Text");
 			}
 		}
 
@@ -114,19 +125,11 @@ namespace WF.Player.Core
 		/// Gets the works with list objects for this commands, regardless if active or inactive.
 		/// </summary>
 		/// <value>The works with list objects.</value>
-		public List<Thing> WorksWithList
+        public WherigoCollection<Thing> WorksWithList
 		{
 			get
 			{
-				List<Thing> result = new List<Thing>();
-
-				// Works this command with targets?
-				if (CmdWith)
-				{
-					result.AddRange(GetTableFuncList<Thing>("WorksWithList"));
-				}
-
-				return result;
+                return CmdWith ? DataContainer.GetWherigoObjectListFromProvider<Thing>("WorksWithList") : new WherigoCollection<Thing>();
 			}
 		}
 
@@ -142,10 +145,11 @@ namespace WF.Player.Core
 		/// is true.</param>
 		public void Execute(Thing target = null)
 		{
-			if (target == null)
-				engine.LuaExecQueue.BeginCallSelf(this, "exec");
-			else
-				engine.LuaExecQueue.BeginCallSelf(this, "exec", target.WIGTable);
+			//if (target == null)
+			//    engine.LuaExecQueue.BeginCallSelf(this, "exec");
+			//else
+			//    engine.LuaExecQueue.BeginCallSelf(this, "exec", target.WIGTable);
+			_executeCommand(target);
 		}
 
 		#endregion

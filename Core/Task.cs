@@ -19,8 +19,6 @@
 
 using System;
 using System.Collections.Generic;
-using WF.Player.Core.Engines;
-using WF.Player.Core.Lua;
 
 namespace WF.Player.Core
 {
@@ -32,7 +30,8 @@ namespace WF.Player.Core
 
 		#region Constructor
 
-		internal Task (Engine e, LuaTable t) : base (e, t)
+		internal Task(WF.Player.Core.Data.IDataContainer data, RunOnClick runOnClick)
+			: base(data, runOnClick)
 		{
 		}
 
@@ -46,7 +45,7 @@ namespace WF.Player.Core
 		/// <value><c>true</c> if active; otherwise, <c>false</c>.</value>
 		public bool Active {
 			get {
-				return GetBool ("Active");
+				return DataContainer.GetBool("Active").Value;
 			}
 		}
 
@@ -56,7 +55,7 @@ namespace WF.Player.Core
 		/// <value><c>true</c> if complete; otherwise, <c>false</c>.</value>
 		public bool Complete {
 			get {
-				return GetBool ("Complete");
+                return DataContainer.GetBool("Complete").Value;
 			}
 		}
 
@@ -66,7 +65,7 @@ namespace WF.Player.Core
 		/// <value>The CorrectState.</value>
 		public TaskCorrectness CorrectState {
 			get {
-				return GetEnum<TaskCorrectness> ("CorrectState", TaskCorrectness.None);
+				return DataContainer.GetEnum<TaskCorrectness>("CorrectState", TaskCorrectness.None).Value;
 			}
 		}
 

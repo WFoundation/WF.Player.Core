@@ -24,9 +24,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 using System.Net;
-using Newtonsoft.Json;
-using WF.Player.Core.Engines;
-using WF.Player.Core.Lua;
+using WF.Player.Core.Utils;
+//using Newtonsoft.Json;
 
 namespace WF.Player.Core
 {
@@ -88,7 +87,7 @@ namespace WF.Player.Core
 
         #region Constructor
 
-        public Cartridge ( string filename = null ) : base(null, null)
+        public Cartridge ( string filename = null ) : base(null)
 		{
             // Save filename of the gwc file for later use.
             // If filename starts with WG, than filename is an online cartridge
@@ -362,8 +361,8 @@ namespace WF.Player.Core
         public string EmptyInventoryListText
         {
             get
-            {				
-				return IsBound ? GetString("EmptyInventoryListText") : null;
+            {
+				return IsBound ? DataContainer.GetString("EmptyInventoryListText") : null;
             }
         }
 
@@ -375,7 +374,7 @@ namespace WF.Player.Core
         {
             get
             {
-                return IsBound ? GetString("EmptyTasksListText") : null;
+				return IsBound ? DataContainer.GetString("EmptyTasksListText") : null;
             }
         }
 
@@ -387,7 +386,7 @@ namespace WF.Player.Core
         {
             get
             {
-                return IsBound ? GetString("EmptyYouSeeListText") : null;
+				return IsBound ? DataContainer.GetString("EmptyYouSeeListText") : null;
             }
         }
 
@@ -399,7 +398,7 @@ namespace WF.Player.Core
         {
             get
             {
-                return IsBound ? GetString("EmptyZonesListText") : null;
+				return IsBound ? DataContainer.GetString("EmptyZonesListText") : null;
             }
         }
 
@@ -665,7 +664,7 @@ namespace WF.Player.Core
             {
                 if (longDescription != value)
                 {
-                    longDescription = value;
+                    longDescription = value.ReplaceHTMLMarkup();
                     NotifyPropertyChanged("LongDescription");
                 }
             }
@@ -1043,42 +1042,13 @@ namespace WF.Player.Core
 		}
 
 		/// <summary>
-		/// Gets or sets the Lua table representing the object on the Lua side.
-		/// </summary>
-		/// <value>The Lua table.</value>
-		internal new LuaTable WIGTable
-		{
-			get
-			{
-				return wigTable;
-			}
-
-			set
-			{
-				wigTable = value;
-			}
-		}
-
-		/// <summary>
-		/// Sets the engine to which this cartridge belongs.
-		/// </summary>
-		/// <value>The engine.</value>
-		internal Engine Engine
-		{
-			set
-			{
-				engine = value;
-			}
-		}
-
-		/// <summary>
-		/// Gets if this Cartridge is bound to an engine and a lua Table.
+		/// Gets if this Cartridge is bound to a data source.
 		/// </summary>
 		internal bool IsBound
 		{
 			get
 			{
-				return wigTable != null && engine != null;
+				return DataContainer != null;
 			}
 		}
 		

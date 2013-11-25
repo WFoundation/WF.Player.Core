@@ -1,4 +1,4 @@
-///
+﻿///
 /// WF.Player.Core - A Wherigo Player Core for different platforms.
 /// Copyright (C) 2012-2013  Dirk Weltz <web@weltz-online.de>
 /// Copyright (C) 2012-2013  Brice Clocher <contact@cybisoft.net>
@@ -18,41 +18,18 @@
 ///
 
 using System;
-using System.Collections.Generic;
 
-namespace WF.Player.Core
+namespace WF.Player.Core.Data.Lua
 {
-	/// <summary>
-	/// A character of the game: a Thing with a gender.
-	/// </summary>
-	public class Character : Thing
-	{
-		#region Constructor
-
-		internal Character(WF.Player.Core.Data.IDataContainer data, RunOnClick runOnClick)
-			: base(data, runOnClick)
-		{
-		}
-
-		#endregion
-
-		#region Properties
-
-		/// <summary>
-		/// Gets the gender of the character.
-		/// </summary>
-		/// <value>The default is <code>It</code>.</value>
-		public CharacterGender Gender
-		{
-			get
-			{
-				return DataContainer.GetEnum<CharacterGender>("Gender", CharacterGender.It).Value;
-			}
-		}
-
-		#endregion
-
-	}
-
+    /// <summary>
+    /// Provides extensions for Lua-related data structures.
+    /// </summary>
+    internal static class LuaDataExtensions
+    {
+		internal static void CallSelf(this WherigoObject wo, string funcName, params object[] parameters)
+        {
+            // Gets the self-provider and calls it.
+            ((LuaDataContainer)wo.DataContainer).CallSelf(funcName, parameters);
+        }
+    }
 }
-

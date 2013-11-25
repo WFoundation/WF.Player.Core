@@ -19,8 +19,6 @@
 
 using System;
 using System.Collections.Generic;
-using WF.Player.Core.Engines;
-using WF.Player.Core.Lua;
 
 namespace WF.Player.Core
 {
@@ -32,7 +30,8 @@ namespace WF.Player.Core
 
 		#region Constructor
 
-		internal Item (Engine e, LuaTable t) : base (e, t)
+		internal Item(WF.Player.Core.Data.IDataContainer data, RunOnClick runOnClick)
+			: base(data, runOnClick)
 		{
 		}
 
@@ -47,7 +46,7 @@ namespace WF.Player.Core
 		public bool Locked {
 			get 
 			{
-				return GetBool ("Locked");
+				return DataContainer.GetBool("Locked").Value;
 			}
 		}
 
@@ -58,7 +57,7 @@ namespace WF.Player.Core
 		public bool Opened {
 			get 
 			{
-				return GetBool ("Opened");
+                return DataContainer.GetBool("Opened").Value;
 			}
 		}
 

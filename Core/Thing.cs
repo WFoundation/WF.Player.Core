@@ -20,7 +20,6 @@
 using System;
 using System.Collections.Generic;
 using WF.Player.Core.Engines;
-using WF.Player.Core.Lua;
 
 namespace WF.Player.Core
 {
@@ -32,7 +31,8 @@ namespace WF.Player.Core
 
 		#region Constructor
 
-		internal Thing (Engine e, LuaTable t) : base (e, t)
+		internal Thing(WF.Player.Core.Data.IDataContainer data, RunOnClick runOnClick)
+			: base(data, runOnClick)
 		{
 		}
 
@@ -44,10 +44,11 @@ namespace WF.Player.Core
 		/// Gets the commands for this item.
 		/// </summary>
 		/// <value>The list of commands.</value>
-		public List<Command> Commands {
+        public WherigoCollection<Command> Commands
+        {
 			get 
 			{
-				return GetTableList<Command>("Commands");
+				return DataContainer.GetWherigoObjectList<Command>("Commands");
 			}
 		}
 
@@ -58,17 +59,17 @@ namespace WF.Player.Core
 		public Thing Container {
 			get 
 			{
-				return GetTable("Container") as Thing;
+				return DataContainer.GetWherigoObject<Thing>("Container");
 			}
 		}
 
 		/// <summary>
 		/// Gets a list of available commands.
 		/// </summary>
-		public List<Command> ActiveCommands {
+		public WherigoCollection<Command> ActiveCommands {
 			get 
 			{
-				return GetTableFuncList<Command>("GetActiveCommands");
+				return DataContainer.GetWherigoObjectListFromProvider<Command>("GetActiveCommands");
 			}
 		}
 
@@ -76,10 +77,11 @@ namespace WF.Player.Core
 		/// Gets the inventory.
 		/// </summary>
 		/// <value>The inventory.</value>
-		public List<Thing> Inventory {
+        public WherigoCollection<Thing> Inventory
+        {
 			get 
 			{
-				return GetTableList<Thing>("Inventory");
+				return DataContainer.GetWherigoObjectList<Thing>("Inventory");
 			}
 		}
 

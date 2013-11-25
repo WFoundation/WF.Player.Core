@@ -19,8 +19,6 @@
 
 using System;
 using System.Globalization;
-using WF.Player.Core.Engines;
-using WF.Player.Core.Lua;
 
 namespace WF.Player.Core
 {
@@ -32,8 +30,57 @@ namespace WF.Player.Core
 
 		#region Constructor
 
-		internal Distance (Engine e, LuaTable t) : base (e, t)
+		internal Distance(WF.Player.Core.Data.IDataContainer data)
+			: base(data)
 		{
+		}
+
+		#endregion
+
+		#region Operators
+
+		/// <summary>
+		/// Determines if a distance is strictly smaller than a second.
+		/// </summary>
+		/// <param name="d1"></param>
+		/// <param name="d2"></param>
+		/// <returns>Returns true if the first Distance is strictly smaller than the second.</returns>
+		public static bool operator <(Distance d1, Distance d2)
+		{
+			return d1.Value < d2.Value;
+		}
+
+		/// <summary>
+		/// Determines if a distance is smaller or equal to a second.
+		/// </summary>
+		/// <param name="d1"></param>
+		/// <param name="d2"></param>
+		/// <returns>Returns true if the first Distance is smaller or equal to the second.</returns>
+		public static bool operator <=(Distance d1, Distance d2)
+		{
+			return d1.Value <= d2.Value;
+		}
+
+		/// <summary>
+		/// Determines if a distance is strictly greater than a second.
+		/// </summary>
+		/// <param name="d1"></param>
+		/// <param name="d2"></param>
+		/// <returns>Returns true if the first Distance is strictly greater than the second.</returns>
+		public static bool operator >(Distance d1, Distance d2)
+		{
+			return d1.Value > d2.Value;
+		}
+
+		/// <summary>
+		/// Determines if a distance is greater or equal to a second.
+		/// </summary>
+		/// <param name="d1"></param>
+		/// <param name="d2"></param>
+		/// <returns>Returns true if the first Distance is greater or equal to the second.</returns>
+		public static bool operator >=(Distance d1, Distance d2)
+		{
+			return d1.Value >= d2.Value;
 		}
 
 		#endregion
@@ -45,7 +92,7 @@ namespace WF.Player.Core
 		/// </summary>
 		public double Value {
 			get {
-				return GetDouble ("value");
+                return DataContainer.GetDouble("value").Value;
 			}
 		}
 

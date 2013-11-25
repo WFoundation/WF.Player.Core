@@ -18,8 +18,6 @@
 ///
 
 using System;
-using WF.Player.Core.Engines;
-using WF.Player.Core.Lua;
 
 namespace WF.Player.Core
 {
@@ -31,7 +29,8 @@ namespace WF.Player.Core
 
 		#region Constructor
 
-		internal ZonePoint (Engine e, LuaTable t) : base (e, t)
+		internal ZonePoint(WF.Player.Core.Data.IDataContainer data)
+			: base(data)
 		{
 		}
 
@@ -45,7 +44,7 @@ namespace WF.Player.Core
 		/// <value>The altitude.</value>
 		public double Altitude {
 			get {
-				return GetDouble ("altitude");
+				return DataContainer.GetDouble("altitude").GetValueOrDefault();
 			}
 		}
 
@@ -55,7 +54,7 @@ namespace WF.Player.Core
 		/// <value>The latitude.</value>
 		public double Latitude {
 			get {
-				return GetDouble ("latitude");
+                return DataContainer.GetDouble("latitude").Value;
 			}
 		}
 
@@ -65,7 +64,7 @@ namespace WF.Player.Core
 		/// <value>The longitude.</value>
 		public double Longitude {
 			get {
-				return GetDouble ("longitude");
+                return DataContainer.GetDouble("longitude").Value;
 			}
 		}
 

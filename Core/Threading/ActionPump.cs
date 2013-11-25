@@ -19,7 +19,7 @@
 
 using System;
 
-namespace WF.Player.Core.Utils.Threading
+namespace WF.Player.Core.Threading
 {
 	/// <summary>
 	/// A thread-safe queue of actions to be defered and executed on a trigger.
