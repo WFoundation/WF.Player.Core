@@ -220,6 +220,7 @@ namespace WF.Player.Core.Engines
             LuaDataContainer env = dataFactory.CreateContainerAt("Env");
 
 			// Set defaults
+			env["Ok"] = platformHelper.Ok;
             env["CartFolder"] = platformHelper.CartridgeFolder;
             env["SyncFolder"] = platformHelper.SavegameFolder;
             env["LogFolder"] = platformHelper.LogFolder;
@@ -817,7 +818,7 @@ namespace WF.Player.Core.Engines
 			// Sanity checks.
 			CheckStateForLuaAccess();
 			CheckStateForConcurrentGameOperation();
-			CheckStateIsNot(EngineGameState.Initialized, "The engine is aldreay stopped.");
+			CheckStateIsNot(EngineGameState.Initialized, "The engine is already stopped.");
 			
 			GameState = EngineGameState.Stopping;
 
@@ -843,7 +844,7 @@ namespace WF.Player.Core.Engines
 			// Sanity checks.
 			CheckStateForLuaAccess();
 			CheckStateForConcurrentGameOperation();
-			CheckStateIsNot(EngineGameState.Playing, "The engine is aldreay playing.");
+			CheckStateIsNot(EngineGameState.Playing, "The engine is already playing.");
 			
 			GameState = EngineGameState.Restoring;
 
@@ -857,7 +858,22 @@ namespace WF.Player.Core.Engines
 			luaExecQueue.BeginCallSelf(cartridge, "OnRestore");
 			luaExecQueue.WaitEmpty();
 
+			// Refreshes the values.
+			RefreshActiveVisibleTasksAsync();
+			RefreshActiveVisibleZonesAsync();
+			RefreshVisibleInventoryAsync();
+			RefreshVisibleObjectsAsync();
+
 			GameState = EngineGameState.Playing;
+
+			// Restarts the timers.
+			var timers = player.DataContainer.GetWherigoObjectListFromProvider<Timer>("GetActiveTimers", new object[] {player.DataContainer});
+			foreach (Timer t in timers) //.Where(t => !t.DataContainer.GetBool("Restart").GetValueOrDefault()))
+			{
+				if (t.DataContainer.GetProvider("Restart").FirstOrDefault<bool>(new object[] {t.DataContainer}))
+					// Creates the internal timer.
+					CreateAndStartInternalTimer(t.ObjIndex);
+			}
         }
 
         /// <summary>
@@ -926,29 +942,11 @@ namespace WF.Player.Core.Engines
 			luaExecQueue.IsRunning = true;
 
 			// Restarts the timers.
-			//var e = safeLuaState.SafeGetEnumerator((LuaTable)safeLuaState.SafeCallSelf(playerTable, "GetActiveTimers")[0]);
-			//while (e.MoveNext())
-			//{
-			//    LuaTable obj = (LuaTable) e.Current.Value;
-
-			//    // Should the timer be restarted?
-			//    bool shouldRestart = safeLuaState.SafeGetField<bool>((LuaTable)safeLuaState.SafeCallSelf(obj, "Restart")[0], 0);
-			//    if (!shouldRestart)
-			//    {
-			//        continue;
-			//    }
-
-			//    // Creates the internal timer.
-			//    int objIndex = safeLuaState.SafeGetField<int>(obj, "ObjIndex");
-			//    CreateAndStartInternalTimer(objIndex);
-			//}
-
-			// Restarts the timers.
-			var timers = player.DataContainer.GetListFromProvider<IDataContainer>("GetActiveTimers");
-			foreach (var timer in timers.Where(t => !t.GetBool("Restart").GetValueOrDefault()))
+			var timers = player.DataContainer.GetWherigoObjectListFromProvider<Timer>("GetActiveTimers", new object[] {player.DataContainer});
+			foreach (var timer in timers.Where(t => !t.DataContainer.GetBool("Restart").GetValueOrDefault()))
 			{
 				// Creates the internal timer.
-				CreateAndStartInternalTimer(timer.GetInt("ObjIndex").Value);
+				CreateAndStartInternalTimer(timer.ObjIndex);
 			}
 
 			// State change.
@@ -1024,7 +1022,8 @@ namespace WF.Player.Core.Engines
 			this.alt = alt;
 			this.accuracy = accuracy;
 
-			luaExecQueue.BeginCallSelf(player, "ProcessLocation", lat, lon, alt, accuracy);
+			if (GameState == EngineGameState.Playing)
+				luaExecQueue.BeginCallSelf(player, "ProcessLocation", lat, lon, alt, accuracy);
         }
 
         /// <summary>
@@ -1254,7 +1253,8 @@ namespace WF.Player.Core.Engines
                     // If ProcessLocation is called during initialization, Lua crashes. 
                     // But we still need the call to happen. That is why we defer the call 
                     // to later, thanks to the execution queue.
-                    luaExecQueue.BeginCallSelf(player, "ProcessLocation", lat, lon, alt, accuracy);
+					if (GameState == EngineGameState.Playing)
+                    	luaExecQueue.BeginCallSelf(player, "ProcessLocation", lat, lon, alt, accuracy);
 				}
 
 				// Checks if an engine property has changed.

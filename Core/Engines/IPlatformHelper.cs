@@ -45,6 +45,11 @@ namespace WF.Player.Core.Engines
 		string LogFolder { get; }
 
 		/// <summary>
+		/// Gets the string representing the normal text for Ok buttons.
+		/// </summary>
+		string Ok { get; }
+
+		/// <summary>
 		/// Gets the character sequence representing a path separator on this platform.
 		/// </summary>
 		string PathSeparator { get; }

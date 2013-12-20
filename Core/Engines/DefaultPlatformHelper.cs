@@ -39,6 +39,11 @@ namespace WF.Player.Core.Engines
 			get { return "unknown"; }
 		}
 
+		public string Ok
+		{
+			get { return "Ok"; }
+		}
+
 		public string PathSeparator
 		{
 			get { return Path.DirectorySeparatorChar.ToString(); }

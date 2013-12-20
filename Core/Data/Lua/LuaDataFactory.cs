@@ -108,6 +108,7 @@ namespace WF.Player.Core.Data.Lua
         private Dictionary<int, Node> _wEntities = new Dictionary<int,Node>();
 
         private IHelper _helper;
+
         #endregion
 
         #region Properties
@@ -188,6 +189,7 @@ namespace WF.Player.Core.Data.Lua
 		#endregion
 
         #region Methods
+
         /// <summary>
         /// Creates and returns a new container.
         /// </summary>
@@ -389,7 +391,7 @@ namespace WF.Player.Core.Data.Lua
             return CreateProviderCore(lf);
         }
 
-        /// <summary>
+		/// <summary>
         /// Executes a Lua script.
         /// </summary>
         /// <param name="luaScript">The script to execute.</param>
@@ -977,12 +979,6 @@ namespace WF.Player.Core.Data.Lua
                     conformedArgs.Add(GetNativeValueFromValue(arg));
                 }
                 arguments = conformedArgs.ToArray();
-
-                /// TEMP DEBUG
-                if (classname == "Distance" && arguments.Length == 3)
-                {
-                    System.Diagnostics.Debugger.Break();
-                }
 
                 try
                 {

@@ -161,7 +161,7 @@ namespace WF.Player.Core
 					return "ft";
 
 				case DistanceUnit.NauticalMiles:
-					return "nmi";
+					return "nm";
 
 				default:
 					throw new NotImplementedException(String.Format("Unexpected unit {0} is not supported."));

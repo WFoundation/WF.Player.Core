@@ -93,7 +93,7 @@ namespace WF.Player.Core.Formats
 		private double _longitude;
 		private double _altitude;
 
-        private LuaDataContainer _allZObjects;
+		private LuaDataContainer _allZObjects;
 
 		internal FileGWS(
 			Cartridge cart, 
@@ -136,7 +136,7 @@ namespace WF.Player.Core.Formats
 
             // Belongs this GWS file to the cartridge
             if (!cartCreateDate.Equals(_cartridgeEntity.CreateDate))
-                throw new Exception("Tring to load a GWS file with different creation date of cartridge.");
+				throw new Exception("Trying to load a GWS file with different creation date of cartridge.");
 
             string cartPlayerName = readCString(input);
             string cartDeviceName = readCString(input);
@@ -153,20 +153,20 @@ namespace WF.Player.Core.Formats
 
             int numOfObjects = input.ReadInt32();
             //int numAllZObjects = _luaState.SafeCount(_luaState.SafeGetField<LuaTable>(_cartridge, "AllZObjects"));
-            _allZObjects = _cartridge.GetContainer("AllZObjects");
+			_allZObjects = _cartridge.GetContainer("AllZObjects"); //.GetWherigoObjectList<WherigoObject>("AllZObjects");
             int numAllZObjects = _allZObjects.Count;
 
-            for (int i = 1; i < numOfObjects; i++)
+			for (int i = 1; i < numOfObjects; i++)
             {
                 objectType = readString(input);
-                if (i > numAllZObjects)
+				if (i > numAllZObjects - 1)
                 {
                     // Create new objects
                     // TODO: Cartridge=
                     ////_luaState.SafeDoString("Wherigo." + objectType + "()", "");
 
                     // TODO: Object creation can be done using:
-                    // WherigoObject wo = _dataFactory.CreateWherigoObject(objectType);
+					WherigoObject wo = _dataFactory.CreateWherigoObject(objectType, new object[] {_cartridge});
                 }
                 else
                 {
@@ -174,12 +174,18 @@ namespace WF.Player.Core.Formats
                 }
             }
 
+			// Now update allZObjects, because it could be, that new ones are created
+			_allZObjects = _cartridge.GetContainer ("AllZObjects");
+			numAllZObjects = _allZObjects.Count;
+
             //LuaTable obj = _player;
             LuaDataContainer obj = _player;
             objectType = readString(input);
 
+			// Read begin table (5) for player
             byte b = input.ReadByte();
 
+			// Read data for player
             readTable(input, obj);
 
             //LuaTable allZObjects = _luaState.SafeGetField<LuaTable>(_cartridge, "AllZObjects");
@@ -195,15 +201,24 @@ namespace WF.Player.Core.Formats
                 else
                 {
                     //obj = _luaState.SafeGetField<LuaTable>(allZObjects, i);
-                    obj = _allZObjects.GetContainer(i);
+					obj = (LuaDataContainer)_allZObjects.GetContainer(i);
                     readTable(input, obj);
                     //_luaState.SafeCallSelf(obj, "deserialize");
                     //obj.GetProvider("deserialize", true).Execute();
-                    obj.CallSelf("deserialize");
+					// obj.CallSelf("deserialize");
                 }
             }
 
             input.Close();
+
+			// Now deserialize all ZObjects
+			for (int i = 0; i < numAllZObjects; i++)
+			{
+				obj = (LuaDataContainer)_allZObjects.GetContainer(i);
+				obj.CallSelf ("deserialize");
+			}
+
+			// TODO: Update all lists
         }
 
         /// <summary>
@@ -261,7 +276,7 @@ namespace WF.Player.Core.Formats
                         break;
 
                     case 3:
-                        SetField(obj, key, readCString(input), rawset);
+                        SetField(obj, key, readString(input), rawset);
                         break;
 
                     case 4:
@@ -284,12 +299,20 @@ namespace WF.Player.Core.Formats
                         //readTable(input, _luaState.SafeGetField<LuaTable>(obj, (LuaValue)key));
                         readTable(input, tab);
                         break;
-                    case 7:
+					case 6:
+						// End of table
+						return;
+						break;
+					case 7:
                         //if (className != null)
                         //    _luaState.SafeCallRaw(rawset, obj, key, _luaState.SafeGetInnerField<LuaTable>(_cartridge, "AllZObjects", input.ReadInt16()));
                         //else
                         //    _luaState.SafeSetField(obj, (LuaValue)key, _luaState.SafeGetInnerField<LuaTable>(_cartridge, "AllZObjects", input.ReadInt16()));
-                        SetField(obj, key, _allZObjects.GetContainer(input.ReadInt16()), rawset);
+						var objIndex = input.ReadInt16 ();
+						if (objIndex == -21555)
+							SetField (obj, key, _player, rawset);
+						else
+						SetField(obj, key, _allZObjects.GetContainer(objIndex), rawset);
                         break;
                     case 8:
                         //tab = (LuaTable)_luaState.SafeDoString("return Wherigo." + readString(input) + "()", "")[0];
@@ -357,17 +380,19 @@ namespace WF.Player.Core.Formats
 			output.BaseStream.Position = pos;
 
             //int numAllZObjects = _luaState.SafeCount(_luaState.SafeGetField<LuaTable>(_cartridge, "AllZObjects"));
-            _allZObjects = _cartridge.GetContainer("AllZObjects");
+			_allZObjects = _cartridge.GetContainer ("AllZObjects");
             int numAllZObjects = _allZObjects.Count;
 			output.Write(numAllZObjects);
 
 			for (int i = 1; i < numAllZObjects; i++)
 			{
                 //className = Encoding.UTF8.GetBytes(_luaState.SafeGetInnerField<LuaString>(_cartridge, "AllZObjects", i, "ClassName").ToString());
-                className = Encoding.UTF8.GetBytes(_allZObjects.GetContainer(i).GetString("ClassName"));
+				className = Encoding.UTF8.GetBytes(_allZObjects.GetContainer(i).GetString("ClassName"));
 				output.Write(className.Length);
 				output.Write(className);
 			}
+
+			className = Encoding.UTF8.GetBytes(_allZObjects.GetContainer(numAllZObjects-1).GetString("ClassName"));
 
 			LuaDataContainer obj = _player;
             //className = Encoding.UTF8.GetBytes(_luaState.SafeGetField<LuaString>(obj, "ClassName").ToString());
@@ -382,7 +407,7 @@ namespace WF.Player.Core.Formats
 			for (int i = 0; i < numAllZObjects; i++)
 			{
                 //obj = _luaState.SafeGetInnerField<LuaTable>(_cartridge, "AllZObjects", i);
-                obj = _allZObjects.GetContainer(i);
+				obj = (LuaDataContainer)_allZObjects.GetContainer(i);
                 //className = Encoding.UTF8.GetBytes(_luaState.SafeGetField<LuaString>(obj, "ClassName").ToString());
                 className = Encoding.UTF8.GetBytes(obj.GetString("ClassName"));
 				output.Write(className.Length);
@@ -430,6 +455,12 @@ namespace WF.Player.Core.Formats
 				}
 
 				// Save value
+				if (entry.Value == null)
+				{
+					// Write false for null
+					output.Write((byte)1);
+					output.Write((byte)0);
+				}
 				if (entry.Value is bool)
 				{
 					output.Write((byte)1);
@@ -447,12 +478,14 @@ namespace WF.Player.Core.Formats
 					output.Write(array.Length);
 					output.Write(array);
 				}
-				if (entry.Value is LuaDataProvider)
+				if (entry.Value is LuaFunction)  // New: LuaDataProvider)
 				{
 					output.Write((byte)4);
                     ////byte[] array = toArray((string)luaState.GetFunction("string.dump").Call((LuaFunction)entry.Value)[0]);
                     //byte[] array = toArray((string)_luaState.SafeCallRaw("string.dump", (LuaFunction)entry.Current.Value)[0].ToString());
-                    byte[] array = toArray(_dataFactory.GetProviderAt("string.dump").FirstOrDefault<string>(entry.Value));
+//					var str = strDumpFunc.FirstOrDefault<string> ((LuaFunction)entry.Value);
+//					str = _dataFactory.RunScript ("string.dump(cartWherigoTutorial.OnStart())");
+					byte[] array = toArray(_dataFactory.GetProviderAt("string.dump").FirstOrDefault<string>((LuaFunction)entry.Value));
 					// TODO: Delete
 					//					string path = Environment.GetFolderPath (Environment.SpecialFolder.Personal);
 					//					string filePath = Path.Combine(path, "out.txt");
@@ -462,10 +495,10 @@ namespace WF.Player.Core.Formats
 					output.Write(array.Length);
 					output.Write(array);
 				}
-				if (entry.Value is LuaDataContainer)
+				if (entry.Value is LuaTable)  // New: LuaDataContainer)
 				{
                     //string className = _luaState.SafeGetField<LuaString>((LuaTable)entry.Current.Value, "ClassName").ToString();
-                    LuaDataContainer dc = (LuaDataContainer)entry.Value;
+					LuaDataContainer dc = (LuaDataContainer)_dataFactory.GetContainer((LuaTable)entry.Value);
                     string className = dc.GetString("ClassName");
 
 					if (className != null && (className.Equals("Distance") || className.Equals("ZonePoint") || className.Equals("ZCommand") || className.Equals("ZReciprocalCommand")))
@@ -488,13 +521,18 @@ namespace WF.Player.Core.Formats
 					}
 					else
 					{
+						// New: It is a normal LuaTable or an unknown new ZObject type
                         //LuaTable data = (LuaTable)entry.Current.Value;
                         LuaDataContainer data = dc;
-                        //LuaFunction lf = _luaState.SafeGetField<LuaFunction>((LuaTable)entry.Current.Value, "serialize");
-                        LuaDataProvider lf = dc.GetProvider("serialize", true);
-                        if (lf != null)
-                            //data = (LuaTable)_luaState.SafeCallSelf((LuaTable)entry.Current.Value, "serialize")[0]; //().CallSelf("serialize");
-                            data = lf.FirstContainerOrDefault();
+						if (className != null) {
+							// New: If we are here, than this is a new ZObject class, so call serialize before.
+							// New: That means, that it is  a normal LuaTable, so save it
+							//LuaFunction lf = _luaState.SafeGetField<LuaFunction>((LuaTable)entry.Current.Value, "serialize");
+							LuaDataProvider lf = dc.GetProvider ("serialize", true);
+							if (lf != null)
+            	                //data = (LuaTable)_luaState.SafeCallSelf((LuaTable)entry.Current.Value, "serialize")[0]; //().CallSelf("serialize");
+                	            data = lf.FirstContainerOrDefault ();
+						}
 						writeTable(output, data);
 					}
 				}

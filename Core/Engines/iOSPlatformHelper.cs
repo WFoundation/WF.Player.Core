@@ -67,6 +67,11 @@ namespace WF.Player.Core.Engines
 			get { return "Log"; }
 		}
 
+		public string Ok
+		{
+			get { return "Ok"; }
+		}
+
 		public string PathSeparator
 		{
 			get { return Path.DirectorySeparatorChar.ToString(); }
