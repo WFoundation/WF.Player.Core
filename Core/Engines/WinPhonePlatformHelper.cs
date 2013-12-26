@@ -70,6 +70,11 @@ namespace WF.Player.Core.Engines
 			get { return "/Log"; }
 		}
 
+        public virtual string Ok
+        {
+            get { return "Ok"; }
+        }
+
 		public string PathSeparator
 		{
 			get { return System.IO.Path.DirectorySeparatorChar.ToString(); }

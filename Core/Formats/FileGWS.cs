@@ -166,7 +166,7 @@ namespace WF.Player.Core.Formats
                     ////_luaState.SafeDoString("Wherigo." + objectType + "()", "");
 
                     // TODO: Object creation can be done using:
-					WherigoObject wo = _dataFactory.CreateWherigoObject(objectType, new object[] {_cartridge});
+					WherigoObject wo = _dataFactory.CreateWherigoObject(objectType, _cartridge);
                 }
                 else
                 {
@@ -478,14 +478,14 @@ namespace WF.Player.Core.Formats
 					output.Write(array.Length);
 					output.Write(array);
 				}
-				if (entry.Value is LuaFunction)  // New: LuaDataProvider)
+				if (entry.Value is LuaDataProvider)
 				{
 					output.Write((byte)4);
                     ////byte[] array = toArray((string)luaState.GetFunction("string.dump").Call((LuaFunction)entry.Value)[0]);
                     //byte[] array = toArray((string)_luaState.SafeCallRaw("string.dump", (LuaFunction)entry.Current.Value)[0].ToString());
 //					var str = strDumpFunc.FirstOrDefault<string> ((LuaFunction)entry.Value);
 //					str = _dataFactory.RunScript ("string.dump(cartWherigoTutorial.OnStart())");
-					byte[] array = toArray(_dataFactory.GetProviderAt("string.dump").FirstOrDefault<string>((LuaFunction)entry.Value));
+					byte[] array = toArray(_dataFactory.GetProviderAt("string.dump").FirstOrDefault<string>(entry.Value));
 					// TODO: Delete
 					//					string path = Environment.GetFolderPath (Environment.SpecialFolder.Personal);
 					//					string filePath = Path.Combine(path, "out.txt");
@@ -495,10 +495,11 @@ namespace WF.Player.Core.Formats
 					output.Write(array.Length);
 					output.Write(array);
 				}
-				if (entry.Value is LuaTable)  // New: LuaDataContainer)
+				if (entry.Value is LuaDataContainer)
 				{
                     //string className = _luaState.SafeGetField<LuaString>((LuaTable)entry.Current.Value, "ClassName").ToString();
-					LuaDataContainer dc = (LuaDataContainer)_dataFactory.GetContainer((LuaTable)entry.Value);
+                    //LuaDataContainer dc = (LuaDataContainer)_dataFactory.GetContainer((LuaTable)entry.Value);
+                    LuaDataContainer dc = (LuaDataContainer)entry.Value;
                     string className = dc.GetString("ClassName");
 
 					if (className != null && (className.Equals("Distance") || className.Equals("ZonePoint") || className.Equals("ZCommand") || className.Equals("ZReciprocalCommand")))

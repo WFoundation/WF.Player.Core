@@ -37,6 +37,9 @@ namespace WF.Player.Core.Data.Lua
             private LuaDataContainer _parent;
             private IDictionaryEnumerator _baseEnumerator;
 
+            private DictionaryEntry _current;
+            private bool _isCurrentValid;
+
             internal Enumerator(LuaDataContainer luaDataContainer)
             {
                 this._parent = luaDataContainer;
@@ -46,36 +49,88 @@ namespace WF.Player.Core.Data.Lua
             #region IEnumerator
             public object Current
             {
-                get { return _baseEnumerator.Value; }
+                get 
+                {
+                    CheckValid();
+
+                    return _current.Value;
+                }
             }
 
             public bool MoveNext()
             {
-                return _baseEnumerator.MoveNext();
+                if (!_baseEnumerator.MoveNext())
+                {
+                    _isCurrentValid = false;
+                    return false;
+                }
+
+                // Updates the current values.
+                object key = UnwrapOrNull(_baseEnumerator.Key);
+                if (key == null)
+                {
+                    throw new InvalidOperationException("Enumerated key should not be null.");
+                }
+                object val = UnwrapOrNull(_baseEnumerator.Value);
+                _current = new DictionaryEntry(key, val);
+                _isCurrentValid = true;
+
+                return true;
             }
 
             public void Reset()
             {
                 _baseEnumerator.Reset();
+                _isCurrentValid = false;
             } 
             #endregion
 
             #region IDictionaryEnumerator
             public DictionaryEntry Entry
             {
-                get { return _baseEnumerator.Entry; }
+                get 
+                {
+                    CheckValid();
+                    
+                    return _current; 
+                }
             }
 
             public object Key
             {
-                get { return _baseEnumerator.Key; }
+                get 
+                {
+                    CheckValid();
+
+                    return _current.Key; 
+                }
             }
 
             public object Value
             {
-                get { return _baseEnumerator.Value; }
+                get 
+                {
+                    CheckValid();
+
+                    return _current.Value; 
+                }
             } 
             #endregion
+
+            private object UnwrapOrNull(object nativeObject)
+            {
+                return nativeObject is LuaValue 
+                    ? _parent._dataFactory.GetValueFromNativeValue((LuaValue)nativeObject)
+                    : nativeObject;
+            }
+
+            private void CheckValid()
+            {
+                if (!_isCurrentValid)
+                {
+                    throw new InvalidOperationException();
+                }
+            }
         }
 
         #endregion
@@ -308,8 +363,8 @@ namespace WF.Player.Core.Data.Lua
             // Gets the lua function.
             LuaFunction lf = _luaState.SafeGetField<LuaFunction>(_luaTable, key);
 
-            // Returns the provider.
-            return lf == null ? null : _dataFactory.GetProvider(lf);
+            // Returns the self-provider.
+            return lf == null ? null : _dataFactory.GetProvider(lf, self: this);
         }
 
         public string GetString(string key)

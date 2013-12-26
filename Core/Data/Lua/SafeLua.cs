@@ -1195,7 +1195,23 @@ namespace WF.Player.Core.Data.Lua
 
             foreach (var item in array)
             {
-                lvl.Add(Wrap(item));
+                LuaValue wrappedItem;
+                
+                if (item is Array)
+                {
+                    // Creates a new table with the wrapped contents of the array.
+                    lock (_luaState)
+                    {
+                        wrappedItem = _luaState.CreateTable(((Array)item).OfType<object>().Select(o => Wrap(o)));
+                    }
+                }
+                else
+                {
+                    // Simply wraps the item.
+                    wrappedItem = Wrap(item);
+                }
+
+                lvl.Add(wrappedItem);
             }
 
             return lvl.ToArray();

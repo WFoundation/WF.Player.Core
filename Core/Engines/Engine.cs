@@ -867,13 +867,7 @@ namespace WF.Player.Core.Engines
 			GameState = EngineGameState.Playing;
 
 			// Restarts the timers.
-			var timers = player.DataContainer.GetWherigoObjectListFromProvider<Timer>("GetActiveTimers", new object[] {player.DataContainer});
-			foreach (Timer t in timers) //.Where(t => !t.DataContainer.GetBool("Restart").GetValueOrDefault()))
-			{
-				if (t.DataContainer.GetProvider("Restart").FirstOrDefault<bool>(new object[] {t.DataContainer}))
-					// Creates the internal timer.
-					CreateAndStartInternalTimer(t.ObjIndex);
-			}
+            RestartTimers();
         }
 
         /// <summary>
@@ -942,12 +936,7 @@ namespace WF.Player.Core.Engines
 			luaExecQueue.IsRunning = true;
 
 			// Restarts the timers.
-			var timers = player.DataContainer.GetWherigoObjectListFromProvider<Timer>("GetActiveTimers", new object[] {player.DataContainer});
-			foreach (var timer in timers.Where(t => !t.DataContainer.GetBool("Restart").GetValueOrDefault()))
-			{
-				// Creates the internal timer.
-				CreateAndStartInternalTimer(timer.ObjIndex);
-			}
+            RestartTimers();
 
 			// State change.
 			GameState = EngineGameState.Playing;
@@ -1224,7 +1213,10 @@ namespace WF.Player.Core.Engines
 		internal void HandleAttributeChanged(WherigoObject obj, string attribute)
 		{
             if (cartridge == null)
+            {
+                System.Diagnostics.Debug.WriteLine("Engine: WARNING: HandleAttributeChanged called with null cartridge.");
                 return;
+            }
             
             //WherigoObject obj = dataFactory.GetWherigoObject(t);
             ////string classname;
@@ -1715,6 +1707,23 @@ namespace WF.Player.Core.Engines
 				// Call OnTick of this timer
 				luaExecQueue.BeginCallSelf(t, "Tick");
 			}
+        }
+
+        /// <summary>
+        /// Restarts all timers of the current cartridge that are marked
+        /// to be restarted.
+        /// </summary>
+        private void RestartTimers()
+        {
+            // Gets the active timers.
+            var timers = player.DataContainer.GetWherigoObjectListFromProvider<Timer>("GetActiveTimers");
+            
+            // Restart those whose Restart provider gives true.
+            foreach (Timer t in timers.Where(tim => tim.DataContainer.GetProvider("Restart").FirstOrDefault<bool>()))
+            {
+                // Creates the internal timer.
+                CreateAndStartInternalTimer(t.ObjIndex);
+            }
         }
 
         #endregion

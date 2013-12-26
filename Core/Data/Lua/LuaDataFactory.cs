@@ -543,7 +543,7 @@ namespace WF.Player.Core.Data.Lua
         public W CreateWherigoObject<W>(params object[] arguments) where W : WherigoObject
         {
             // Gets the classname for the needed type.
-			string classname = GetWherigoClassnameCore(typeof(W));
+			string classname = GetWherigoClassname(typeof(W));
 
 			// Creates the object.
 			WherigoObject wo = CreateWherigoObjectCore(classname, typeof(W), arguments);
@@ -590,8 +590,8 @@ namespace WF.Player.Core.Data.Lua
             if (data != null)
             {
                 wlist.AddRange(data
-                .OfType<LuaTable>()
-                .Select(lt => GetWherigoObjectCore(lt, dontFailIfNotWigEntity: true))
+                .OfType<LuaDataContainer>()
+                .Select(ldc => GetWherigoObjectCore(GetNativeContainerCore(ldc), dontFailIfNotWigEntity: true))
                 .Where(wo => wo is W)
                 .Cast<W>()
                 .ToList());
@@ -942,74 +942,71 @@ namespace WF.Player.Core.Data.Lua
         }
 
         private WherigoObject CreateWherigoObjectCore(string classname, Type typeToCompare, object[] arguments)
-        {
-            // Prepares the builder script for a default construction.
-            string script = "return Wherigo." + classname + "()";
+        {            
+            // Gets the table for the class to get.
+            LuaTable classLt = _luaState.SafeGetGlobal<LuaTable>("Wherigo." + classname);
 
-            // Creates a default instance of the Wherigo entity using the script.
-            var retList = _luaState.SafeDoString(script);
-            LuaTable wlt = retList.FirstOrDefault() as LuaTable;
+            // Gets the newInstance function of the class.
+            string newInstanceFuncName = "Wherigo.newInstance";
+            LuaFunction newInstanceLf = _luaState.SafeGetGlobal<LuaFunction>(newInstanceFuncName);
 
-            // Checks that the instance is valid.
+            // Checks that the function is valid.
+            if (newInstanceLf == null)
+            {
+                throw new InvalidOperationException("No " + newInstanceFuncName + " function could be found.");
+            }
+
+            // Conforms the arguments.
+            List<LuaValue> conformedArguments = new List<LuaValue>();
+            conformedArguments.Add(classLt); // Self comes first.
+            if (IsWherigoClassnameZObject(classname))
+            {
+                // The ZObject constructor requires the current cartridge object as only parameter.
+                // Therefore, let's discard the arguments and only supply the cartridge table.
+                conformedArguments.Add(GetNativeContainerCore(_helper.Cartridge.DataContainer));
+            }
+            else
+            {
+                // Non-ZObject constructors take their parameters in a row.
+                // All supplied arguments are wrapped.
+                arguments = arguments ?? new object[] { };
+                conformedArguments.AddRange(arguments.Select(o => GetNativeValueFromValue(o)));
+            }
+
+            // Calls the function to create a new instance.
+            LuaTable wlt;
+            try
+            {
+                IList<object> ret = _luaState.SafeCallRaw(newInstanceLf, conformedArguments.ToArray());
+                wlt = ret.FirstOrDefault() as LuaTable;
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("An exception occured while constructing an instance of " + classname, e);
+            }
+
+            // Checks if the object is valid.
             if (wlt == null)
             {
-                throw new InvalidOperationException("Failed to generate default instance of " + classname);
+                throw new InvalidOperationException("An object of class " + classname + " could not be constructed.");
             }
-
-            // Only inits the object if arguments have been passed.
-            if (arguments != null && arguments.Length > 0)
-            {
-                // Gets the init function of this instance.
-                LuaFunction initLf = _luaState.SafeGetField<LuaFunction>(wlt, "init");
-
-                // Checks that the function is valid.
-                if (initLf == null)
-                {
-                    throw new InvalidOperationException("The instance of " + classname + " has no init function.");
-                }
-
-                // Conforms the arguments:
-                // - Converts values to native lua values.
-                // - Adds the self table as first parameter.
-                arguments = arguments ?? new object[] { };
-                List<LuaValue> conformedArgs = new List<LuaValue>(arguments.Length);
-                conformedArgs.Add(wlt);
-                foreach (var arg in arguments)
-                {
-                    conformedArgs.Add(GetNativeValueFromValue(arg));
-                }
-                arguments = conformedArgs.ToArray();
-
-                try
-                {
-                    // Calls the function.
-                    _luaState.SafeCallRaw(initLf, arguments);
-                }
-                catch (Exception)
-                {
-                    /// BRICE TEMP DEBUG
-                    /// 
-
-                    System.Diagnostics.Debug.WriteLine("LuaDataFactory: WARNING: Using debug-only method to create wig object. REMOVE!");
-
-                    if (classname != "Distance" && classname != "ZonePoint")
-                    {
-                        throw;
-                    }
-
-                    _helper.LuaExecutionQueue.BeginAction(new Action(() =>
-                    {
-                        _luaState.SafeCallRaw(initLf, arguments);
-                    }));
-                }
-            }
-
+            
             // Returns the wrapped wherigo object.
             //System.Diagnostics.Debug.WriteLine("LuaDataFactory: Creating an instance of " + classname);
             return GetWherigoObjectCore(wlt, typeToCompare: typeToCompare);
         }
 
-        private string GetWherigoClassnameCore(Type type)
+        private bool IsWherigoClassnameZObject(string classname)
+        {
+            return "ZCartridge".Equals(classname) || "Zone".Equals(classname)
+                || "ZCharacter".Equals(classname) || "ZItem".Equals(classname)
+                || "ZTask".Equals(classname) || "ZInput".Equals(classname)
+                || "ZMedia".Equals(classname) || "ZTimer".Equals(classname)
+                //|| "ZCommand".Equals(classname) || "ZReciprocalCommand".Equals(classname)
+                || "ZObject".Equals(classname);
+        }
+
+        private string GetWherigoClassname(Type type)
         {
             // Gets the short name of the type.
             string name = type.Name;
@@ -1029,7 +1026,7 @@ namespace WF.Player.Core.Data.Lua
                 return "Z" + name;
             }
 
-            // ZReciprocalCommands do not have equivalents in the model,
+            // ZReciprocalCommands do not have equivalents in the C# model,
             // therefore they are not mentionned here.
 
             // Finally, WherigoObject should give ZObject as a classname.
