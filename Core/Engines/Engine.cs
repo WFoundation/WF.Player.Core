@@ -245,7 +245,7 @@ namespace WF.Player.Core.Engines
             uiDispatchPump = new ActionPump();
 
 			// Sets some event handlers for the job queues.
-			luaExecQueue.IsBusyChanged += new EventHandler(HandleluaExecQueueIsBusyChanged);
+			luaExecQueue.IsBusyChanged += new EventHandler(HandleLuaExecQueueIsBusyChanged);
 			uiDispatchPump.IsBusyChanged += new EventHandler(HandleUIDispatchPumpIsBusyChanged);
 
 			// Sets the game state.
@@ -321,7 +321,7 @@ namespace WF.Player.Core.Engines
 				// Bye bye threads.
 				if (luaExecQueue != null)
 				{
-					luaExecQueue.IsBusyChanged -= new EventHandler(HandleluaExecQueueIsBusyChanged);					
+					luaExecQueue.IsBusyChanged -= new EventHandler(HandleLuaExecQueueIsBusyChanged);					
 					luaExecQueue.Dispose();
 					lock (syncRoot)
 					{
@@ -1516,7 +1516,7 @@ namespace WF.Player.Core.Engines
 
 		#region Internal Event Handlers
 
-		private void HandleluaExecQueueIsBusyChanged(object sender, EventArgs e)
+		private void HandleLuaExecQueueIsBusyChanged(object sender, EventArgs e)
 		{
 			bool leqIsBusy = luaExecQueue.IsBusy;
 
