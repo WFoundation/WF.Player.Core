@@ -32,6 +32,7 @@ namespace WF.Player.Core.Live
 {
     public class Cartridges : ObservableCollection<Cartridge>
     {
+		// TODO: Localize statusMessage?
 		private const string apiEndpoint = "http://foundation.rangerfox.com/API/APIv1JSON.svc";
 		private string userToken = "";
         private int status = 0;

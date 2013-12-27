@@ -143,7 +143,7 @@ namespace WF.Player.Core
 		{
 			if (!smallestUnit.Equals(DistanceUnit.Meters) && !smallestUnit.Equals(DistanceUnit.Kilometers))
 			{
-				throw new NotImplementedException("Parameter smallestUnit must be Meters or Kilometers.");
+				throw new NotImplementedException("Parameter smallest Unit must be Meters or Kilometers.");
 			}
 
 			double v = Value;

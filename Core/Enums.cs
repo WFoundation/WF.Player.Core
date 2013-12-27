@@ -164,7 +164,7 @@ namespace WF.Player.Core
 					return "nm";
 
 				default:
-					throw new NotImplementedException(String.Format("Unexpected unit {0} is not supported."));
+					throw new NotImplementedException(String.Format("Unexpected unit: {0} is not supported."));
 			}
 		}
 
@@ -192,7 +192,7 @@ namespace WF.Player.Core
 					return 1d / 1852.216;
 
 				default:
-					throw new NotImplementedException(String.Format("Unexpected unit {0} is not supported."));
+					throw new NotImplementedException(String.Format("Unexpected unit: {0} is not supported."));
 			}
 		}
 	}

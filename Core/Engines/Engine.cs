@@ -112,7 +112,7 @@ namespace WF.Player.Core.Engines
 		private const int internalTimerDuration = 1000;
 
         public static readonly string CorePlatform = "WF.Player.Core";
-        public static readonly string CoreVersion = "0.3.0";
+		public static readonly string CoreVersion = "0.3.0";
 
         #endregion
 
