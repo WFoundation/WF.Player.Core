@@ -21,19 +21,48 @@ using System;
 
 namespace WF.Player.Core
 {
-	/// <summary>
-	/// A kind of screen that displays game-related information to the players.
-	/// </summary>
-	public enum ScreenType : int
-	{
-		Main = 0,
-		Locations,
-		Items,
-		Inventory,
-		Tasks,
-		Details,
-		Dialog
-	}
+    /// <summary>
+    /// A gender a character can have.
+    /// </summary>
+    public enum CharacterGender : int
+    {
+        It,
+        Female,
+        Male
+    }
+
+    /// <summary>
+    /// A unit of distance.
+    /// </summary>
+    public enum DistanceUnit : int
+    {
+        Meters,
+        Kilometers,
+        Miles,
+        Feet,
+        NauticalMiles
+    }
+
+    /// <summary>
+    /// A unit of geographic coordinate.
+    /// </summary>
+    public enum GeoCoordinateUnit : int
+    {
+        DecimalDegrees,
+        DegreesMinutes,
+        DegreesMinutesSeconds
+    }
+
+    /// <summary>
+    /// A type of input requested to the player.
+    /// </summary>
+    public enum InputType : int
+    {
+        Text,
+        MultipleChoice,
+        Unknown
+    }
+
 
 	/// <summary>
 	/// A level of importance associated to log messages.
@@ -46,6 +75,16 @@ namespace WF.Player.Core
 		Warning,
 		Error
 	}
+
+    /// <summary>
+    /// A kind of result a message box can have.
+    /// </summary>
+    public enum MessageBoxResult : int
+    {
+        FirstButton,
+        SecondButton,
+        Cancel
+    }
 
 	/// <summary>
 	/// A type of media.
@@ -63,47 +102,6 @@ namespace WF.Player.Core
 	}
 
 	/// <summary>
-	/// Units of distance.
-	/// </summary>
-	public enum DistanceUnit : int
-	{
-		Meters,
-		Kilometers,
-		Miles,
-		Feet,
-		NauticalMiles
-	}
-
-	/// <summary>
-	/// A type of input requested to the player.
-	/// </summary>
-	public enum InputType : int
-	{
-		Text,
-		MultipleChoice,
-		Unknown
-	}
-
-	/// <summary>
-	/// A type of timer run by a cartridge.
-	/// </summary>
-	public enum TimerType : int
-	{
-		Countdown,
-		Interval
-	}
-
-	/// <summary>
-	/// A kind of result a message box can have.
-	/// </summary>
-	public enum MessageBoxResult : int
-	{
-		FirstButton,
-		SecondButton,
-		Cancel
-	}
-
-	/// <summary>
 	/// A relative position of the player with respect to a Zone.
 	/// </summary>
 	public enum PlayerZoneState : int
@@ -115,24 +113,37 @@ namespace WF.Player.Core
 	}
 
 	/// <summary>
-	/// A correctness a task can have.
-	/// </summary>
-	public enum TaskCorrectness : int
-	{
-		None,
-		Correct,
-		NotCorrect
-	}
+    /// A kind of screen that displays game-related information to the players.
+    /// </summary>
+    public enum ScreenType : int
+    {
+        Main = 0,
+        Locations,
+        Items,
+        Inventory,
+        Tasks,
+        Details,
+        Dialog
+    }
 
-	/// <summary>
-	/// A gender a character can have.
-	/// </summary>
-	public enum CharacterGender : int
-	{
-		It,
-		Female,
-		Male
-	}
+    /// <summary>
+    /// A correctness a task can have.
+    /// </summary>
+    public enum TaskCorrectness : int
+    {
+        None,
+        Correct,
+        NotCorrect
+    }
+
+    /// <summary>
+    /// A type of timer run by a cartridge.
+    /// </summary>
+    public enum TimerType : int
+    {
+        Countdown,
+        Interval
+    }
 
 	/// <summary>
 	/// Defines extensions for enums in the model.
