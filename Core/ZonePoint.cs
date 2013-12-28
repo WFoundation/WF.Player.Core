@@ -323,28 +323,6 @@ namespace WF.Player.Core
            
         }
 
-        //private void AppendLiteralInFormat(StringBuilder formatBuilder, string literal)
-        //{
-        //    // Escapes known format characters.
-        //    var escLiteral = literal
-        //        .Replace("#", @"\#")
-        //        .Replace("0", @"\0")
-        //        .Replace(".", @"\.")
-        //        .Replace(",", @"\,")
-        //        .Replace("%", @"\%")
-        //        .Replace("‰", @"\‰")
-        //        .Replace("E", @"\E")
-        //        .Replace("+", @"\+")
-        //        .Replace("-", @"\-")
-        //        .Replace(@"\", @"\\");
-
-        //    // Prepares the format.
-        //    string format = 
-
-        //    // Appends the string.
-        //    formatBuilder.AppendFormat("'{0}'", escLiteral);
-        //}
-
         #endregion
 	}
 
