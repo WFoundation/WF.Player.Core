@@ -50,6 +50,31 @@ namespace WF.Player.Core.Engines
 		string Ok { get; }
 
 		/// <summary>
+		/// Gets the string shown for empty You See list.
+		/// </summary>
+		string EmptyYouSeeListText { get; }
+
+		/// <summary>
+		/// Gets the string shown for empty Inventory list.
+		/// </summary>
+		string EmptyInventoryListText { get; }
+
+		/// <summary>
+		/// Gets the string shown for empty Tasks list.
+		/// </summary>
+		string EmptyTasksListText { get; }
+
+		/// <summary>
+		/// Gets the string shown for empty Zones list.
+		/// </summary>
+		string EmptyZonesListText { get; }
+
+		/// <summary>
+		/// Gets the string shown when there is no target for the command.
+		/// </summary>
+		string EmptyTargetListText { get; }
+
+		/// <summary>
 		/// Gets the character sequence representing a path separator on this platform.
 		/// </summary>
 		string PathSeparator { get; }

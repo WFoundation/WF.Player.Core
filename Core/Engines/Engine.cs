@@ -221,6 +221,11 @@ namespace WF.Player.Core.Engines
 
 			// Set defaults
 			env["Ok"] = platformHelper.Ok;
+			env["EmptyYouSeeListText"] = platformHelper.EmptyYouSeeListText;
+			env["EmptyInventoryListText"] = platformHelper.EmptyInventoryListText;
+			env["EmptyTasksListText"] = platformHelper.EmptyTasksListText;
+			env["EmptyZonesListText"] = platformHelper.EmptyZonesListText;
+			env["EmptyTargetListText"] = platformHelper.EmptyTargetListText;
             env["CartFolder"] = platformHelper.CartridgeFolder;
             env["SyncFolder"] = platformHelper.SavegameFolder;
             env["LogFolder"] = platformHelper.LogFolder;
