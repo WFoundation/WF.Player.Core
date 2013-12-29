@@ -3,9 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Android", "Core\Core.Android.csproj", "{47C98C7A-1A47-457B-9A22-6D621F344B56}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Newtonsoft.Json.MonoDroid", "..\Newtonsoft.Json\Newtonsoft.Json\Newtonsoft.Json.MonoDroid.csproj", "{E6C3413C-919B-486D-8B6C-225CBD921B98}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KopiLua.Android", "KopiLua\KopiLua\KopiLua.Android.csproj", "{15166620-0EDC-4F70-8551-590818DF7C67}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eluant.Android", "Eluant\Eluant\Eluant.Android.csproj", "{5913825E-0C80-4660-81B3-C2C55B35ADB6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,18 +11,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{15166620-0EDC-4F70-8551-590818DF7C67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{15166620-0EDC-4F70-8551-590818DF7C67}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{15166620-0EDC-4F70-8551-590818DF7C67}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{15166620-0EDC-4F70-8551-590818DF7C67}.Release|Any CPU.Build.0 = Release|Any CPU
 		{47C98C7A-1A47-457B-9A22-6D621F344B56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{47C98C7A-1A47-457B-9A22-6D621F344B56}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47C98C7A-1A47-457B-9A22-6D621F344B56}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{47C98C7A-1A47-457B-9A22-6D621F344B56}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E6C3413C-919B-486D-8B6C-225CBD921B98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E6C3413C-919B-486D-8B6C-225CBD921B98}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E6C3413C-919B-486D-8B6C-225CBD921B98}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E6C3413C-919B-486D-8B6C-225CBD921B98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5913825E-0C80-4660-81B3-C2C55B35ADB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5913825E-0C80-4660-81B3-C2C55B35ADB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5913825E-0C80-4660-81B3-C2C55B35ADB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5913825E-0C80-4660-81B3-C2C55B35ADB6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = Core\Core.Android.csproj

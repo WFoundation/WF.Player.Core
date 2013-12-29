@@ -73,6 +73,36 @@ namespace WF.Player.Core.Engines
 			get { return "/Log"; }
 		}
 
+		public string Ok
+		{
+			get { return "Ok"; }
+		}
+
+		public string EmptyYouSeeListText
+		{
+			get { return "Nothing of interest"; }
+		}
+
+		public string EmptyInventoryListText 
+		{
+			get { return "No items"; }
+		}
+
+		public string EmptyTasksListText 
+		{
+			get { return "No new tasks"; }
+		}
+
+		public string EmptyZonesListText
+		{
+			get { return "Nowhere to go"; }
+		}
+
+		public string EmptyTargetListText 
+		{
+			get { return "Nothing available"; }
+		}
+
 		public string PathSeparator
 		{
 			get { return System.IO.Path.DirectorySeparatorChar.ToString(); }

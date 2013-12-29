@@ -59,9 +59,6 @@
     <Compile Include="Utils\Utils.cs" />
     <Compile Include="Utils\MarkdownSharp.cs" />
     <Compile Include="Utils\Extensions.cs" />
-    <Compile Include="Utils\Threading\ActionPump.cs" />
-    <Compile Include="Utils\Threading\JobQueue.cs" />
-    <Compile Include="Utils\Threading\LuaExecutionQueue.cs" />
     <Compile Include="Cartridge.cs" />
     <Compile Include="Character.cs" />
     <Compile Include="Command.cs" />
@@ -81,37 +78,22 @@
     <Compile Include="Zone.cs" />
     <Compile Include="ZonePoint.cs" />
     <Compile Include="Engines\AndroidPlatformHelper.cs" />
-    <Compile Include="Eluant\LuaFunction.cs" />
-    <Compile Include="Eluant\LuaValueType.cs" />
-    <Compile Include="Eluant\LuaGlobalsTable.cs" />
-    <Compile Include="Eluant\LuaOpaqueClrObjectReference.cs" />
-    <Compile Include="Eluant\LuaBoolean.cs" />
-    <Compile Include="Eluant\LuaTable.cs" />
-    <Compile Include="Eluant\LuaValueExtensions.cs" />
-    <Compile Include="Eluant\LuaString.cs" />
-    <Compile Include="Eluant\LuaVararg.cs" />
-    <Compile Include="Eluant\LuaValue.cs" />
-    <Compile Include="Eluant\LuaNumberOperators.cs" />
-    <Compile Include="Eluant\LuaThread.cs" />
-    <Compile Include="Eluant\LuaNumber.cs" />
-    <Compile Include="Eluant\LuaReference.cs" />
-    <Compile Include="Eluant\MemoryConstrainedLuaRuntime.cs" />
-    <Compile Include="Eluant\LuaLightUserdata.cs" />
-    <Compile Include="Eluant\LuaUserdata.cs" />
-    <Compile Include="Eluant\LuaWeakReference.cs" />
-    <Compile Include="Eluant\LuaRuntime.cs" />
-    <Compile Include="Eluant\LuaNil.cs" />
-    <Compile Include="Eluant\LuaException.cs" />
-    <Compile Include="Eluant\Scripts.cs" />
-    <Compile Include="Eluant\LuaOpaqueClrObject.cs" />
-    <Compile Include="Eluant\LuaEnums.cs" />
-    <Compile Include="Eluant\LuaNative.cs" />
     <Compile Include="WherigoObject.cs" />
-    <Compile Include="Utils\SafeLua.cs" />
+    <Compile Include="Threading\ActionPump.cs" />
+    <Compile Include="Threading\ExecutionQueue.cs" />
+    <Compile Include="Threading\JobQueue.cs" />
+    <Compile Include="Data\IDataContainer.cs" />
+    <Compile Include="Data\IDataFactory.cs" />
+    <Compile Include="Data\IDataProvider.cs" />
+    <Compile Include="Data\Lua\LuaDataContainer.cs" />
+    <Compile Include="Data\Lua\LuaDataExtensions.cs" />
+    <Compile Include="Data\Lua\LuaDataFactory.cs" />
+    <Compile Include="Data\Lua\LuaDataProvider.cs" />
+    <Compile Include="Data\Lua\SafeLua.cs" />
+    <Compile Include="WherigoCollection.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
-    <None Include="Eluant\LuaNumberOperators.tt" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\values\Strings.xml" />
@@ -119,24 +101,24 @@
   <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
   <ItemGroup>
     <EmbeddedResource Include="Resources\Wherigo.luac" />
-    <EmbeddedResource Include="Resources\BindingSupport.lua" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Engines\" />
     <Folder Include="Formats\" />
     <Folder Include="Live\" />
     <Folder Include="Utils\" />
-    <Folder Include="Eluant\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\KopiLua\KopiLua\KopiLua.Android.csproj">
-      <Project>{15166620-0EDC-4F70-8551-590818DF7C67}</Project>
-      <Name>KopiLua.Android</Name>
-    </ProjectReference>
+    <Folder Include="Threading\" />
+    <Folder Include="Data\" />
   </ItemGroup>
   <ItemGroup>
     <AndroidNativeLibrary Include="Libs\armeabi\liblua5.1.so" />
     <AndroidNativeLibrary Include="Libs\armeabi-v7a\liblua5.1.so" />
     <AndroidNativeLibrary Include="Libs\x86\liblua5.1.so" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Eluant\Eluant\Eluant.Android.csproj">
+      <Project>{5913825E-0C80-4660-81B3-C2C55B35ADB6}</Project>
+      <Name>Eluant.Android</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>
