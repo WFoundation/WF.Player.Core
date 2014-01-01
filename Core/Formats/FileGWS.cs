@@ -1,4 +1,4 @@
-﻿///
+﻿﻿///
 /// WF.Player.Core - A Wherigo Player Core for different platforms.
 /// Copyright (C) 2012-2013  Dirk Weltz <web@weltz-online.de>
 /// Copyright (C) 2012-2013  Brice Clocher <contact@cybisoft.net>
@@ -474,24 +474,14 @@ namespace WF.Player.Core.Formats
 				if (entry.Value is string)
 				{
 					output.Write((byte)3);
-					byte[] array = toArray((string)entry.Value);
+					byte[] array = Encoding.UTF8.GetBytes((string)entry.Value);
 					output.Write(array.Length);
 					output.Write(array);
 				}
 				if (entry.Value is LuaDataProvider)
 				{
 					output.Write((byte)4);
-                    ////byte[] array = toArray((string)luaState.GetFunction("string.dump").Call((LuaFunction)entry.Value)[0]);
-                    //byte[] array = toArray((string)_luaState.SafeCallRaw("string.dump", (LuaFunction)entry.Current.Value)[0].ToString());
-//					var str = strDumpFunc.FirstOrDefault<string> ((LuaFunction)entry.Value);
-//					str = _dataFactory.RunScript ("string.dump(cartWherigoTutorial.OnStart())");
 					byte[] array = toArray(_dataFactory.GetProviderAt("string.dump").FirstOrDefault<string>(entry.Value));
-					// TODO: Delete
-					//					string path = Environment.GetFolderPath (Environment.SpecialFolder.Personal);
-					//					string filePath = Path.Combine(path, "out.txt");
-					//					BinaryWriter bw = new BinaryWriter (new FileStream(filePath,FileMode.Create));
-					//					bw.Write (array);
-					//					bw.Close ();
 					output.Write(array.Length);
 					output.Write(array);
 				}
