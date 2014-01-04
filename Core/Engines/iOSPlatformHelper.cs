@@ -21,6 +21,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using MonoTouch.UIKit;
+using MonoTouch.Foundation;
 
 namespace WF.Player.Core.Engines
 {
@@ -111,7 +112,7 @@ namespace WF.Player.Core.Engines
 		{
 			get { return String.Format(
 					"iPhone {0}",
-					Environment.OSVersion.Version.ToString(2)); }
+					Environment.OSVersion.Version.ToString()); }
 		}
 
 		public string DeviceId
@@ -128,7 +129,7 @@ namespace WF.Player.Core.Engines
 
 		public string ClientVersion
 		{
-			get { return entryAssemblyVersion != null ? entryAssemblyVersion.ToString() : "Unknown"; }
+			get { return entryAssemblyVersion != null ? String.Format("{0}.{1}", NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleShortVersionString").ToString(), NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleVersion").ToString()) : "Unknown"; }
 		}
 
 		public bool CanDispatchOnUIThread

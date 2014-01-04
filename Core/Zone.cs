@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using WF.Player.Core.Utils;
 
 namespace WF.Player.Core
 {
@@ -47,6 +48,26 @@ namespace WF.Player.Core
 			get 
 			{
                 return DataContainer.GetBool("Active").Value;
+			}
+		}
+
+		/// <summary>
+		/// Gets the bounds of this zone.
+		/// </summary>
+		/// <value>The bounds.</value>
+		public CoordBounds Bounds {
+			get {
+				var points = Points;
+
+				if (points.Count == 0)
+					return null;
+
+				var result = new CoordBounds (points [0], points [0]);
+
+				foreach (ZonePoint zp in points)
+					result.Add (zp);
+
+				return result;
 			}
 		}
 

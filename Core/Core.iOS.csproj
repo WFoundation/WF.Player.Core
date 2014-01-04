@@ -12,8 +12,6 @@
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{6BC8ED88-2882-458C-8E55-DFD12B67127B};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
-    <SynchReleaseVersion>false</SynchReleaseVersion>
-    <ReleaseVersion>0.3</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
     <DebugSymbols>True</DebugSymbols>
@@ -132,6 +130,7 @@
     <Compile Include="Threading\ExecutionQueue.cs" />
     <Compile Include="Threading\JobQueue.cs" />
     <Compile Include="WherigoCollection.cs" />
+    <Compile Include="Utils\CoordRect.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

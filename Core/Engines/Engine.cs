@@ -410,6 +410,35 @@ namespace WF.Player.Core.Engines
 			} 
 		}
 
+		/// <summary>
+		/// Gets the bounds of all visible zones and items of this cartridge.
+		/// </summary>
+		/// <value>The bounds.</value>
+		public CoordBounds Bounds {
+			get {
+				CoordBounds result = null;
+
+				var zones = ActiveVisibleZones;
+
+				foreach (Zone z in zones) {
+					if (result == null)
+						result = z.Bounds;
+					result.Add (z.Bounds);
+				}
+
+				var things = VisibleObjects;
+
+				foreach (Thing t in things)
+					if (t.ObjectLocation != null) {
+						if (result == null)
+							result = new CoordBounds (t.ObjectLocation);
+						result.Add (t.ObjectLocation);
+					}
+
+				return result;
+			}
+		}
+
 		public Cartridge Cartridge 
 		{ 
 			get 
