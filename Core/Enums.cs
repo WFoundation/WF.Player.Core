@@ -122,9 +122,7 @@ namespace WF.Player.Core
         Items,
         Inventory,
         Tasks,
-        Details,
-		Dialog,
-		Map
+        Details
     }
 
     /// <summary>
