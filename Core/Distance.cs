@@ -25,7 +25,7 @@ namespace WF.Player.Core
 	/// <summary>
 	/// A distance between two objects of the game.
 	/// </summary>
-	public class Distance : WherigoObject
+	public class Distance : WherigoObject, IComparable<double>, IComparable<Distance>
 	{
 
 		#region Constructor
@@ -98,7 +98,7 @@ namespace WF.Player.Core
 
 		#endregion
 
-		#region Methods
+		#region Values and Measures
 
 		/// <summary>
 		/// Gets the value of the distance with a given unit.
@@ -163,7 +163,18 @@ namespace WF.Player.Core
 
 		#endregion
 
-	}
+        #region IComparable
+        public int CompareTo(double other)
+        {
+            return Value.CompareTo(other);
+        }
+
+        public int CompareTo(Distance other)
+        {
+            return Value.CompareTo(other.Value);
+        }
+        #endregion
+    }
 
 	/// <summary>
 	/// Describes parameters that have an influence on the formatting of a distance.
