@@ -1249,61 +1249,59 @@ namespace WF.Player.Core.Engines
                 System.Diagnostics.Debug.WriteLine("Engine: WARNING: HandleAttributeChanged called with null cartridge.");
                 return;
             }
+
+            if (obj == null)
+            {
+                System.Diagnostics.Debug.WriteLine("Engine: WARNING: HandleAttributeChanged called with null object.");
+                return;
+            }
             
-            //WherigoObject obj = dataFactory.GetWherigoObject(t);
-            ////string classname;
-            ////lock (luaState)
-            ////{
-            ////    classname = (string)t["ClassName"].ToString(); 
-            ////}
+            // Raises the NotifyPropertyChanged event if this is a Cartridge.
+            if (obj is Cartridge)
+            {
+                RaisePropertyChangedInObject(cartridge, attribute);
+            }
 
-			if (obj != null) {
-				
-				// Raises the NotifyPropertyChanged event if this is a UIObject.
-				if (obj is UIObject)
-					RaisePropertyChangedInObject((UIObject)obj, attribute);
+			// Raises the NotifyPropertyChanged event if this is a UIObject.
+            else if (obj is UIObject)
+            {
+                RaisePropertyChangedInObject((UIObject)obj, attribute);
+            }
 
-				// Refreshes the zone in order to make it fire its events.
-				if ((obj is Zone && "Active".Equals(attribute)))
-				{
-					//lock (luaState)
-					//{
-					//    player.CallSelf("ProcessLocation", lat, lon, alt, accuracy);
-					//}
-                    
-                    //player.Call("ProcessLocation", lat, lon, alt, accuracy);
-                    //player.CallSelf("ProcessLocation", lat, lon, alt, accuracy);
-
-                    // If ProcessLocation is called during initialization, Lua crashes. 
-                    // But we still need the call to happen. That is why we defer the call 
-                    // to later, thanks to the execution queue.
-					if (GameState == EngineGameState.Playing)
-                    	luaExecQueue.BeginCallSelf(player, "ProcessLocation", lat, lon, alt, accuracy);
-				}
-
-				// Checks if an engine property has changed.
-				bool isAttributeVisibleOrActive = "Active".Equals(attribute) || "Visible".Equals(attribute);
-				if (isAttributeVisibleOrActive && obj is Task)
-				{
-					// Recomputes active visible tasks and raises the property changed event.
-					RefreshActiveVisibleTasksAsync();
-				}
-				else if (isAttributeVisibleOrActive && obj is Zone)
-				{
-					// Recomputes active visible zones and raises the property changed event.
-					RefreshActiveVisibleZonesAsync();
-				}
-
-				// Raises the AttributeChanged event.
-				RaiseAttributeChanged(obj, attribute);
-
-			} else {
-
-				// Raises the NotifyPropertyChanged event if this is a Cartridge.
-				if (obj is Cartridge)
-					RaisePropertyChangedInObject(cartridge, attribute);
-
+			// Refreshes the zone in order to make it fire its events.
+			else if (obj is Zone && "Active".Equals(attribute))
+			{
+                // If ProcessLocation is called during initialization, Lua crashes. 
+                // But we still need the call to happen. That is why we defer the call 
+                // to later, thanks to the execution queue.
+				if (GameState == EngineGameState.Playing)
+                    luaExecQueue.BeginCallSelf(player, "ProcessLocation", lat, lon, alt, accuracy);
 			}
+
+			// Checks if an engine property has changed.
+			bool isAttributeVisibleOrActive = "Active".Equals(attribute) || "Visible".Equals(attribute);
+            if (isAttributeVisibleOrActive)
+            {
+                if (obj is Task)
+                {
+                    // Recomputes active visible tasks and raises the property changed event.
+                    RefreshActiveVisibleTasksAsync();
+                }
+                else if (obj is Zone)
+                {
+                    // Recomputes active visible zones and raises the property changed event.
+                    RefreshActiveVisibleZonesAsync();
+                }
+                else if (obj is Thing)
+                {
+                    // Recomputes the visible objects and raises the property changed event.
+                    RefreshVisibleObjectsAsync();
+                    RefreshVisibleInventoryAsync();
+                } 
+            }
+
+			// Raises the AttributeChanged event.
+			RaiseAttributeChanged(obj, attribute);
 		}
 		
         /// <summary>
