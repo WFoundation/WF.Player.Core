@@ -130,7 +130,7 @@
     <Compile Include="Threading\ExecutionQueue.cs" />
     <Compile Include="Threading\JobQueue.cs" />
     <Compile Include="WherigoCollection.cs" />
-    <Compile Include="CoordRect.cs" />
+    <Compile Include="CoordBounds.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
