@@ -55,6 +55,7 @@
     <Reference Include="mscorlib.extensions" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CoordBounds.cs" />
     <Compile Include="Data\IDataContainer.cs" />
     <Compile Include="Data\IDataFactory.cs" />
     <Compile Include="Data\IDataProvider.cs" />

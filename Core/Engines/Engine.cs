@@ -416,26 +416,17 @@ namespace WF.Player.Core.Engines
 		/// <value>The bounds.</value>
 		public CoordBounds Bounds {
 			get {
-				CoordBounds result = null;
+                CoordBounds result = new CoordBounds();
 
-				var zones = ActiveVisibleZones;
+                // Adds all active visible zones' bounds.
+                result.Inflate(ActiveVisibleZones.Select(z => z.Bounds));
+                
+                // Adds all visible objects' locations.
+                result.Inflate(VisibleObjects.Select(t => t.ObjectLocation));
 
-				foreach (Zone z in zones) {
-					if (result == null)
-						result = z.Bounds;
-					result.Add (z.Bounds);
-				}
-
-				var things = VisibleObjects;
-
-				foreach (Thing t in things)
-					if (t.ObjectLocation != null) {
-						if (result == null)
-							result = new CoordBounds (t.ObjectLocation);
-						result.Add (t.ObjectLocation);
-					}
-
-				return result;
+                // Only returns the bounds if at least a point
+                // has inflated it.
+                return result.IsValid ? result : null;
 			}
 		}
 
@@ -549,8 +540,11 @@ namespace WF.Player.Core.Engines
 				}
 
 				// Raises the property changed event.
-				if (valueChanged)
-					RaisePropertyChanged("ActiveVisibleZones");
+                if (valueChanged)
+                {
+                    RaisePropertyChanged("ActiveVisibleZones");
+                    RaisePropertyChanged("Bounds");
+                }
 			}
 		}
 
@@ -609,8 +603,11 @@ namespace WF.Player.Core.Engines
 				}
 
 				// Raises the property changed event.
-				if (valueChanged)
-					RaisePropertyChanged("VisibleObjects");
+                if (valueChanged)
+                {
+                    RaisePropertyChanged("VisibleObjects");
+                    RaisePropertyChanged("Bounds");
+                }
 			}
 		}
 
@@ -910,7 +907,7 @@ namespace WF.Player.Core.Engines
         /// <param name="stream">Stream, where the cartridge is saved.</param>
         public void Save(Stream stream)
         {
-			// Sanity checks.
+            // Sanity checks.
 			CheckStateIs(EngineGameState.Playing, "The engine is not playing.", true);
 
 			// State change.

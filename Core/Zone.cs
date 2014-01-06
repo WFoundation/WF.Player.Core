@@ -41,9 +41,8 @@ namespace WF.Player.Core
 		#region Properties
 
 		/// <summary>
-		/// Gets a value indicating whether this <see cref="WF.Player.Core.Zone"/> is active.
+		/// Gets a value indicating whether this Zone is active.
 		/// </summary>
-		/// <value><c>true</c> if active; otherwise, <c>false</c>.</value>
 		public bool Active {
 			get 
 			{
@@ -52,29 +51,21 @@ namespace WF.Player.Core
 		}
 
 		/// <summary>
-		/// Gets the bounds of this zone.
+		/// Gets the bounds of this zone, which is the rectangle
+        /// of minimal measure which contains all its points.
 		/// </summary>
-		/// <value>The bounds.</value>
 		public CoordBounds Bounds {
-			get {
-				var points = Points;
+			get 
+            {
+                CoordBounds bounds = new CoordBounds(Points);
 
-				if (points.Count == 0)
-					return null;
-
-				var result = new CoordBounds (points [0], points [0]);
-
-				foreach (ZonePoint zp in points)
-					result.Add (zp);
-
-				return result;
+                return bounds.IsValid ? bounds : null;
 			}
 		}
 
 		/// <summary>
 		/// Gets the original point.
 		/// </summary>
-		/// <value>The original point as ZonePoint.</value>
         public ZonePoint OriginalPoint
         {
             get
@@ -84,9 +75,8 @@ namespace WF.Player.Core
         }
 
 		/// <summary>
-		/// Gets the point defining the zone.
+		/// Gets the points defining the zone.
 		/// </summary>
-		/// <value>The inventory.</value>
         public WherigoCollection<ZonePoint> Points
         {
 			get 
