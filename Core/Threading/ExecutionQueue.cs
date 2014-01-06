@@ -1,4 +1,4 @@
-﻿///
+﻿﻿///
 /// WF.Player.Core - A Wherigo Player Core for different platforms.
 /// Copyright (C) 2012-2013  Dirk Weltz <web@weltz-online.de>
 /// Copyright (C) 2012-2013  Brice Clocher <contact@cybisoft.net>
@@ -33,9 +33,8 @@ namespace WF.Player.Core.Threading
 	{
 		#region Members
 
-        //private SafeLua _luaState;
-
-        //private LuaDataFactory _dataFactory;
+        private List<ManualResetEvent> _waitEmptyResetEvents = new List<ManualResetEvent>();
+        private object _syncRoot = new object();
 
 		#endregion
 
@@ -61,19 +60,37 @@ namespace WF.Player.Core.Threading
 
 		#region Constructors and Destructor
 		/// <summary>
-		/// Creates a new execution queue for a Lua state.
+		/// Creates a new execution queue that is initially active and
+        /// continues on completion.
 		/// </summary>
-		/// <param name="lua"></param>
-		/// <param name="dataFactory"></param>
-		public ExecutionQueue()//LuaDataFactory dataFactory)
+		public ExecutionQueue()
 		{
-            //_luaState = lua;
-            //_dataFactory = dataFactory;
-
 			// JobQueue configuration.
 			IsActive = true;
 			ContinuesOnCompletion = true;
 		}
+
+        protected override void DisposeOverride()
+        {
+            // Copies and unregisters the active reset events.
+            List<ManualResetEvent> activeResetEvents;
+            lock (_syncRoot)
+            {
+                activeResetEvents = new List<ManualResetEvent>(_waitEmptyResetEvents);
+                _waitEmptyResetEvents.Clear();
+            }
+
+            // Wakes up and disposes all active reset events.
+            foreach (ManualResetEvent re in activeResetEvents)
+            {
+                re.Set();
+                re.Dispose();
+            }
+
+            // Deletes managed resources.
+            _waitEmptyResetEvents = null;
+            _syncRoot = null;
+        }
 		#endregion
 
 		#region Public Methods
@@ -155,38 +172,61 @@ namespace WF.Player.Core.Threading
 			// Sanity check.
 			if (IsSameThread)
 			{
-				throw new InvalidOperationException("Cannot use WaitEmpty() from the same LuaExecutionQueue thread.");
+				throw new InvalidOperationException("Cannot use WaitEmpty() from the same thread as this ExecutionQueue.");
 			}
 
 			// Creates a reset event for blocking the caller thread.
-			using (ManualResetEvent re = new ManualResetEvent(false))
+            ManualResetEvent re = new ManualResetEvent(false);
+            
+            // Registers the reset event.
+            lock (_syncRoot)
+            {
+                _waitEmptyResetEvents.Add(re); 
+            }
+
+			// Defines an event handler for IsBusyChanged.
+			EventHandler onBusyChanged = new EventHandler((o, e) =>
 			{
-				// Defines an event handler for IsBusyChanged.
-				// This will be executed in the lua execution queue.
-				EventHandler onBusyChanged = new EventHandler((o, e) =>
-				{
-					// Wakes the thread.
-					ExecutionQueue leq = (ExecutionQueue)o;
-					if (!leq.IsBusy && leq.QueueCount == 0)
-					{
-						// Time to wake the thread up!
-						re.Set();
-					}
-				});
+				// This is executed in the execution queue thread.
+                
+                // Checks if the object is still registered as active and
+                // not disposed. If not, returns.
+                lock (_syncRoot)
+                {
+                    if (!_waitEmptyResetEvents.Contains(re))
+                    {
+                        return;
+                    }
+                }
 
-				// Adds the event handler.
-				this.IsBusyChanged += onBusyChanged;
-
-				// Don't wait if the thread is not busy.
-				if (IsBusy || QueueCount > 0)
+                // Wakes the thread.
+				ExecutionQueue leq = (ExecutionQueue)o;
+				if (!leq.IsBusy && leq.QueueCount == 0)
 				{
-					// Waits!
-					re.WaitOne();
+					// Time to wake the thread up!
+                    re.Set();
 				}
+			});
 
-				// Once we wake up: removes the event handler.
-				this.IsBusyChanged -= onBusyChanged; 
+			// Adds the event handler.
+			this.IsBusyChanged += onBusyChanged;
+
+			// Don't wait if the thread is not busy.
+			if (IsBusy || QueueCount > 0)
+			{
+				// Waits!
+				re.WaitOne();
 			}
+
+			// Once we wake up: removes the event handler.
+			this.IsBusyChanged -= onBusyChanged; 
+
+            // Makes sure the event is disposed and unregistered.
+            re.Dispose();
+            lock (_syncRoot)
+            {
+                _waitEmptyResetEvents.Remove(re);
+            }
 		}
 		
 		/// <summary>
@@ -227,12 +267,6 @@ namespace WF.Player.Core.Threading
 			return parameters ?? new object[] { };
 		}
 
-        //private LuaValue[] ConformParameters(LuaValue[] parameters, LuaValue firstParam)
-        //{
-        //    // Conforms the parameters and then concats the first param.
-        //    return ConformParameters(parameters).ConcatBefore(firstParam);
-        //}
-
 		#endregion
 
 		#region Job Processing
@@ -246,7 +280,6 @@ namespace WF.Player.Core.Threading
                 return;
 
             // Checks if the function still exists.
-            //LuaFunction lf = _luaState.SafeGetField<LuaFunction>(obj, func);
             LuaDataContainer dc = obj as LuaDataContainer;
             if (dc == null)
                 return;
@@ -257,7 +290,6 @@ namespace WF.Player.Core.Threading
                 return;
 
             // Calls the function.
-            //_luaState.SafeCallRaw(lf, parameters);
             lf.Execute(parameters);
         }
 
@@ -270,14 +302,12 @@ namespace WF.Player.Core.Threading
 				return;
 
 			// Checks if the function still exists.
-            //LuaFunction lf = _luaState.SafeGetField<LuaFunction>(obj, func);
             IDataProvider lf = obj.GetProvider(func);
 
 			if (lf == null)
 				return;
 
 			// Calls the function.
-            //_luaState.SafeCallRaw(lf, parameters);
             lf.Execute(parameters);
 		}
 
@@ -290,7 +320,6 @@ namespace WF.Player.Core.Threading
                 return;
 
             // Calls the function.
-            //_luaState.SafeCallRaw(func, parameters);
             func.Execute(parameters);
         }
 
