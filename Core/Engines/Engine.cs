@@ -1187,10 +1187,11 @@ namespace WF.Player.Core.Engines
 			ZonePoint thingLoc = t.ObjectLocation;
 			bool isZone = t is Zone;
 
-			// If the Thing is not a zone and has no location, consider it is close to the player.
 			if (!isZone && thingLoc == null)
 			{
-				t.VectorFromPlayer = new LocationVector(dataFactory.CreateWherigoObject<Distance>(), 0);
+                // If the Thing is not a zone and has no location, consider it is close to the player.
+                //t.VectorFromPlayer = new LocationVector(dataFactory.CreateWherigoObject<Distance>(), 0);
+                t.VectorFromPlayer = null;
 				
 				RaisePropertyChangedInObject(t, "VectorFromPlayer");
 				return;
