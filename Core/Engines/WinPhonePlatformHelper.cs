@@ -75,6 +75,31 @@ namespace WF.Player.Core.Engines
             get { return "Ok"; }
         }
 
+        public string EmptyYouSeeListText
+        {
+            get { return "Empty"; }
+        }
+
+        public string EmptyInventoryListText
+        {
+            get { return "Empty"; }
+        }
+
+        public string EmptyTasksListText
+        {
+            get { return "Empty"; }
+        }
+
+        public string EmptyZonesListText
+        {
+            get { return "Empty"; }
+        }
+
+        public string EmptyTargetListText
+        {
+            get { return "Empty"; }
+        }
+
 		public string PathSeparator
 		{
 			get { return System.IO.Path.DirectorySeparatorChar.ToString(); }
@@ -136,5 +161,5 @@ namespace WF.Player.Core.Engines
 		} 
 
 		#endregion
-	}
+    }
 }
