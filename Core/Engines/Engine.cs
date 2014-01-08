@@ -1256,20 +1256,18 @@ namespace WF.Player.Core.Engines
                 return;
             }
             
-            // Raises the NotifyPropertyChanged event if this is a Cartridge.
+            // Raises the NotifyPropertyChanged event if this is a Cartridge or UIObject.
             if (obj is Cartridge)
             {
                 RaisePropertyChangedInObject(cartridge, attribute);
             }
-
-			// Raises the NotifyPropertyChanged event if this is a UIObject.
             else if (obj is UIObject)
             {
                 RaisePropertyChangedInObject((UIObject)obj, attribute);
             }
 
 			// Refreshes the zone in order to make it fire its events.
-			else if (obj is Zone && "Active".Equals(attribute))
+			if (obj is Zone && "Active".Equals(attribute))
 			{
                 // If ProcessLocation is called during initialization, Lua crashes. 
                 // But we still need the call to happen. That is why we defer the call 
