@@ -20,7 +20,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-//using Eluant;
 using WF.Player.Core.Data;
 using WF.Player.Core.Data.Lua;
 
@@ -33,9 +32,8 @@ namespace WF.Player.Core.Threading
 	{
 		#region Members
 
-        //private SafeLua _luaState;
-
-        //private LuaDataFactory _dataFactory;
+        private List<ManualResetEvent> _waitEmptyResetEvents = new List<ManualResetEvent>();
+        private object _syncRoot = new object();
 
 		#endregion
 
@@ -61,22 +59,39 @@ namespace WF.Player.Core.Threading
 
 		#region Constructors and Destructor
 		/// <summary>
-		/// Creates a new execution queue for a Lua state.
+		/// Creates a new execution queue that is initially active and
+        /// continues on completion.
 		/// </summary>
-		/// <param name="lua"></param>
-		/// <param name="dataFactory"></param>
-		public ExecutionQueue()//LuaDataFactory dataFactory)
+		public ExecutionQueue()
 		{
-            //_luaState = lua;
-            //_dataFactory = dataFactory;
-
 			// JobQueue configuration.
 			IsActive = true;
 			ContinuesOnCompletion = true;
 		}
+
+        protected override void DisposeOverride()
+        {
+            // Copies and unregisters the active reset events.
+            List<ManualResetEvent> activeResetEvents;
+            lock (_syncRoot)
+            {
+                activeResetEvents = new List<ManualResetEvent>(_waitEmptyResetEvents);
+            }
+
+            // Wakes up and disposes all active reset events.
+            foreach (ManualResetEvent re in activeResetEvents)
+            {
+                DisposeWaitEmptyResetEvent(re);
+            }
+
+            // Deletes managed resources.
+            _waitEmptyResetEvents = null;
+            _syncRoot = null;
+        }
 		#endregion
 
-		#region Public Methods
+		#region Begin Actions
+
 		/// <summary>
 		/// Executes asynchronously a call to a Lua function on the thread this LuaExecutionQueue is associated with.
 		/// </summary>
@@ -146,63 +161,125 @@ namespace WF.Player.Core.Threading
             AcceptJob(GetJob(cont, func, ConformParameters(parameters), true));
 		}
 
-		/// <summary>
-		/// Blocks the caller thread until this ExecutionQueue has completed all the jobs 
-		/// in the queue and goes to sleep.
-		/// </summary>
-		public void WaitEmpty()
-		{
-			// Sanity check.
-			if (IsSameThread)
-			{
-				throw new InvalidOperationException("Cannot use WaitEmpty() from the same LuaExecutionQueue thread.");
-			}
+        /// <summary>
+        /// Executes asynchronously an action.
+        /// </summary>
+        /// <remarks>
+        /// Beware of concurrency. Callers should ensure that the action is not going to perform
+        /// cross-thread operations, especially on the Lua state that is used by this instance.
+        /// </remarks>
+        /// <param name="action">Action to execute.</param>
+        internal void BeginAction(Action action)
+        {
+            AcceptJob(action);
+        }
 
-			// Creates a reset event for blocking the caller thread.
-			using (ManualResetEvent re = new ManualResetEvent(false))
-			{
-				// Defines an event handler for IsBusyChanged.
-				// This will be executed in the lua execution queue.
-				EventHandler onBusyChanged = new EventHandler((o, e) =>
-				{
-					// Wakes the thread.
-					ExecutionQueue leq = (ExecutionQueue)o;
-					if (!leq.IsBusy && leq.QueueCount == 0)
-					{
-						// Time to wake the thread up!
-						re.Set();
-					}
-				});
+        #endregion
 
-				// Adds the event handler.
-				this.IsBusyChanged += onBusyChanged;
+        #region Wait for Completion
 
-				// Don't wait if the thread is not busy.
-				if (IsBusy || QueueCount > 0)
-				{
-					// Waits!
-					re.WaitOne();
-				}
+        /// <summary>
+        /// Blocks the caller thread until this ExecutionQueue has completed all the jobs 
+        /// in the queue and goes to sleep.
+        /// </summary>
+        public void WaitEmpty()
+        {
+            // Sanity check.
+            if (IsSameThread)
+            {
+                throw new InvalidOperationException("Cannot use WaitEmpty() from the same thread as this ExecutionQueue.");
+            }
 
-				// Once we wake up: removes the event handler.
-				this.IsBusyChanged -= onBusyChanged; 
-			}
-		}
+            // Creates a reset event for blocking the caller thread.
+            ManualResetEvent re = CreateWaitEmptyResetEvent();
+
+            // Defines an event handler for IsBusyChanged.
+            EventHandler onBusyChanged = new EventHandler((o, e) =>
+            {
+                // This is executed in the execution queue thread.
+
+                // Checks if the object is still registered as active and
+                // not disposed. If not, returns.
+                if (IsWaitEmptyResetEventInvalid(re))
+                {
+                    return;
+                }
+
+                // Wakes the thread.
+                ExecutionQueue leq = (ExecutionQueue)o;
+                if (!leq.IsBusy && leq.QueueCount == 0)
+                {
+                    // Time to wake the thread up!
+                    re.Set();
+                }
+            });
+
+            // Adds the event handler.
+            this.IsBusyChanged += onBusyChanged;
+
+            // Don't wait if the thread is not busy.
+            if (IsBusy || QueueCount > 0)
+            {
+                // Waits!
+                re.WaitOne();
+            }
+
+            // Once we wake up: removes the event handler.
+            this.IsBusyChanged -= onBusyChanged;
+
+            // Makes sure the event is disposed and unregistered.
+            DisposeWaitEmptyResetEvent(re);
+        }
+
+        private void DisposeWaitEmptyResetEvent(ManualResetEvent re)
+        {
+            // Unregisters the event from the list.
+            lock (_syncRoot)
+            {
+                _waitEmptyResetEvents.Remove(re);
+            }
+
+            // Wakes up and disposes the event.
+            re.Set();
+            re.Dispose();
+
+            // Reregisters the event for finalization.
+            GC.ReRegisterForFinalize(re);
+        }
+
+        private bool IsWaitEmptyResetEventInvalid(ManualResetEvent re)
+        {
+            bool isInList;
+
+            lock (_syncRoot)
+            {
+                isInList = _waitEmptyResetEvents.Contains(re);
+            }
+
+            return IsDisposed || !isInList;
+        }
+
+        private ManualResetEvent CreateWaitEmptyResetEvent()
+        {
+            // Creates a reset event that is unset.
+            ManualResetEvent ret = new ManualResetEvent(false);
+
+            // Prevents the reset event from being finalized by the GC.
+            GC.SuppressFinalize(ret);
+
+            // Registers the reset event.
+            lock (_syncRoot)
+            {
+                _waitEmptyResetEvents.Add(ret);
+            }
+
+            return ret;
+        }
+
+
+
+        #endregion
 		
-		/// <summary>
-		/// Executes asynchronously an action.
-		/// </summary>
-		/// <remarks>
-		/// Beware of concurrency. Callers should ensure that the action is not going to perform
-		/// cross-thread operations, especially on the Lua state that is used by this instance.
-		/// </remarks>
-		/// <param name="action">Action to execute.</param>
-		internal void BeginAction(Action action)
-		{
-			AcceptJob(action);
-		}
-
-		#endregion
 
 		#region Job Creation
 
@@ -227,12 +304,6 @@ namespace WF.Player.Core.Threading
 			return parameters ?? new object[] { };
 		}
 
-        //private LuaValue[] ConformParameters(LuaValue[] parameters, LuaValue firstParam)
-        //{
-        //    // Conforms the parameters and then concats the first param.
-        //    return ConformParameters(parameters).ConcatBefore(firstParam);
-        //}
-
 		#endregion
 
 		#region Job Processing
@@ -246,7 +317,6 @@ namespace WF.Player.Core.Threading
                 return;
 
             // Checks if the function still exists.
-            //LuaFunction lf = _luaState.SafeGetField<LuaFunction>(obj, func);
             LuaDataContainer dc = obj as LuaDataContainer;
             if (dc == null)
                 return;
@@ -257,7 +327,6 @@ namespace WF.Player.Core.Threading
                 return;
 
             // Calls the function.
-            //_luaState.SafeCallRaw(lf, parameters);
             lf.Execute(parameters);
         }
 
@@ -270,14 +339,12 @@ namespace WF.Player.Core.Threading
 				return;
 
 			// Checks if the function still exists.
-            //LuaFunction lf = _luaState.SafeGetField<LuaFunction>(obj, func);
             IDataProvider lf = obj.GetProvider(func);
 
 			if (lf == null)
 				return;
 
 			// Calls the function.
-            //_luaState.SafeCallRaw(lf, parameters);
             lf.Execute(parameters);
 		}
 
@@ -290,7 +357,6 @@ namespace WF.Player.Core.Threading
                 return;
 
             // Calls the function.
-            //_luaState.SafeCallRaw(func, parameters);
             func.Execute(parameters);
         }
 
