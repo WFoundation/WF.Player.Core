@@ -20,17 +20,41 @@
 using System;
 using System.Threading;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace WF.Player.Core.Threading
 {
 	/// <summary>
-	/// An base class for a thread-safe, customizable queue of jobs.
+	/// A base class for a thread-safe, customizable queue of jobs.
 	/// </summary>
-	internal abstract class JobQueue : IDisposable
+	public abstract class JobQueue : IDisposable
 	{
-		#region Members
+        #region Nested Classes
 
-		private Queue<Action> jobQueue = new Queue<Action>();
+        /// <summary>
+        /// A job to execute.
+        /// </summary>
+        private class Job
+        {
+#if DEBUG
+            /// <summary>
+            /// Gets or sets the stack trace that led to this job being
+            /// accepted by the parent JobQueue.
+            /// </summary>
+            public StackTrace StackWhenAccepted { get; set; } 
+#endif
+
+            /// <summary>
+            /// Gets or sets the action to execute when running this job.
+            /// </summary>
+            public Action Action { get; set; }
+        }
+
+        #endregion
+        
+        #region Members
+
+		private Queue<Job> jobQueue = new Queue<Job>();
 		private Thread jobThread;
 		private bool isDisposed = false;
 		private bool isSleeping = true;
@@ -82,7 +106,7 @@ namespace WF.Player.Core.Threading
 				{
 					if (isDisposed)
 					{
-						throw new InvalidOperationException("This object is disposed.");
+						throw new ObjectDisposedException("jobQueue");
 					}
 
 					return jobQueue.Count;
@@ -321,7 +345,12 @@ namespace WF.Player.Core.Threading
 			// Adds the job to the queue.
 			lock (this.syncRoot)
 			{
-				this.jobQueue.Enqueue(job);
+                this.jobQueue.Enqueue(new Job() { 
+                    Action = job
+#if DEBUG
+                    , StackWhenAccepted = new StackTrace()  
+#endif
+                });
 			}
 
 			// Makes sure the thread is running.
@@ -397,7 +426,7 @@ namespace WF.Player.Core.Threading
 					// The thread is waking up.
 					IsSleeping = false;
 
-					Action nextJob = null;
+					Job nextJob = null;
 					int jobsLeftToDo = 0;
 
 					// Gets the next job, if any.
@@ -419,7 +448,7 @@ namespace WF.Player.Core.Threading
 					// If there is a job to execute, do it.
 					if (nextJob != null)
 					{
-						nextJob();
+						nextJob.Action();
 						jobsLeftToDo--;
 					}
 

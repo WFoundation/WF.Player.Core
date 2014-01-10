@@ -24,7 +24,7 @@ namespace WF.Player.Core.Threading
 	/// <summary>
 	/// A thread-safe queue of actions to be defered and executed on a trigger.
 	/// </summary>
-	internal class ActionPump : JobQueue
+	public class ActionPump : JobQueue
 	{			
 		#region Properties
 

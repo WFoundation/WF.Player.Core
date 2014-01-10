@@ -288,11 +288,13 @@ namespace WF.Player.Core.Engines
 				{
 					cartridge.DataContainer = null;
 					cartridge = null;
+                    RaisePropertyChanged("Cartridge", false);
 				}
 				if (player != null)
 				{
 					player.DataContainer = null;
 					player = null;
+                    RaisePropertyChanged("Player", false);
 				}
 
 				// Unhooks WIGInternal.
@@ -745,8 +747,6 @@ namespace WF.Player.Core.Engines
 
 			// Various sets.
 			this.cartridge = cartridge;
-            ////((LuaTable)luaState.Globals["Env"])["CartFilename"] = cartridge.Filename;
-            //safeLuaState.SafeSetGlobal("Env.CartFilename", cartridge.Filename);
             dataFactory.GetContainerAt("Env")["CartFilename"] = cartridge.Filename;
 
 			// Loads the cartridge code.
@@ -796,6 +796,11 @@ namespace WF.Player.Core.Engines
 
             // State change.
             GameState = EngineGameState.Initialized;
+
+            // Notifies of the property changes.
+            RaisePropertyChanged("Cartridge", false);
+            RaisePropertyChanged("Player", false);
+
 		}
 
 		public void Reset()
