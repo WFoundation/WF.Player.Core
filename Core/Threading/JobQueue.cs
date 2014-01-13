@@ -31,8 +31,157 @@ namespace WF.Player.Core.Threading
 	{
         #region Nested Classes
 
+		private class FilterQueue
+		{
+			#region Members
+			private Queue<Job> _queue;
+			private Dictionary<string, int> _ignoredTags;
+			private int _dequeuesSinceLastIgnoreCheck = 0;
+			#endregion
+
+			#region Properties
+			/// <summary>
+			/// Gets how many elements this queue has.
+			/// </summary>
+			public int Count
+			{
+				get
+				{
+					return _queue.Count;
+				}
+			} 
+			#endregion
+
+			#region Constructors
+			public FilterQueue()
+			{
+				_queue = new Queue<Job>();
+				_ignoredTags = new Dictionary<string, int>();
+			} 
+			#endregion
+
+			/// <summary>
+			/// Marks a tag to be ignored until the current element at
+			/// the end of the queue is dequeued.
+			/// </summary>
+			/// <remarks>
+			/// If elements are added to the queue before the current
+			/// element at the end of queue is reached, the tag stops 
+			/// to be ignored anyway when this last element is dequeued.
+			/// 
+			/// If this queue is empty at the time of this call, this
+			/// method does nothing.
+			/// </remarks>
+			/// <param name="tag">Non-null tag.</param>
+			public void IgnoreTagUntilCurrentEndOfQueue(string tag)
+			{
+				// Empty queue: do nothing.
+				int count = _queue.Count;
+				if (count == 0)
+				{
+					return;
+				}
+
+				// Marks the tag to be ignored.
+				_ignoredTags[tag] = count;
+			}
+
+			/// <summary>
+			/// Adds a job to the end of the queue.
+			/// </summary>
+			/// <param name="job"></param>
+			public void Enqueue(Job job)
+			{
+				_queue.Enqueue(job);
+			}
+
+			/// <summary>
+			/// Removes and returns the first job that is not marked
+			/// to be ignored, starting at the job at the beginning of
+			/// the queue.
+			/// </summary>
+			/// <returns>The first non-ignored job or null if the queue does not
+			/// contain any non-ignored job.</returns>
+			public Job Dequeue()
+			{
+				// Immediate return if the queue is empty or there are
+				// no filters.
+				if (_queue.Count == 0)
+				{
+					return null;
+				}
+				else if (_ignoredTags.Count == 0)
+				{
+					return _queue.Dequeue();
+				}
+				
+				// Dequeues until a non-ignored job is found.
+				while (_queue.Count > 0)
+				{
+					// Gets the next job.
+					Job job = _queue.Dequeue();
+					_dequeuesSinceLastIgnoreCheck++;
+
+					// Immediate return if it is an untagged job.
+					if (job.Tag == null)
+					{
+						return job;
+					}
+
+					// If it is a tagged job, matches it against all
+					// ignore rules.
+					int ignoreElementsCount;
+					if (_ignoredTags.TryGetValue(job.Tag, out ignoreElementsCount))
+					{
+						// The tag has an ignore rule.
+
+						// Some elements have been already dequeued: ignoreElementsCount
+						// needs to be decremented.
+						ignoreElementsCount -= _dequeuesSinceLastIgnoreCheck;
+						_dequeuesSinceLastIgnoreCheck = 0;
+
+						// Is the rule still valid?
+						// NO -> removes the rule and returns the element.
+						// YES -> updates the rule count and continues.
+						if (ignoreElementsCount < 0)
+						{
+							// Removes the rule (it is not valid anymore).
+							_ignoredTags.Remove(job.Tag);
+
+							// Returns the element (it is not ignored anymore).
+							return job;
+						}
+						else
+						{
+							// Updates the rule count.
+							_ignoredTags[job.Tag] = ignoreElementsCount;
+
+							// Continue the loop: we need to check
+							// for another element.
+							Debug.WriteLine("JobQueue: Skipped job marked for ignore: " + job.Tag);
+						}
+					}
+				}
+
+				// No element has been found: returns null.
+				return null;
+			}
+
+			/// <summary>
+			/// Removes all jobs from the queue.
+			/// </summary>
+			/// <remarks>
+			/// All tags that are marked to be ignored are unmarked.
+			/// </remarks>
+			public void Clear()
+			{
+				_queue.Clear();
+				_ignoredTags.Clear();
+			}
+		}
+
         /// <summary>
-        /// A job to execute.
+        /// A job to execute in this queue.
         /// </summary>
         private class Job
         {
@@ -48,13 +197,18 @@ namespace WF.Player.Core.Threading
             /// Gets or sets the action to execute when running this job.
             /// </summary>
             public Action Action { get; set; }
+
+			/// <summary>
+			/// Gets or sets the tag for this job.
+			/// </summary>
+			public string Tag { get; set; }
         }
 
         #endregion
         
         #region Members
 
-		private Queue<Job> jobQueue = new Queue<Job>();
+		private FilterQueue jobQueue = new FilterQueue();
 		private Thread jobThread;
 		private bool isDisposed = false;
 		private bool isSleeping = true;
@@ -334,7 +488,8 @@ namespace WF.Player.Core.Threading
 		/// </summary>
 		/// <param name="job"></param>
 		/// <param name="wakeUpThread">If true, wakes up the thread if it is sleeping.</param>
-		protected void AcceptJob(Action job, bool wakeUpThread = true)
+		/// <param name="tag">A custom tag for this action.</param>
+		protected void AcceptJob(Action job, bool wakeUpThread = true, string tag = null)
 		{
 			// Sanity Check.
 			if (IsDisposed)
@@ -346,7 +501,8 @@ namespace WF.Player.Core.Threading
 			lock (this.syncRoot)
 			{
                 this.jobQueue.Enqueue(new Job() { 
-                    Action = job
+                    Action = job,
+					Tag = tag
 #if DEBUG
                     , StackWhenAccepted = new StackTrace()  
 #endif
@@ -395,6 +551,19 @@ namespace WF.Player.Core.Threading
 			}
 		}
 
+		/// <summary>
+		/// Removes from the job queue all jobs whose tag is equal to
+		/// a specified tag.
+		/// </summary>
+		/// <param name="tag">A tag to compare. Must not be null.</param>
+		protected void RemoveJobsWithTag(string tag)
+		{
+			lock (syncRoot)
+			{
+				jobQueue.IgnoreTagUntilCurrentEndOfQueue(tag);
+			}
+		}
+
 		private void OnContinuesOnCompletionChanged(bool newValue)
 		{
 			if (newValue && this.jobThread != null && this.jobThread.IsAlive)
@@ -438,18 +607,20 @@ namespace WF.Player.Core.Threading
 							return;
 						}
 
-						jobsLeftToDo = this.jobQueue.Count;
-						if (jobsLeftToDo > 0)
-						{
-							nextJob = this.jobQueue.Dequeue();
-						}
+						// Gets the next job, or null if none is found.
+						nextJob = this.jobQueue.Dequeue();
 					}
 
 					// If there is a job to execute, do it.
 					if (nextJob != null)
 					{
 						nextJob.Action();
-						jobsLeftToDo--;
+					}
+
+					// Gets how many jobs are still in queue.
+					lock (syncRoot)
+					{
+						jobsLeftToDo = this.jobQueue.Count;
 					}
 
 					// If there are more jobs to do and we should do them, let's go!

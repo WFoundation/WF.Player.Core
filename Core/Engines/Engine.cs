@@ -1055,7 +1055,7 @@ namespace WF.Player.Core.Engines
 			this.accuracy = accuracy;
 
 			if (GameState == EngineGameState.Playing)
-				luaExecQueue.BeginCallSelf(player, "ProcessLocation", lat, lon, alt, accuracy);
+				luaExecQueue.BeginCallSelfUnique(player, "ProcessLocation", lat, lon, alt, accuracy);
 		}
 
 		/// <summary>
@@ -1285,7 +1285,7 @@ namespace WF.Player.Core.Engines
 				// But we still need the call to happen. That is why we defer the call 
 				// to later, thanks to the execution queue.
 				if (GameState == EngineGameState.Playing)
-					luaExecQueue.BeginCallSelf(player, "ProcessLocation", lat, lon, alt, accuracy);
+					luaExecQueue.BeginCallSelfUnique(player, "ProcessLocation", lat, lon, alt, accuracy);
 			}
 
 			// Checks if an engine property has changed.
