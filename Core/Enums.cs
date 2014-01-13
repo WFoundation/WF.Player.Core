@@ -199,7 +199,7 @@ namespace WF.Player.Core
 					return 3.2808399d;
 
 				case DistanceUnit.NauticalMiles:
-					return 1d / 1852.216;
+					return Utils.GeoMathHelper.METER_NMI_COEF;
 
 				default:
 					throw new NotImplementedException(String.Format("Unexpected unit: {0} is not supported."));
