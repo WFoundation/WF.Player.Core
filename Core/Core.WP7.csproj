@@ -118,12 +118,11 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Mangatome\Eluant\Eluant\Eluant-wp7.csproj">
+    <ProjectReference Include="..\Eluant\Eluant\Eluant-wp7.csproj">
       <Project>{C389118D-8F19-4C8D-9493-DAD568BA2E7A}</Project>
       <Name>Eluant-wp7</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.$(TargetFrameworkProfile).Overrides.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.CSharp.targets" />
   <ProjectExtensions />
