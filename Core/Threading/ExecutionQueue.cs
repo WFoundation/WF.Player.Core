@@ -93,7 +93,7 @@ namespace WF.Player.Core.Threading
 		#region Begin Actions
 
 		/// <summary>
-		/// Executes asynchronously a call to a Lua function on the thread this LuaExecutionQueue is associated with.
+		/// Executes asynchronously a call to a Lua function on the thread this ExecutionQueue is associated with.
 		/// </summary>
 		/// <remarks>This method returns once the call job is queued.</remarks>
 		/// <param name="obj">IDataContainer that contains the function.</param>
@@ -106,7 +106,7 @@ namespace WF.Player.Core.Threading
 		}
 
 		/// <summary>
-		/// Executes asynchronously a call to a Lua function on the thread this LuaExecutionQueue is associated with.
+		/// Executes asynchronously a call to a Lua function on the thread this ExecutionQueue is associated with.
 		/// </summary>
 		/// <remarks>This method returns once the call job is queued.</remarks>
 		/// <param name="obj">Table entity that contains the function.</param>
@@ -120,7 +120,7 @@ namespace WF.Player.Core.Threading
 		}
 
         /// <summary>
-        /// Executes asynchronously a call to a Lua function on the thread this LuaExecutionQueue is associated with.
+        /// Executes asynchronously a call to a Lua function on the thread this ExecutionQueue is associated with.
         /// </summary>
         /// <remarks>This method returns once the call job is queued.</remarks>
         /// <param name="func">Function to call.</param>
@@ -132,7 +132,7 @@ namespace WF.Player.Core.Threading
         }
 
 		/// <summary>
-		/// Executes asynchronously a call to a Lua self-function on the thread this LuaExecutionQueue is associated with.
+		/// Executes asynchronously a call to a Lua self-function on the thread this ExecutionQueue is associated with.
 		/// </summary>
 		/// <remarks>This method returns once the call job is queued.</remarks>
 		/// <param name="obj">IDataContainer that contains the self-function.</param>
@@ -146,7 +146,7 @@ namespace WF.Player.Core.Threading
 		}
 
 		/// <summary>
-		/// Executes asynchronously a call to a Lua self-function on the thread this LuaExecutionQueue is associated with.
+		/// Executes asynchronously a call to a Lua self-function on the thread this ExecutionQueue is associated with.
 		/// </summary>
 		/// <remarks>This method returns once the call job is queued.</remarks>
 		/// <param name="obj">Entity that contains the self-function.</param>
@@ -161,12 +161,38 @@ namespace WF.Player.Core.Threading
             AcceptJob(GetJob(cont, func, ConformParameters(parameters), true));
 		}
 
+		/// <summary>
+		/// Executes asynchronously a call to a Lua self-function on the thread this ExecutionQueue is associated with,
+		/// after making sure that calls of the same function that are queued but yet to execute
+		/// are being removed from the queue.
+		/// </summary>
+		/// <remarks>This method returns once the call job is queued.</remarks>
+		/// <param name="obj">Entity that contains the self-function.</param>
+		/// <param name="func">Field name in underlying LuaTable of <paramref name="obj"/> that corresponds to the 
+		/// self-function to call. Cannot be null.</param>
+		/// <param name="parameters">Optional parameters to pass to the function. <paramref name="obj"/> is automatically
+		/// added as first parameter.</param>
+		public void BeginCallSelfUnique(WherigoObject obj, string func, params object[] parameters)
+		{
+			if (func == null)
+			{
+				throw new ArgumentNullException("func");
+			}
+			
+			// Removes all job for this function.
+			RemoveJobsWithTag(func);
+
+			// Conforms the parameters and enqueues a job.
+			IDataContainer cont = obj.DataContainer;
+			AcceptJob(GetJob(cont, func, ConformParameters(parameters), true), tag: func);
+		}
+
         /// <summary>
         /// Executes asynchronously an action.
         /// </summary>
         /// <remarks>
         /// Beware of concurrency. Callers should ensure that the action is not going to perform
-        /// cross-thread operations, especially on the Lua state that is used by this instance.
+        /// cross-thread operations.
         /// </remarks>
         /// <param name="action">Action to execute.</param>
         internal void BeginAction(Action action)
