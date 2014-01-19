@@ -167,35 +167,15 @@ namespace WF.Player.Core.Engines
 
 			// Base objects.
 			platformHelper = platform;
-
-			//luaState = new LuaRuntime();
-
-			//safeLuaState = new Utils.SafeLua(luaState)
-			//safeLuaState = new Utils.SafeLua()
-			//{
-			//    RethrowsExceptions = true,
-			//    RethrowsDisposedLuaExceptions = false
-			//};
-
 			timers = new Dictionary<int, System.Threading.Timer>();
-
-			//uiObjects = new Dictionary<int, UIObject>();
 			dataFactory = new LuaDataFactory(new LuaDataFactoryHelper(this));
-
 			geoMathHelper = new GeoMathHelper(dataFactory);
 
 			// Create Wherigo environment
 			wherigo = new WIGInternalImpl(this, dataFactory);
 
 			// Set definitions from Wherigo for ShowScreen
-			//LuaTable wherigoTable = safeLuaState.SafeGetGlobal<LuaTable>("Wherigo");
 			LuaDataContainer wherigoTable = dataFactory.GetContainerAt("Wherigo");
-			//safeLuaState.SafeSetField(wherigoTable, "MAINSCREEN", (int)ScreenType.Main);
-			//safeLuaState.SafeSetField(wherigoTable, "LOCATIONSCREEN", (int)ScreenType.Locations);
-			//safeLuaState.SafeSetField(wherigoTable, "ITEMSCREEN", (int)ScreenType.Items);
-			//safeLuaState.SafeSetField(wherigoTable, "INVENTORYSCREEN", (int)ScreenType.Inventory);
-			//safeLuaState.SafeSetField(wherigoTable, "TASKSCREEN", (int)ScreenType.Tasks);
-			//safeLuaState.SafeSetField(wherigoTable, "DETAILSCREEN", (int)ScreenType.Details);
 			wherigoTable["MAINSCREEN"] = (int)ScreenType.Main;
 			wherigoTable["LOCATIONSCREEN"] = (int)ScreenType.Locations;
 			wherigoTable["ITEMSCREEN"] = (int)ScreenType.Items;
@@ -209,18 +189,8 @@ namespace WF.Player.Core.Engines
 			wherigoTable["LOGINFO"] = (int)LogLevel.Info;
 			wherigoTable["LOGWARNING"] = (int)LogLevel.Warning;
 			wherigoTable["LOGERROR"] = (int)LogLevel.Error;
-			//safeLuaState.SafeSetField(wherigoTable, "LOGDEBUG", (int)LogLevel.Debug);
-			//safeLuaState.SafeSetField(wherigoTable, "LOGCARTRIDGE", (int)LogLevel.Cartridge);
-			//safeLuaState.SafeSetField(wherigoTable, "LOGINFO", (int)LogLevel.Info);
-			//safeLuaState.SafeSetField(wherigoTable, "LOGWARNING", (int)LogLevel.Warning);
-			//safeLuaState.SafeSetField(wherigoTable, "LOGERROR", (int)LogLevel.Error);
 
 			// Get information about the player
-			// Create table for Env, ...
-			////luaState.Globals["Env"] = luaState.CreateTable();
-			////LuaTable env = (LuaTable)luaState.Globals["Env"];
-			//LuaTable env = safeLuaState.SafeCreateTable();
-			//safeLuaState.SafeSetGlobal("Env", env);
 			LuaDataContainer env = dataFactory.CreateContainerAt("Env");
 
 			// Set defaults
@@ -239,15 +209,6 @@ namespace WF.Player.Core.Engines
 			env["Device"] = platformHelper.Device;
 			env["DeviceID"] = platformHelper.DeviceId;
 			env["Version"] = String.Format("{0} ({1} {2})", platformHelper.ClientVersion, CorePlatform, CoreVersion);
-			//safeLuaState.SafeSetField(env, "CartFolder", platformHelper.CartridgeFolder);
-			//safeLuaState.SafeSetField(env, "SyncFolder", platformHelper.SavegameFolder);
-			//safeLuaState.SafeSetField(env, "LogFolder", platformHelper.LogFolder);
-			//safeLuaState.SafeSetField(env, "PathSep", platformHelper.PathSeparator);
-			//safeLuaState.SafeSetField(env, "Downloaded", 0.0);
-			//safeLuaState.SafeSetField(env, "Platform", String.Format("{0} ({1})", CorePlatform, platformHelper.Platform));
-			//safeLuaState.SafeSetField(env, "Device", platformHelper.Device);
-			//safeLuaState.SafeSetField(env, "DeviceID", platformHelper.DeviceId);
-			//safeLuaState.SafeSetField(env, "Version", String.Format("{0} ({1} {2})", platformHelper.ClientVersion, CorePlatform, CoreVersion));
 
 			// Creates job queues that runs in another thread.
 			luaExecQueue = new ExecutionQueue();
@@ -321,15 +282,6 @@ namespace WF.Player.Core.Engines
 				// Bye bye timers.
 				DisposeTimers();
 
-				// Bye bye UI objects.
-				//foreach (UIObject uiObject in uiObjects.Values)
-				//{
-				//    // TODO: Check, if this is correct
-				//    //					uiObject.WIGTable.Dispose(disposeManagedResources);
-				//    uiObject.WIGTable.Dispose();
-				//}
-				//uiObjects.Clear();
-
 				// Bye bye threads.
 				if (luaExecQueue != null)
 				{
@@ -352,19 +304,6 @@ namespace WF.Player.Core.Engines
 				}
 
 				// Disposes the underlying objects.
-				////if (luaState != null)
-				////{
-				////    lock (luaState)
-				////    {
-				////        luaState.Dispose();
-				////    }
-				////    luaState = null;
-				////    safeLuaState = null;
-				////}
-				//if (safeLuaState != null)
-				//{
-				//    safeLuaState.Dispose();
-				//}
 				dataFactory.Dispose();
 			}
 
@@ -760,25 +699,11 @@ namespace WF.Player.Core.Engines
 			FileFormats.Load(input, cartridge);
 
 			// Set player relevant data
-			////playerTable = (LuaTable)((LuaTable)luaState.Globals["Wherigo"])["Player"];
-			////playerTable["CompletionCode"] = cartridge.CompletionCode;
-			////playerTable["Name"] = cartridge.Player;
-			//playerTable = safeLuaState.SafeGetGlobal<LuaTable>("Wherigo.Player");
-			//safeLuaState.SafeSetField(playerTable, "CompletionCode", cartridge.CompletionCode);
-			//safeLuaState.SafeSetField(playerTable, "Name", cartridge.Player);
 			player = dataFactory.GetWherigoObjectAt<Character>("Wherigo.Player");
 			LuaDataContainer playerTable = (LuaDataContainer)player.DataContainer;
 			playerTable["CompletionCode"] = cartridge.CompletionCode;
 			playerTable["Name"] = cartridge.Player;
 
-			////LuaTable objLoc = (LuaTable)playerTable["ObjectLocation"];
-			////objLoc["latitude"] = lat;
-			////objLoc["longitude"] = lon;
-			////objLoc["altitude"] = alt;
-			//LuaTable objLoc = safeLuaState.SafeGetField<LuaTable>(playerTable, "ObjectLocation");
-			//safeLuaState.SafeSetField(objLoc, "latitude", lat);
-			//safeLuaState.SafeSetField(objLoc, "longitude", lon);
-			//safeLuaState.SafeSetField(objLoc, "altitude", alt);
 			LuaDataContainer objLoc = playerTable.GetContainer("ObjectLocation");
 			objLoc["latitude"] = lat;
 			objLoc["longitude"] = lon;
@@ -788,13 +713,6 @@ namespace WF.Player.Core.Engines
 			byte[] luaBytes = cartridge.Resources[0].Data;
 
 			// TODO: Asynchronize below!
-
-			// Runs the init code and stores the Cartridge container.
-			////cartridgeTable = (LuaTable)luaState.DoString(luaBytes, cartridge.Filename)[0];
-			////playerTable["Cartridge"] = cartridgeTable;
-			//cartridgeTable = (LuaTable)safeLuaState.SafeDoString(luaBytes, Cartridge.Filename)[0];
-			//safeLuaState.SafeSetField(playerTable, "Cartridge", cartridgeTable);
-			//cartridge = dataFactory.GetWherigoObject<Cartridge>(cartridgeTable);
 
 			// Runs the init code.
 			LuaDataContainer cartridgeTable = dataFactory.LoadProvider(luaBytes, cartridge.Filename).FirstContainerOrDefault();
@@ -872,8 +790,7 @@ namespace WF.Player.Core.Engines
 
 			// The last one stops the sound ;)
 			// Should be done immediately before the handler is gone
-			if (StopSoundsRequested != null)
-				StopSoundsRequested(this, new WherigoEventArgs(cartridge));
+			RaiseStopSoundsRequested(false);
 
 			GameState = EngineGameState.Initialized;
 		}
@@ -987,10 +904,6 @@ namespace WF.Player.Core.Engines
 
 		public void FreeMemory()
 		{
-			////lock (luaState) {
-			////    luaState.DoString ("collectgarbage(\"collect\")");
-			////}
-			//safeLuaState.SafeDoString("collectgarbage(\"collect\")");
 			dataFactory.RunScript("collectgarbage(\"collect\")");
 		}
 
@@ -1191,11 +1104,6 @@ namespace WF.Player.Core.Engines
 			/// This below executes in the lua exec thread, so it's fine to block.
 
 			// Gets more info about the thing.
-			//LuaValue thingLoc;
-			//lock (luaState)
-			//{
-			//    thingLoc = t.WIGTable["ObjectLocation"];
-			//}
 			ZonePoint thingLoc = t.ObjectLocation;
 			bool isZone = t is Zone;
 
@@ -1209,21 +1117,6 @@ namespace WF.Player.Core.Engines
 				return;
 			}
 
-			//LuaVararg ret;
-			//if (isZone)
-			//{
-			//    lock (luaState)
-			//    {
-			//        ret = wherigo.VectorToZone(playerTable["ObjectLocation"], t.WIGTable);
-			//    }
-			//}
-			//else
-			//{
-			//    lock (luaState)
-			//    {
-			//        ret = wherigo.VectorToPoint(playerTable["ObjectLocation"], thingLoc);
-			//    }
-			//}
 			LocationVector ret;
 			if (isZone)
 			{
@@ -1233,11 +1126,6 @@ namespace WF.Player.Core.Engines
 			{
 				ret = geoMathHelper.VectorToPoint(player.ObjectLocation, thingLoc);
 			}
-
-			//if (!(ret [0] is LuaNil) && !(ret [1] is LuaNil)) {
-			//    t.VectorFromPlayer = new LocationVector ((Distance)GetTable ((LuaTable)ret [0]), (double)ret [1].ToNumber ());
-			//    RaisePropertyChangedInObject (t, "VectorFromPlayer");
-			//}
 
 			t.VectorFromPlayer = ret;
 			RaisePropertyChangedInObject(t, "VectorFromPlayer");
@@ -1369,10 +1257,6 @@ namespace WF.Player.Core.Engines
 		/// </summary>
 		internal void HandleInventoryChanged(Thing obj, Thing from, Thing to)
 		{
-			//Thing obj = dataFactory.GetWherigoObject<Thing>(ltThing);
-			//Thing from = dataFactory.GetWherigoObject<Thing>(ltFrom);
-			//Thing to = dataFactory.GetWherigoObject<Thing>(ltTo);
-
 			// Raises the PropertyChanged events on the objects.
 			if (obj != null)
 				RaisePropertyChangedInObject((UIObject)obj, "Container");
@@ -1502,38 +1386,6 @@ namespace WF.Player.Core.Engines
 		/// </summary>
 		internal void HandleZoneStateChanged(IEnumerable<Zone> zones)
 		{
-			//List<Zone> list = new List<Zone>();
-
-			//// Generates the list of zones.
-			//IEnumerator<KeyValuePair<LuaValue,LuaValue>> z;
-			//bool run = true;
-			//lock (luaState)
-			//{
-			//    z = zones.GetEnumerator();
-			//    run = z.MoveNext();
-			//}
-			//while (run)
-			//{
-			//    // Gets a zone from the table.
-			//    Zone zone = (Zone)GetTable((LuaTable)z.Current.Value);
-
-			//    // Performs notifications.
-			//    if (zone != null)
-			//    {
-			//        RaisePropertyChangedInObject((UIObject)zone, "State");
-			//        RefreshThingVectorFromPlayerAsync(zone);
-			//    }
-
-			//    // Adds the zone to the list.
-			//    list.Add(zone);
-
-			//    // Keep on running?
-			//    lock (luaState)
-			//    {
-			//        run = z.MoveNext();
-			//    }
-			//}
-
 			// Generates the list of zones.
 			foreach (var zone in zones)
 			{
@@ -1583,23 +1435,10 @@ namespace WF.Player.Core.Engines
 		/// </summary>
 		internal void HandleTimerStarted(Timer timer)
 		{
-
-			// Gets the object index of the Timer that started.
-			//int objIndex;
-			//lock (luaState)
-			//{
-			//    objIndex = Convert.ToInt32((double)t["ObjIndex"].ToNumber()); 
-			//}
-
 			// Starts a timer.
 			CreateAndStartInternalTimer(timer.ObjIndex);
 
 			// Call OnStart of this timer
-			//lock (luaState)
-			//{
-			//    t.CallSelf("Start");
-			//}
-			//timer.Call("Start");
 			timer.CallSelf("Start");
 		}
 
@@ -1632,12 +1471,6 @@ namespace WF.Player.Core.Engines
 		/// </summary>
 		internal void HandleTimerStopped(Timer timerEntity)
 		{
-			//int objIndex;
-			//lock (luaState)
-			//{
-			//    objIndex = Convert.ToInt32((double)t["ObjIndex"].ToNumber()); 
-			//}
-			//Timer timerEntity = dataFactory.GetWherigoObject<Timer>(t);
 			int objIndex = timerEntity.ObjIndex;
 
 			// TODO: What happens if the timer is not in the dictionary?
@@ -1658,11 +1491,6 @@ namespace WF.Player.Core.Engines
 			}
 
 			// Call OnStop of this timer
-			//lock (luaState)
-			//{
-			//    t.CallSelf("Stop");
-			//}
-			//timerEntity.Call("Stop");
 			timerEntity.CallSelf("Stop");
 		}
 
@@ -1674,35 +1502,16 @@ namespace WF.Player.Core.Engines
 		{
 			int objIndex = (int)source;
 
-			////LuaTable t = GetObject(objIndex).WIGTable;
-			//LuaTable t = dataFactory.GetNativeContainer(objIndex);
 			LuaDataContainer t = dataFactory.GetContainer(objIndex);
 
 			// Gets the ZTimer's properties.
-			//LuaValue elapsedRaw = safeLuaState.SafeGetField<LuaValue>(t, "Elapsed");
-			//LuaValue remainingRaw = safeLuaState.SafeGetField<LuaValue>(t, "Remaining");
-			////lock (luaState)
-			////{
-			////    elapsedRaw = t["Elapsed"];
-			////    remainingRaw = t["Remaining"]; 
-			////}
-			//if (elapsedRaw == null || elapsedRaw is LuaNil)
-			//    elapsedRaw = 0.0d;
 			double elapsedRaw = t.GetDouble("Elapsed").GetValueOrDefault();
 			double? remainingRaw = t.GetDouble("Remaining");
-			//if (remainingRaw == null || remainingRaw is LuaNil)
 			if (remainingRaw == null)
 			{
-				////lock (luaState)
-				////{
-				////    remainingRaw = t["Duration"];
-				////}
-				//remainingRaw = safeLuaState.SafeGetField<LuaValue>(t, "Duration");
 				remainingRaw = t.GetDouble("Duration").GetValueOrDefault();
 			}
 
-			//double elapsed = (double)(LuaNumber)elapsedRaw.ToNumber() * internalTimerDuration;
-			//double remaining = (double)(LuaNumber)remainingRaw.ToNumber() * internalTimerDuration;
 			double elapsed = elapsedRaw * internalTimerDuration;
 			double remaining = remainingRaw.Value * internalTimerDuration;
 
@@ -1718,13 +1527,6 @@ namespace WF.Player.Core.Engines
 				shoudTimerTick = true;
 			}
 
-			////lock (luaState)
-			////{
-			////    t["Elapsed"] = elapsed / internalTimerDuration;
-			////    t["Remaining"] = remaining / internalTimerDuration; 
-			////}
-			//safeLuaState.SafeSetField(t, "Elapsed", elapsed / internalTimerDuration);
-			//safeLuaState.SafeSetField(t, "Remaining", remaining / internalTimerDuration);
 			t["Elapsed"] = elapsed / internalTimerDuration;
 			t["Remaining"] = remaining / internalTimerDuration;
 
