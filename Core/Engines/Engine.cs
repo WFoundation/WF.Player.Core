@@ -1167,7 +1167,7 @@ namespace WF.Player.Core.Engines
 			}
 
 			// Refreshes the zone in order to make it fire its events.
-			if (obj is Zone && "Active".Equals(attribute))
+			if (obj is Zone && ("Active".Equals(attribute) || "Points".Equals(attribute)))
 			{
 				// If ProcessLocation is called during initialization, Lua crashes. 
 				// But we still need the call to happen. That is why we defer the call 
