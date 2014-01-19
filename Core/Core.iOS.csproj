@@ -131,6 +131,7 @@
     <Compile Include="Threading\JobQueue.cs" />
     <Compile Include="WherigoCollection.cs" />
     <Compile Include="CoordBounds.cs" />
+    <Compile Include="Utils\GeoMathHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
