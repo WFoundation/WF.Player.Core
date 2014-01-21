@@ -49,7 +49,6 @@ namespace WF.Player.Core.Formats
 			loaders = new List<ICartridgeLoader>();
 
 			loaders.Add(new FileGWC());
-			loaders.Add(new FileGWZ());
 		}
 
 		#endregion
@@ -63,7 +62,7 @@ namespace WF.Player.Core.Formats
         /// <returns>FileFormat of given stream.</returns>
 		public static CartridgeFileFormat GetFileFormat(Stream inputStream)
         {
-			CartridgeFileFormat current;
+			CartridgeFileFormat current = CartridgeFileFormat.Unknown;
 
 			foreach (ICartridgeLoader loader in loaders)
 			{
