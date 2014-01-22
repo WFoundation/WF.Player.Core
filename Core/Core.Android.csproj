@@ -91,6 +91,8 @@
     <Compile Include="Data\Lua\LuaDataProvider.cs" />
     <Compile Include="Data\Lua\SafeLua.cs" />
     <Compile Include="WherigoCollection.cs" />
+    <Compile Include="Utils\GeoMathHelper.cs" />
+    <Compile Include="CoordBounds.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
