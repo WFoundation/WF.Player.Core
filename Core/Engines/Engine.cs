@@ -235,7 +235,10 @@ namespace WF.Player.Core.Engines
 			GC.SuppressFinalize(this);
 		}
 
-		private void Dispose(bool disposeManagedResources, bool noStateChange = false)
+		private void Dispose(
+			bool disposeManagedResources, 
+			EngineGameState? duringState = EngineGameState.Disposing, 
+			EngineGameState? afterState = EngineGameState.Disposed)
 		{
 			// Sets the state as disposed. Returns if it is already.
 			lock (syncRoot)
@@ -243,6 +246,12 @@ namespace WF.Player.Core.Engines
 				if (gameState == EngineGameState.Disposed)
 				{
 					return;
+				}
+
+				// State change?
+				if (duringState.HasValue)
+				{
+					GameState = duringState.Value; 
 				}
 
 				// Safe lua goes into disposal mode.
@@ -305,11 +314,12 @@ namespace WF.Player.Core.Engines
 
 				// Disposes the underlying objects.
 				dataFactory.Dispose();
-			}
 
-			if (!noStateChange)
-			{
-				gameState = EngineGameState.Disposed;
+				// State change.
+				if (afterState.HasValue)
+				{
+					GameState = afterState.Value;
+				}
 			}
 		}
 
@@ -584,18 +594,20 @@ namespace WF.Player.Core.Engines
 					{
 						gameState = value;
 					}
-					RaisePropertyChanged("GameState");
 
 					// Checks if IsReady needs to be changed.
 					bool newIsReady = value != EngineGameState.Uninitialized
 						&& value != EngineGameState.Initializing
 						&& value != EngineGameState.Disposed
-						&& value != EngineGameState.Uninitializing;
+						&& value != EngineGameState.Uninitializing
+						&& value != EngineGameState.Disposing;
 					if (newIsReady != IsReady)
 					{
 						// Changes IsReady.
 						IsReady = newIsReady;
 					}
+
+					RaisePropertyChanged("GameState");
 				}
 			}
 		}
@@ -733,11 +745,8 @@ namespace WF.Player.Core.Engines
 			// Sanity checks.
 			CheckStateIs(EngineGameState.Initialized, "The engine is not in state Initialized.", true);
 
-			// State change.
-			GameState = EngineGameState.Uninitializing;
-
-			// Silent dispose.
-			Dispose(true, true);
+			// Silent dispose: Uninitializing during dispose, no state change after.
+			Dispose(true, EngineGameState.Uninitializing, null);
 
 			// Reinit instance.
 			InitInstance(this.platformHelper);
@@ -1579,6 +1588,7 @@ namespace WF.Player.Core.Engines
 		/// <param name="propName">Name of the property to raise.</param>
 		protected void RaisePropertyChanged(string propName)
 		{
+			// Raises this event in the UI thread, using the pump.
 			RaisePropertyChanged(propName, true);
 		}
 
@@ -1591,6 +1601,25 @@ namespace WF.Player.Core.Engines
 			// Throws an exception if there is no handler for this.
 			if (!platformHelper.CanDispatchOnUIThread)
 				throw new InvalidOperationException("Unable to dispatch on UI Thread. Make sure to construct Engine with a IPlatformHelper that implements DispatchOnUIThread() and has CanDispatchOnUIThread return true.");
+
+			// The pump cannot be used when the engine is resetting or disposing.
+			// In those cases, a direct UI dispatch is forced.
+			if (usePump)
+			{
+				bool isNotReadyForPump = false;
+				EngineGameState currentGameState;
+				lock (syncRoot)
+				{
+					currentGameState = gameState;
+					isNotReadyForPump = !isReady && gameState != EngineGameState.Initializing;
+				}
+
+				if (isNotReadyForPump)
+				{
+					System.Diagnostics.Debug.WriteLine("Engine: WARNING: Cannot use UI dispatch pump in state {0}, forced direct.",  currentGameState.ToString());
+					usePump = false;
+				}
+			}
 
 			if (usePump)
 			{
@@ -1880,6 +1909,9 @@ namespace WF.Player.Core.Engines
 				case EngineGameState.Disposed:
 					throw new ObjectDisposedException("Engine instance", "The engine has been disposed.");
 
+				case EngineGameState.Disposing:
+					throw new InvalidOperationException("The engine is disposing.");
+
 				default:
 					return;
 			}
@@ -1968,6 +2000,7 @@ namespace WF.Player.Core.Engines
 		Resuming,
 		Stopping,
 		Paused,
+		Disposing,
 		Disposed
 	}
 
