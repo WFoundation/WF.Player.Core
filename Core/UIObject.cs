@@ -85,7 +85,7 @@ namespace WF.Player.Core
 		public string HTML {
 			get {
 				if (_html == null) {
-					_html = "<html><body><center>" + DataContainer.GetString("Description").ReplaceHTMLScriptMarkup().ReplaceMarkdown() + "</center></body></html>";
+					_html = DataContainer.GetString("Description").ReplaceHTMLScriptMarkup().ReplaceMarkdown(); // + "</center></body></html>";
 				}
 				return _html;
 			}

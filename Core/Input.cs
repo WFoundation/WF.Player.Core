@@ -80,7 +80,7 @@ namespace WF.Player.Core
 		/// <value>The text.</value>
 		public string HTML {
 			get {
-				return "<html><body><center>" + DataContainer.GetString("Text").ReplaceHTMLScriptMarkup().ReplaceMarkdown() + "</center></body></html>";
+				return DataContainer.GetString("Text").ReplaceHTMLScriptMarkup().ReplaceMarkdown(); // + "</center></body></html>";
 			}
 		}
 

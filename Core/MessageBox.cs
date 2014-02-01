@@ -35,7 +35,7 @@ namespace WF.Player.Core
 		/// <value>The text.</value>
 		public string HTML {
 			get {
-				return "<html><body><center>" + Text.ReplaceMarkdown() + "</center></body></html>";
+				return Text.ReplaceMarkdown(); // + "</center></body></html>";
 			}
 		}
 

@@ -111,11 +111,15 @@
     <Folder Include="Utils\" />
     <Folder Include="Threading\" />
     <Folder Include="Data\" />
+    <Folder Include="lib\" />
+    <Folder Include="lib\armeabi\" />
+    <Folder Include="lib\armeabi-v7a\" />
+    <Folder Include="lib\x86\" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidNativeLibrary Include="Libs\armeabi\liblua5.1.so" />
-    <AndroidNativeLibrary Include="Libs\armeabi-v7a\liblua5.1.so" />
-    <AndroidNativeLibrary Include="Libs\x86\liblua5.1.so" />
+    <AndroidNativeLibrary Include="lib\armeabi\liblua5.1.so" />
+    <AndroidNativeLibrary Include="lib\armeabi-v7a\liblua5.1.so" />
+    <AndroidNativeLibrary Include="lib\x86\liblua5.1.so" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Eluant\Eluant\Eluant.Android.csproj">
