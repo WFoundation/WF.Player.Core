@@ -538,6 +538,16 @@ namespace WF.Player.Core
         }
 
 		/// <summary>
+		/// Gets if this cartridge is fully loaded, including its metadata,
+		/// and game resources.
+		/// </summary>
+		public bool IsLoaded
+		{
+			get;
+			internal set;
+		}
+
+		/// <summary>
 		/// Gets if the cartridge is open source, i.e. the source is availible for download.
 		/// </summary>
 		/// <value><c>true</c> if this instance is open source; otherwise, <c>false</c>.</value>

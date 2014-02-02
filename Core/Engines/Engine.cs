@@ -690,6 +690,7 @@ namespace WF.Player.Core.Engines
 
 		#region Game Operations (Init, Start...)
 
+		#region Init
 		/// <summary>
 		/// Initializes this Engine with the data of a Cartridge, loaded from a stream.
 		/// </summary>
@@ -703,12 +704,37 @@ namespace WF.Player.Core.Engines
 			// State change.
 			GameState = EngineGameState.Initializing;
 
-			// Various sets.
-			this.cartridge = cartridge;
-			dataFactory.GetContainerAt("Env")["CartFilename"] = cartridge.Filename;
-
 			// Loads the cartridge code.
 			FileFormats.Load(input, cartridge);
+
+			// Performs the init.
+			InitCore(cartridge);
+		}
+
+		/// <summary>
+		/// Initializes this Engine with the data of a Cartridge that has been 
+		/// previously loaded.
+		/// </summary>
+		/// <param name="cartridge">Cartridge object to init.</param>
+		public void Init(Cartridge cartridge)
+		{
+			// Sanity checks.
+			CheckStateIs(EngineGameState.Uninitialized, "The engine cannot be initialized in this state", true);
+			if (!cartridge.IsLoaded)
+				throw new InvalidOperationException("The cartridge is not loaded. Use Init(Stream, Cartridge) instead.");
+
+			// State change.
+			GameState = EngineGameState.Initializing;
+
+			// Performs the init.
+			InitCore(cartridge);
+		}
+
+		private void InitCore(Cartridge cart)
+		{
+			// Various sets.
+			this.cartridge = cart;
+			dataFactory.GetContainerAt("Env")["CartFilename"] = cartridge.Filename;
 
 			// Set player relevant data
 			player = dataFactory.GetWherigoObjectAt<Character>("Wherigo.Player");
@@ -737,9 +763,13 @@ namespace WF.Player.Core.Engines
 			// Notifies of the property changes.
 			RaisePropertyChanged("Cartridge", false);
 			RaisePropertyChanged("Player", false);
+		} 
+		#endregion
 
-		}
-
+		/// <summary>
+		/// Resets the engine, unloading the current cartridge and restoring
+		/// this instance to its original state.
+		/// </summary>
 		public void Reset()
 		{
 			// Sanity checks.

@@ -195,6 +195,9 @@ namespace WF.Player.Core.Formats
 						i++;
 					}
 				}
+
+				// The cartridge has been fully loaded.
+				cart.IsLoaded = true;
 			}
 			catch (Exception e)
 			{
