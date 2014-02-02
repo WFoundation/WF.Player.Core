@@ -30,9 +30,11 @@ using WF.Player.Core.Data.Lua;
 
 namespace WF.Player.Core.Formats
 {
+	/// <summary>
+	/// A parser and generator of Wherigo save files.
+	/// </summary>
 	internal class FileGWS
 	{
-		
 		 /*
 		 Save File Data Format Emulator (GWS File)
 		 
@@ -81,10 +83,7 @@ namespace WF.Player.Core.Formats
 		 08: object + 4 byte length of type name string 
 		 */
 
-        //private SafeLua _luaState;
 		private Cartridge _cartridgeEntity;
-        //private LuaTable _cartridge;
-        //private LuaTable _player;
         private LuaDataContainer _cartridge;
         private LuaDataContainer _player;
 		private IPlatformHelper _platformHelper;
@@ -101,21 +100,26 @@ namespace WF.Player.Core.Formats
 			IPlatformHelper platformHelper, 
 			LuaDataFactory dataFactory)
 		{
-            //this._luaState = safeLuaState;
 			this._dataFactory = dataFactory;
+
 			this._cartridgeEntity = cart;
-            //this._cartridge = dataFactory.GetNativeContainer(cart);
-            //this._player = dataFactory.GetNativeContainer(player);
             this._cartridge = (LuaDataContainer)cart.DataContainer;
             this._player = (LuaDataContainer)player.DataContainer;
+
 			this._platformHelper = platformHelper;
+
             ZonePoint pos = player.ObjectLocation;
+
 			this._latitude = pos.Latitude;
 			this._longitude = pos.Longitude;
 			this._altitude = pos.Latitude;
 		}
 
         #region Loading
+		/// <summary>
+		/// Loads a save game for the current cartridge from a stream.
+		/// </summary>
+		/// <param name="stream">Stream to load the game from.</param>
         public void Load(Stream stream)
         {
             string objectType;
@@ -152,8 +156,7 @@ namespace WF.Player.Core.Formats
             // If not, than ask, if we should go on, even it could get problems.
 
             int numOfObjects = input.ReadInt32();
-            //int numAllZObjects = _luaState.SafeCount(_luaState.SafeGetField<LuaTable>(_cartridge, "AllZObjects"));
-			_allZObjects = _cartridge.GetContainer("AllZObjects"); //.GetWherigoObjectList<WherigoObject>("AllZObjects");
+			_allZObjects = _cartridge.GetContainer("AllZObjects");
             int numAllZObjects = _allZObjects.Count;
 
 			for (int i = 1; i < numOfObjects; i++)
@@ -161,11 +164,7 @@ namespace WF.Player.Core.Formats
                 objectType = readString(input);
 				if (i > numAllZObjects - 1)
                 {
-                    // Create new objects
-                    // TODO: Cartridge=
-                    ////_luaState.SafeDoString("Wherigo." + objectType + "()", "");
-
-                    // TODO: Object creation can be done using:
+                    // Object creation can be done using:
 					WherigoObject wo = _dataFactory.CreateWherigoObject(objectType, _cartridge);
                 }
                 else
@@ -188,8 +187,7 @@ namespace WF.Player.Core.Formats
 			// Read data for player
             readTable(input, obj);
 
-            //LuaTable allZObjects = _luaState.SafeGetField<LuaTable>(_cartridge, "AllZObjects");
-            for (int i = 0; i < numAllZObjects; i++)
+			for (int i = 0; i < numAllZObjects; i++)
             {
                 objectType = readString(input);
                 b = input.ReadByte();
@@ -200,12 +198,8 @@ namespace WF.Player.Core.Formats
                 }
                 else
                 {
-                    //obj = _luaState.SafeGetField<LuaTable>(allZObjects, i);
 					obj = (LuaDataContainer)_allZObjects.GetContainer(i);
                     readTable(input, obj);
-                    //_luaState.SafeCallSelf(obj, "deserialize");
-                    //obj.GetProvider("deserialize", true).Execute();
-					// obj.CallSelf("deserialize");
                 }
             }
 
@@ -221,11 +215,6 @@ namespace WF.Player.Core.Formats
 			// TODO: Update all lists
         }
 
-        /// <summary>
-        /// Read the table obj from the binary reader input. 
-        /// </summary>
-        /// <param name="output">BinaryReader to read the table from.</param>
-        /// <param name="obj">Table to read from binary writer.</param>
         private void readTable(BinaryReader input, LuaDataContainer obj)
         {
             string className = "unknown";
@@ -235,10 +224,9 @@ namespace WF.Player.Core.Formats
 
             if (obj != null)
             {
-                //className = _luaState.SafeGetField<LuaString>(obj, "ClassName").ToString();
                 className = obj.GetString("ClassName");
+
                 if (className != null)
-                    //rawset = _luaState.SafeGetField<LuaFunction>(obj, "rawset");
                     rawset = obj.GetProvider("rawset", false);
             }
 
@@ -281,33 +269,18 @@ namespace WF.Player.Core.Formats
 
                     case 4:
                         byte[] chunk = input.ReadBytes(input.ReadInt32());
-                        //if (className != null)
-                        //    //_luaState.SafeCallRaw(rawset, obj, key, (LuaFunction)_luaState.SafeLoadString(chunk, key.ToString()));
-                        //    rawset.Execute(obj, key, _dataFactory.LoadProvider(chunk, key.ToString()));
-                        //else
-                        //    //_luaState.SafeSetField(obj, (LuaValue)key, (LuaFunction)_luaState.SafeLoadString(chunk, key.ToString()));
                         SetField(obj, key, _dataFactory.LoadProvider(chunk, key.ToString()), rawset);
                         break;
                     case 5:
-                        //tab = _luaState.SafeCreateTable();
                         tab = _dataFactory.CreateContainer();
-                        //if (className != null)
-                        //    _luaState.SafeCallRaw(rawset, obj, key, tab);
-                        //else
-                        //    _luaState.SafeSetField(obj, (LuaValue)key, tab);
                         SetField(obj, key, tab, rawset);
-                        //readTable(input, _luaState.SafeGetField<LuaTable>(obj, (LuaValue)key));
                         readTable(input, tab);
                         break;
 					case 6:
 						// End of table
 						return;
-						break;
+						
 					case 7:
-                        //if (className != null)
-                        //    _luaState.SafeCallRaw(rawset, obj, key, _luaState.SafeGetInnerField<LuaTable>(_cartridge, "AllZObjects", input.ReadInt16()));
-                        //else
-                        //    _luaState.SafeSetField(obj, (LuaValue)key, _luaState.SafeGetInnerField<LuaTable>(_cartridge, "AllZObjects", input.ReadInt16()));
 						var objIndex = input.ReadInt16 ();
 						if (objIndex == -21555)
 							SetField (obj, key, _player, rawset);
@@ -315,12 +288,7 @@ namespace WF.Player.Core.Formats
 						SetField(obj, key, _allZObjects.GetContainer(objIndex), rawset);
                         break;
                     case 8:
-                        //tab = (LuaTable)_luaState.SafeDoString("return Wherigo." + readString(input) + "()", "")[0];
                         tab = (LuaDataContainer)_dataFactory.CreateWherigoObject(readString(input)).DataContainer;
-                        //if (className != null)
-                        //    _luaState.SafeCallRaw(rawset, obj, key, tab);
-                        //else
-                        //    _luaState.SafeSetField(obj, (LuaValue)key, tab);
                         SetField(obj, key, tab, rawset);
 
                         // After an object, there is always a table with the content
@@ -335,7 +303,7 @@ namespace WF.Player.Core.Formats
 
         private void SetField(LuaDataContainer obj, object key, object value, IDataProvider rawset)
         {
-            if (rawset != null)
+			if (rawset != null)
                 rawset.Execute(obj, key, value);
             else
                 obj[key] = value;
@@ -343,14 +311,13 @@ namespace WF.Player.Core.Formats
         #endregion
 
 		/// <summary>
-		/// Save active cartridge to a gws file.
+		/// Saves the current cartridge to a GWS file.
 		/// </summary>
 		/// <param name="stream">Stream to write the data to.</param>
 		/// <param name="saveName">Description for the save file, which is put into the file.</param>
 		public void Save(Stream stream, string saveName = "UI initiated sync")
 		{
 			BinaryWriter output = new BinaryWriter(stream);
-			byte[] className;
 
 			// Write signature and version
 			output.Write(new byte[] { 0x02, 0x0A, 0x53, 0x59, 0x4E, 0x43, 0x00 });
@@ -379,41 +346,28 @@ namespace WF.Player.Core.Formats
 			output.Write(BitConverter.GetBytes(lengthOfHeader));
 			output.BaseStream.Position = pos;
 
-            //int numAllZObjects = _luaState.SafeCount(_luaState.SafeGetField<LuaTable>(_cartridge, "AllZObjects"));
 			_allZObjects = _cartridge.GetContainer ("AllZObjects");
             int numAllZObjects = _allZObjects.Count;
 			output.Write(numAllZObjects);
 
 			for (int i = 1; i < numAllZObjects; i++)
 			{
-                //className = Encoding.UTF8.GetBytes(_luaState.SafeGetInnerField<LuaString>(_cartridge, "AllZObjects", i, "ClassName").ToString());
-				className = Encoding.UTF8.GetBytes(_allZObjects.GetContainer(i).GetString("ClassName"));
-				output.Write(className.Length);
-				output.Write(className);
+				writeString(output, _allZObjects.GetContainer(i).GetString("ClassName"));
 			}
 
-			className = Encoding.UTF8.GetBytes(_allZObjects.GetContainer(numAllZObjects-1).GetString("ClassName"));
-
 			LuaDataContainer obj = _player;
-            //className = Encoding.UTF8.GetBytes(_luaState.SafeGetField<LuaString>(obj, "ClassName").ToString());
-            className = Encoding.UTF8.GetBytes(obj.GetString("ClassName"));
-			output.Write(className.Length);
-			output.Write(className);
-            //LuaTable data = (LuaTable)_luaState.SafeCallSelf(obj, "serialize")[0];
-            //LuaDataContainer data = obj.GetProvider("serialize", true).FirstContainerOrDefault();
-            LuaDataContainer data = obj.CallSelf("serialize");
+
+			writeString(output, obj.GetString("ClassName"));
+
+			LuaDataContainer data = obj.CallSelf("serialize");
 			writeTable(output, data);
 
 			for (int i = 0; i < numAllZObjects; i++)
 			{
-                //obj = _luaState.SafeGetInnerField<LuaTable>(_cartridge, "AllZObjects", i);
 				obj = (LuaDataContainer)_allZObjects.GetContainer(i);
-                //className = Encoding.UTF8.GetBytes(_luaState.SafeGetField<LuaString>(obj, "ClassName").ToString());
-                className = Encoding.UTF8.GetBytes(obj.GetString("ClassName"));
-				output.Write(className.Length);
-				output.Write(className);
-                //data = (LuaTable)_luaState.SafeCallSelf(obj, "serialize")[0];
-                //data = obj.GetProvider("serialize", true).FirstContainerOrDefault();
+
+				writeString(output, obj.GetString("ClassName"));
+
                 data = obj.CallSelf("serialize");
 				writeTable(output, data);
 			}
@@ -431,10 +385,9 @@ namespace WF.Player.Core.Formats
 		{
 			output.Write((byte)5);
 
-            //var entry = _luaState.SafeGetEnumerator(obj);
             var entry = obj.GetEnumerator();
             while (entry.MoveNext())
-            {
+            {				
 				// Save key
 				if (entry.Key is bool)
 				{
@@ -449,9 +402,7 @@ namespace WF.Player.Core.Formats
 				if (entry.Key is string)
 				{
 					output.Write((byte)3);
-					byte[] array = Encoding.UTF8.GetBytes((string)entry.Key);
-					output.Write(array.Length);
-					output.Write(array);
+					writeString(output, (string)entry.Key);
 				}
 
 				// Save value
@@ -474,9 +425,7 @@ namespace WF.Player.Core.Formats
 				if (entry.Value is string)
 				{
 					output.Write((byte)3);
-					byte[] array = Encoding.UTF8.GetBytes((string)entry.Value);
-					output.Write(array.Length);
-					output.Write(array);
+					writeString(output, (string)entry.Value);
 				}
 				if (entry.Value is LuaDataProvider)
 				{
@@ -487,41 +436,32 @@ namespace WF.Player.Core.Formats
 				}
 				if (entry.Value is LuaDataContainer)
 				{
-                    //string className = _luaState.SafeGetField<LuaString>((LuaTable)entry.Current.Value, "ClassName").ToString();
-                    //LuaDataContainer dc = (LuaDataContainer)_dataFactory.GetContainer((LuaTable)entry.Value);
                     LuaDataContainer dc = (LuaDataContainer)entry.Value;
                     string className = dc.GetString("ClassName");
 
 					if (className != null && (className.Equals("Distance") || className.Equals("ZonePoint") || className.Equals("ZCommand") || className.Equals("ZReciprocalCommand")))
 					{
 						output.Write((byte)8);
-						byte[] array = Encoding.UTF8.GetBytes(className);
-						output.Write(array.Length);
-						output.Write(array);
-                        //LuaTable data = (LuaTable)_luaState.SafeCallSelf((LuaTable)entry.Current.Value, "serialize")[0];
-                        //LuaDataContainer data = dc.GetProvider("serialize", true).FirstContainerOrDefault();
-                        LuaDataContainer data = dc.CallSelf("serialize");
+						writeString(output, className);
+
+						LuaDataContainer data = dc.CallSelf("serialize");
 						writeTable(output, data);
 					}
 					else if (className != null && (className.Equals("ZCartridge") || className.Equals("ZCharacter") || className.Equals("ZInput") || className.Equals("ZItem") ||
 						className.Equals("ZMedia") || className.Equals("Zone") || className.Equals("ZTask") || className.Equals("ZTimer")))
 					{
 						output.Write((byte)7);
-                        //output.Write(Convert.ToInt16(_luaState.SafeGetField<LuaNumber>((LuaTable)entry.Current.Value, "ObjIndex")));
-                        output.Write(Convert.ToInt16(dc.GetInt("ObjIndex").Value));
+                       output.Write(Convert.ToInt16(dc.GetInt("ObjIndex").Value));
 					}
 					else
 					{
 						// New: It is a normal LuaTable or an unknown new ZObject type
-                        //LuaTable data = (LuaTable)entry.Current.Value;
                         LuaDataContainer data = dc;
 						if (className != null) {
 							// New: If we are here, than this is a new ZObject class, so call serialize before.
-							// New: That means, that it is  a normal LuaTable, so save it
-							//LuaFunction lf = _luaState.SafeGetField<LuaFunction>((LuaTable)entry.Current.Value, "serialize");
+							// New: That means, that it is a normal LuaTable, so save it
 							LuaDataProvider lf = dc.GetProvider ("serialize", true);
 							if (lf != null)
-            	                //data = (LuaTable)_luaState.SafeCallSelf((LuaTable)entry.Current.Value, "serialize")[0]; //().CallSelf("serialize");
                 	            data = lf.FirstContainerOrDefault ();
 						}
 						writeTable(output, data);
@@ -533,7 +473,7 @@ namespace WF.Player.Core.Formats
 		}
 
 		/// <summary>
-		/// Read a null terminated string from binary stream.
+		/// Reads a null terminated string from binary stream.
 		/// </summary>
 		/// <param name="reader">Binary stream with file as input.</param>
 		/// <returns>String, which represents the C# string.</returns>
@@ -551,7 +491,7 @@ namespace WF.Player.Core.Formats
 		}
 
 		/// <summary>
-		/// Write a null terminated string to binary stream.
+		/// Writes a null terminated string to binary stream.
 		/// </summary>
 		/// <param name="reader">Binary stream with file as output.</param>
 		/// <returns>String, which represents the C# string.</returns>	
@@ -566,7 +506,8 @@ namespace WF.Player.Core.Formats
 		}
 
 		/// <summary>
-		/// Read string from binary reader. First four bytes are the length, the next length bytes are the string. 
+		/// Reads a string from binary reader. 
+		/// First four bytes are the length, the next length bytes are the string. 
 		/// </summary>
 		/// <param name="input">BinaryReader to read from.</param>
 		/// <returns>String readed from binary reader.</returns>
@@ -574,7 +515,24 @@ namespace WF.Player.Core.Formats
 		{
 			var b = input.ReadBytes(input.ReadInt32()).ToArray();
 
-			return Encoding.UTF8.GetString(b, 0, b.Length);
+			var s = Encoding.UTF8.GetString(b, 0, b.Length);
+
+			return s;
+		}
+
+		/// <summary>
+		/// Writes a string to a binary writer. 
+		/// First four bytes are the length, the next length bytes are the string. 
+		/// </summary>
+		/// <param name="output">BinaryWriter to write the string to.</param>
+		/// <param name="str">String to write</param>
+		private void writeString(BinaryWriter output, string str)
+		{
+			var b = Encoding.UTF8.GetBytes(str);
+
+			output.Write(b.Length);
+
+			output.Write(b);
 		}
 
 		/// <summary>
