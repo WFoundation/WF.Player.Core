@@ -21,6 +21,8 @@ using System;
 using System.Linq;
 using System.Reflection;
 using Android.App;
+using Android.Content;
+using Android.Content.PM;
 using Android.OS;
 
 namespace WF.Player.Core.Engines
@@ -30,22 +32,13 @@ namespace WF.Player.Core.Engines
 	/// </summary>
 	public class AndroidPlatformHelper : IPlatformHelper
 	{
+		static PackageInfo pInfo;
+
 		#region Constructors
 
-		static AndroidPlatformHelper()
+		public AndroidPlatformHelper(Context context)
 		{
-			try
-			{
-				EntryAssemblyVersion = Version.Parse(Assembly.GetExecutingAssembly()
-						.GetCustomAttributes(false)
-						.OfType<AssemblyFileVersionAttribute>()
-						.First()
-						.Version);
-			}
-			catch (Exception)
-			{
-				EntryAssemblyVersion = null;
-			}
+			pInfo = context.PackageManager.GetPackageInfo(context.PackageName,PackageInfoFlags.Activities);
 		} 
 		#endregion
 
@@ -137,7 +130,7 @@ namespace WF.Player.Core.Engines
 		{
 			get
 			{
-				return EntryAssemblyVersion != null ? EntryAssemblyVersion.ToString() : "Unknown";
+				return String.Format("WF.Player.Android {0}.{1}", pInfo.VersionName, pInfo.VersionCode);
 			}
 
 			// The value is set by the static constructor in order to catch the UI thread's 

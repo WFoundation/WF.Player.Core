@@ -102,9 +102,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Wherigo.luac" />
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Engines\" />
     <Folder Include="Formats\" />
     <Folder Include="Live\" />
@@ -126,5 +123,8 @@
       <Project>{5913825E-0C80-4660-81B3-C2C55B35ADB6}</Project>
       <Name>Eluant.Android</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Wherigo.luac" />
   </ItemGroup>
 </Project>
