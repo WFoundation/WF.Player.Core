@@ -98,7 +98,8 @@ namespace WF.Player.Core
 		GIF = 4,
 		WAV = 17,
 		MP3 = 18,
-		FDL = 19
+		FDL = 19,
+		OGG = 21
 	}
 
 	/// <summary>
