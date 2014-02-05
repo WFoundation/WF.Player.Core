@@ -678,11 +678,22 @@ namespace WF.Player.Core.Engines
 
 		#region Internal
 
-		//private LuaExecutionQueue LuaExecQueue { get { return luaExecQueue; } }
+		/// <summary>
+		/// Gets if the events that are related to property changes in 
+		/// objects can be raised.
+		/// </summary>
+		private bool CanRaisePropertyEvent
+		{
+			get
+			{
+				EngineGameState state = GameState;
 
-		//internal SafeLua SafeLuaState { get { return safeLuaState; } }
-
-		//internal IDataFactory<LuaTable> DataFactory { get { return dataFactory; } }
+				return state != EngineGameState.Uninitialized
+					&& state != EngineGameState.Uninitializing
+					&& state != EngineGameState.Disposing
+					&& state != EngineGameState.Disposed;
+			}
+		}
 
 		#endregion
 
@@ -1667,7 +1678,14 @@ namespace WF.Player.Core.Engines
 		{
 			BeginInvokeInUIThread(() =>
 			{
-				obj.NotifyPropertyChanged(propName);
+				if (CanRaisePropertyEvent)
+				{
+					obj.NotifyPropertyChanged(propName);
+				}
+				else
+				{
+					System.Diagnostics.Debug.WriteLine("Engine: WARNING: Ignored RaisePropertyChangedInObject because engine is not in a legal state. ({0})", GameState);
+				}
 			}, true);
 		}
 
@@ -1675,7 +1693,14 @@ namespace WF.Player.Core.Engines
 		{
 			BeginInvokeInUIThread(() =>
 			{
-				obj.NotifyPropertyChanged(propName);
+				if (CanRaisePropertyEvent)
+				{
+					obj.NotifyPropertyChanged(propName);
+				}
+				else
+				{
+					System.Diagnostics.Debug.WriteLine("Engine: WARNING: Ignored RaisePropertyChangedInObject because engine is not in a legal state. ({0})", GameState);
+				}
 			}, true);
 		}
 
@@ -1796,9 +1821,16 @@ namespace WF.Player.Core.Engines
 		{
 			BeginInvokeInUIThread(() =>
 			{
-				if (AttributeChanged != null)
+				if (CanRaisePropertyEvent)
 				{
-					AttributeChanged(this, new AttributeChangedEventArgs(cartridge, obj, propName));
+					if (AttributeChanged != null)
+					{
+						AttributeChanged(this, new AttributeChangedEventArgs(cartridge, obj, propName));
+					}
+				}
+				else
+				{
+					System.Diagnostics.Debug.WriteLine("Engine: WARNING: Ignored RaiseAttributeChanged because engine is not in a legal state. ({0})", GameState);
 				}
 			}, true);
 		}
