@@ -607,7 +607,10 @@ namespace WF.Player.Core.Engines
 						IsReady = newIsReady;
 					}
 
-					RaisePropertyChanged("GameState");
+					// This event is raised bypassing the ui dispatch pump because
+					// it carries information that needs immediate processing by the UI,
+					// even if lua processing has already started.
+					RaisePropertyChangedExtended("GameState", gs, value, false);
 				}
 			}
 		}
@@ -636,7 +639,11 @@ namespace WF.Player.Core.Engines
 					{
 						isReady = value;
 					}
-					RaisePropertyChanged("IsReady");
+
+					// This event is raised bypassing the ui dispatch pump because
+					// it carries information that needs immediate processing by the UI,
+					// even if lua processing has already started.
+					RaisePropertyChangedExtended("IsReady", ir, value, false);
 				}
 			}
 		}
@@ -669,7 +676,7 @@ namespace WF.Player.Core.Engines
 					// This event is raised bypassing the ui dispatch pump because
 					// it carries information that needs immediate processing by the UI,
 					// even if lua processing has already started.
-					RaisePropertyChanged("IsBusy", false);
+					RaisePropertyChangedExtended("IsBusy", ib, value, false);
 				}
 			}
 		}
@@ -1715,6 +1722,19 @@ namespace WF.Player.Core.Engines
 			}, usePump);
 		}
 
+		private void RaisePropertyChangedExtended<T>(string propName, T oldValue, T newValue, bool usePump = true)
+		{
+			BeginInvokeInUIThread(() =>
+			{
+				PropertyChangedExtendedEventArgs<T> e = new PropertyChangedExtendedEventArgs<T>(propName, oldValue, newValue);
+
+				if (PropertyChanged != null)
+				{
+					PropertyChanged(this, e);
+				}
+			}, usePump);
+		}
+
 		private void RaiseLogMessageRequested(LogLevel level, string message)
 		{
 			BeginInvokeInUIThread(() =>
@@ -2064,6 +2084,23 @@ namespace WF.Player.Core.Engines
 		Paused,
 		Disposing,
 		Disposed
+	}
+
+	/// <summary>
+	/// Event args for a change in property with specified values.
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
+	public class PropertyChangedExtendedEventArgs<T> : PropertyChangedEventArgs
+	{
+		public virtual T OldValue { get; private set; }
+		public virtual T NewValue { get; private set; }
+
+		public PropertyChangedExtendedEventArgs(string propertyName, T oldValue, T newValue)
+			: base(propertyName)
+		{
+			OldValue = oldValue;
+			NewValue = newValue;
+		}
 	}
 
 	#endregion
