@@ -1320,7 +1320,10 @@ namespace WF.Player.Core.Engines
 		{
 			// Raises PropertyChanged on the command's owner.
 			if (command.Owner != null)
+			{
 				RaisePropertyChangedInObject(command.Owner, "Commands");
+				RaisePropertyChangedInObject(command.Owner, "ActiveCommands");
+			}
 
 			// TODO: Reciprocal commands need to raise PropertyChanged on the targets too.
 
