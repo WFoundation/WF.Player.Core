@@ -49,7 +49,7 @@ namespace WF.Player.Core
 			engine.Init(cartridgeStream, cart);
 
 			engine.RefreshLocation(firstLat, firstLon, firstAlt, accuracy);
-			engine.RefreshHeading(0);
+			//engine.RefreshHeading(0);
 
 			// Run Time: the game starts.
 

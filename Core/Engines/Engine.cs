@@ -83,7 +83,9 @@ namespace WF.Player.Core.Engines
 		private double lon = 0;
 		private double alt = 0;
 		private double accuracy = 0;
-		private double heading = 0;
+		private bool hasValidLocation = false;
+		private bool hasDirtyLocation = false;
+		//private double heading = 0;
 
 		private WherigoCollection<Thing> visibleInventory;
 		private WherigoCollection<Thing> visibleObjects;
@@ -399,16 +401,16 @@ namespace WF.Player.Core.Engines
 			}
 		}
 
-		public double Heading
-		{
-			get
-			{
-				lock (syncRoot)
-				{
-					return heading;
-				}
-			}
-		}
+		//public double Heading
+		//{
+		//    get
+		//    {
+		//        lock (syncRoot)
+		//        {
+		//            return heading;
+		//        }
+		//    }
+		//}
 
 		public double Latitude
 		{
@@ -826,6 +828,9 @@ namespace WF.Player.Core.Engines
 			RefreshVisibleObjectsAsync();
 
 			GameState = EngineGameState.Playing;
+
+			// Now that the cartridge has started, process the location.
+			ProcessLocationInternal();
 		}
 
 		/// <summary>
@@ -1019,25 +1024,51 @@ namespace WF.Player.Core.Engines
 			// Sanity checks.
 			CheckStateForLuaAccess();
 
-			this.lat = lat;
-			this.lon = lon;
-			this.alt = alt;
-			this.accuracy = accuracy;
+			lock (syncRoot)
+			{
+				this.lat = lat;
+				this.lon = lon;
+				this.alt = alt;
+				this.accuracy = accuracy;
+				this.hasValidLocation = true;
+			}
 
-			if (GameState == EngineGameState.Playing)
-				luaExecQueue.BeginCallSelfUnique(player, "ProcessLocation", lat, lon, alt, accuracy);
+			ProcessLocationInternal();
 		}
 
-		/// <summary>
-		/// Refresh compass heading of device.
-		/// </summary>
-		/// <param name="heading">New heading in degrees.</param>
-		public void RefreshHeading(double heading)
+		private void ProcessLocationInternal()
 		{
-			this.heading = heading;
+			// Checks if the location should be processed.
+			bool shouldProcessLocation = false;
+			lock (syncRoot)
+			{
+				shouldProcessLocation =
+					GameState == EngineGameState.Playing &&
+					(this.hasValidLocation || this.hasDirtyLocation);
+			}
 
-			// TODO: Give it out to the lua engine?
+			// If so, processes it.
+			if (shouldProcessLocation)
+				luaExecQueue.BeginCallSelfUnique(player, "ProcessLocation", lat, lon, alt, accuracy);
+
+			// Marks the location clean or dirty depending on whether it was
+			// processed this time or not.
+			lock (syncRoot)
+			{
+				this.hasDirtyLocation = !shouldProcessLocation;
+			}
 		}
+
+		///// <summary>
+		///// Refresh compass heading of device.
+		///// </summary>
+		///// <param name="heading">New heading in degrees.</param>
+		//public void RefreshHeading(double heading)
+		//{
+		//    this.heading = heading;
+
+		//    // TODO: Give it out to the lua engine?
+		//}
 
 		#endregion
 
@@ -1229,8 +1260,7 @@ namespace WF.Player.Core.Engines
 				// If ProcessLocation is called during initialization, Lua crashes. 
 				// But we still need the call to happen. That is why we defer the call 
 				// to later, thanks to the execution queue.
-				if (GameState == EngineGameState.Playing)
-					luaExecQueue.BeginCallSelfUnique(player, "ProcessLocation", lat, lon, alt, accuracy);
+				ProcessLocationInternal();
 			}
 
 			// Checks if an engine property has changed.
@@ -1422,7 +1452,7 @@ namespace WF.Player.Core.Engines
 			// Gets the event parameters.
 			ScreenType st = (ScreenType)Enum.ToObject(typeof(ScreenType), screen);
 			UIObject obj = st == ScreenType.Details && idxObj > -1 ? dataFactory.GetWherigoObject<UIObject>(idxObj) : null;
-
+			
 			// Raise the event.
 			RaiseScreenRequested(st, obj);
 		}
