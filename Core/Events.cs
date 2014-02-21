@@ -163,7 +163,7 @@ namespace WF.Player.Core
 		/// <summary>
 		/// Gets the status text associated with this event.
 		/// </summary>
-		public string Text;
+		public string Text { get; private set; }
 
 		internal StatusTextEventArgs(Cartridge cart, string text)
 			: base(cart)
