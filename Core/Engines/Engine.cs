@@ -888,6 +888,9 @@ namespace WF.Player.Core.Engines
 
 			GameState = EngineGameState.Playing;
 
+			// Now that the cartridge has started, process the location.
+			ProcessLocationInternal();
+
 			// Restarts the timers.
 			RestartTimers();
 		}
