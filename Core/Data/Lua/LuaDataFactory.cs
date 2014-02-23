@@ -37,7 +37,25 @@ namespace WF.Player.Core.Data.Lua
 
         private class FriendLuaDataContainer : LuaDataContainer
         {
-            internal LuaTable Table
+#if DEBUG
+			internal IEnumerable<object> KeyValuePairs
+			{
+				get
+				{
+					List<object> list = new List<object>();
+
+					var e = GetEnumerator();
+					while (e.MoveNext())
+					{
+						list.Add(e.Entry);
+					}
+
+					return list;
+				}
+			}
+#endif
+			
+			internal LuaTable Table
             {
                 get
                 {
@@ -48,7 +66,7 @@ namespace WF.Player.Core.Data.Lua
             internal FriendLuaDataContainer(LuaTable table, SafeLua lua, LuaDataFactory factory)
                 : base(table, lua, factory)
             {
-
+				
             }
         }
 

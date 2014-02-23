@@ -55,9 +55,16 @@ namespace WF.Player.Core
         private DateTime? dateLastPlayed;
         private DateTime? dateLastUpdated;
         private string device;
+		private string emptyInventoryListText;
+		private string emptyTasksListText;
+		private string emptyYouSeeListText;
+		private string emptyZonesListText;
         private string guid;
         private Media icon;
         private string iconFileURL;
+		private string internalDescription;
+		private string internalName;
+		private string internalStartingDescription;
         private bool isArchived;
         private bool isDisabled;
         private bool isOpenSource;
@@ -360,10 +367,19 @@ namespace WF.Player.Core
         /// <value>The empty inventory list text.</value>
         public string EmptyInventoryListText
         {
-            get
-            {
-				return IsBound ? DataContainer.GetString("EmptyInventoryListText") : null;
-            }
+			get
+			{
+				return emptyInventoryListText;
+			}
+
+			internal set
+			{
+				if (emptyInventoryListText != value)
+				{
+					emptyInventoryListText = value;
+					NotifyPropertyChanged("EmptyInventoryListText");
+				}
+			}
         }
 
         /// <summary>
@@ -372,10 +388,19 @@ namespace WF.Player.Core
         /// <value>The empty tasks list text.</value>
         public string EmptyTasksListText
         {
-            get
-            {
-				return IsBound ? DataContainer.GetString("EmptyTasksListText") : null;
-            }
+			get
+			{
+				return emptyTasksListText;
+			}
+
+			internal set
+			{
+				if (emptyTasksListText != value)
+				{
+					emptyTasksListText = value;
+					NotifyPropertyChanged("EmptyTasksListText");
+				}
+			}
         }
 
         /// <summary>
@@ -384,10 +409,19 @@ namespace WF.Player.Core
         /// <value>The empty you see list text.</value>
         public string EmptyYouSeeListText
         {
-            get
-            {
-				return IsBound ? DataContainer.GetString("EmptyYouSeeListText") : null;
-            }
+			get
+			{
+				return emptyYouSeeListText;
+			}
+
+			internal set
+			{
+				if (emptyYouSeeListText != value)
+				{
+					emptyYouSeeListText = value;
+					NotifyPropertyChanged("EmptyYouSeeListText");
+				}
+			}
         }
 
         /// <summary>
@@ -396,14 +430,23 @@ namespace WF.Player.Core
         /// <value>The empty zones list text.</value>
         public string EmptyZonesListText
         {
-            get
-            {
-				return IsBound ? DataContainer.GetString("EmptyZonesListText") : null;
-            }
+			get
+			{
+				return emptyZonesListText;
+			}
+
+			internal set
+			{
+				if (emptyZonesListText != value)
+				{
+					emptyZonesListText = value;
+					NotifyPropertyChanged("EmptyZonesListText");
+				}
+			}
         }
 
 		/// <summary>
-		/// Gets the filename of the cartridge.
+		/// Gets or sets the filename of the cartridge.
 		/// </summary>
 		public string Filename 
 		{ 
@@ -496,6 +539,69 @@ namespace WF.Player.Core
                 }
             }
         }
+
+		/// <summary>
+		/// Gets the description of this cartridge, as defined in the internal
+		/// program of the cartridge.
+		/// </summary>
+		public string InternalDescription
+		{
+			get
+			{
+				return internalDescription;
+			}
+
+			internal set
+			{
+				if (internalDescription != value)
+				{
+					internalDescription = value;
+					NotifyPropertyChanged("InternalDescription");
+				}
+			}
+		}
+
+		/// <summary>
+		/// Gets the title of this cartridge, as defined in the internal
+		/// program of the cartridge.
+		/// </summary>
+		public string InternalName
+		{
+			get
+			{
+				return internalName;
+			}
+
+			internal set
+			{
+				if (internalName != value)
+				{
+					internalName = value;
+					NotifyPropertyChanged("InternalName");
+				}
+			}
+		}
+
+		/// <summary>
+		/// Gets the description of the start point of this cartridge, 
+		/// as defined in the internal program of the cartridge.
+		/// </summary>
+		public string InternalStartingDescription
+		{
+			get
+			{
+				return internalStartingDescription;
+			}
+
+			internal set
+			{
+				if (internalStartingDescription != value)
+				{
+					internalStartingDescription = value;
+					NotifyPropertyChanged("InternalStartingDescription");
+				}
+			}
+		}
 
         /// <summary>
         /// Gets if the cartridge is archived.
@@ -1150,6 +1256,18 @@ namespace WF.Player.Core
 
 		#endregion
 
+		internal override void OnDataContainerChanged(Data.IDataContainer dc)
+		{
+			// Refreshes some properties.
+			bool ok = dc != null;
+			EmptyInventoryListText = ok ? dc.GetString("EmptyInventoryListText") : null;
+			EmptyTasksListText = ok ? dc.GetString("EmptyTasksListText") : null;
+			EmptyYouSeeListText = ok ? dc.GetString("EmptyYouSeeListText") : null;
+			EmptyZonesListText = ok ? dc.GetString("EmptyZonesListText") : null;
+			InternalDescription = ok ? dc.GetString("Description") : null;
+			InternalName = ok ? dc.GetString("Name") : null;
+			InternalStartingDescription = ok ? dc.GetString("StartingLocationDescription") : null;
+		}
    }
 
 }
