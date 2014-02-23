@@ -1052,7 +1052,10 @@ namespace WF.Player.Core.Engines
 
 			// If so, processes it.
 			if (shouldProcessLocation)
+			{
+				//System.Diagnostics.Debug.WriteLine("Engine: Will process location: {0} {1} {2} {3}", lat, lon, alt, accuracy);
 				luaExecQueue.BeginCallSelfUnique(player, "ProcessLocation", lat, lon, alt, accuracy);
+			}
 
 			// Marks the location clean or dirty depending on whether it was
 			// processed this time or not.
@@ -1457,7 +1460,21 @@ namespace WF.Player.Core.Engines
 		{
 			// Gets the event parameters.
 			ScreenType st = (ScreenType)Enum.ToObject(typeof(ScreenType), screen);
-			UIObject obj = st == ScreenType.Details && idxObj > -1 ? dataFactory.GetWherigoObject<UIObject>(idxObj) : null;
+			UIObject obj = null;
+
+			// Checks if an object is required.
+			if (st == ScreenType.Details && idxObj > -1)
+			{
+				// Tries to get the object as an UIObject.
+				obj = dataFactory.GetWherigoObject<WherigoObject>(idxObj) as UIObject;
+
+				// If the object is not a UIObject, discards the event because
+				// it is not part of the Wherigo spec.
+				if (obj == null)
+				{
+					return;
+				}
+			}
 			
 			// Raise the event.
 			RaiseScreenRequested(st, obj);
