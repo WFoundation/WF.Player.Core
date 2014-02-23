@@ -316,6 +316,41 @@ namespace WF.Player.Core.Data.Lua
 			return (o != null && o is T) ? (T)o : default(T);
 		}
 
+		/// <summary>
+		/// Gets the field of a table's metatable, for a particular key, and of a particular type.
+		/// </summary>
+		/// <typeparam name="T">Type of the field value to get.</typeparam>
+		/// <param name="table">The table whose metatable to query.</param>
+		/// <param name="key">The key to query.</param>
+		/// <returns>If <paramref name="table"/> has a metatable, and this
+		/// metatable has a value of type <typeparamref name="T"/> for
+		/// <paramref name="key"/>, then this value is returned. Otherwise
+		/// the default for <typeparamref name="T"/> is returned, namely
+		/// but not only if <paramref name="table"/> doesn't have a
+		/// metatable.</returns>
+		public T SafeGetFieldInMetatable<T>(LuaTable table, object key)
+		{
+			object o = null;
+			lock (_luaState)
+			{
+				try
+				{
+					LuaTable mt = table.Metatable;
+
+					if (mt != null)
+					{
+						o = Dewrap(mt[Wrap(key)]);
+					}
+				}
+				catch (Exception e)
+				{
+					o = HandleException(e, null);
+				}
+			}
+
+			return (o != null && o is T) ? (T)o : default(T);
+		}
+
         ///// <summary>
         ///// Calls a function contained by a table and that takes as first parameter the table
         ///// itself.
@@ -1217,9 +1252,5 @@ namespace WF.Player.Core.Data.Lua
             return lvl.ToArray();
         } 
         #endregion
-
-
-
-
-    }
+	}
 }

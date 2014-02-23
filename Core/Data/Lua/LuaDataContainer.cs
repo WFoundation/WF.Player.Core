@@ -43,7 +43,7 @@ namespace WF.Player.Core.Data.Lua
             internal Enumerator(LuaDataContainer luaDataContainer)
             {
                 this._parent = luaDataContainer;
-                _baseEnumerator = _parent._luaState.SafeGetEnumerator(_parent._luaTable);
+                _baseEnumerator = _parent._luaState.SafeGetEnumerator(_parent._selfLuaTable);
             }
 
             #region IEnumerator
@@ -140,6 +140,7 @@ namespace WF.Player.Core.Data.Lua
         private LuaDataFactory _dataFactory;
         private SafeLua _luaState;
         protected LuaTable _luaTable;
+		private LuaTable _selfLuaTable; 
 
         #endregion
 
@@ -178,6 +179,12 @@ namespace WF.Player.Core.Data.Lua
             _luaState = luaState;
             _luaTable = table;
             _dataFactory = factory;
+
+			// If the table is a proxy, the inner table needs to be recovered
+			// in order to enable enumerating, because proxy tables handled by 
+			// the Wherigo Lua engine cannot be enumerated.
+			_selfLuaTable = _luaState.SafeGetFieldInMetatable<LuaTable>(_luaTable, "_self") 
+				?? _luaTable;
         }
 
         #endregion
@@ -285,7 +292,7 @@ namespace WF.Player.Core.Data.Lua
         #region IDataContainer
         public int Count
         {
-            get { return _luaState.SafeCount(_luaTable); }
+            get { return _luaState.SafeCount(_selfLuaTable); }
         }
 
         public bool? GetBool(string key)
