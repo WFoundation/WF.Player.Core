@@ -32,30 +32,19 @@ namespace WF.Player.Core
 		public static Engine CreateEngine()
 		{
 			// Chooses one of the standard platform helpers.
-			IPlatformHelper platform = new DefaultPlatformHelper();
+			IPlatformHelper platform = null;
 #if WINDOWS_PHONE
 			platform = new WinPhonePlatformHelper();
+#elif ANDROID
+			platform = new AndroidPlatformHelper();
+#elif iOS
+			platform = new iOSPlatformHelper();
+#else
+			platform = new DefaultPlatformHelper()
 #endif
 
 			// Creates a new Engine for the platform.
 			return new Engine(platform);
-		}
-
-		public static Cartridge InitAndStartCartridge(Engine engine, Stream cartridgeStream, string filename, long firstLat, long firstLon, long firstAlt, long accuracy)
-		{
-			// Boot Time: inits the cartridge and process position.
-			Cartridge cart = new Cartridge(filename);
-
-			engine.Init(cartridgeStream, cart);
-
-			engine.RefreshLocation(firstLat, firstLon, firstAlt, accuracy);
-			//engine.RefreshHeading(0);
-
-			// Run Time: the game starts.
-
-			engine.Start();
-
-			return cart;
 		}
 	}
 }
