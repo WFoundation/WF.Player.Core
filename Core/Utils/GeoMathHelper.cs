@@ -33,6 +33,11 @@ namespace WF.Player.Core.Utils
 			{
 				return _dataFactory.CreateWherigoObject<ZonePoint>(Lat, Lon);
 			}
+
+			public override string ToString()
+			{
+				return Lat + ", " + Lon;
+			}
 		}
 
 		private struct Vector
@@ -103,7 +108,8 @@ namespace WF.Player.Core.Utils
 		public const double DEG_PI = 180 / Math.PI;
 		public const double PI_2 = Math.PI / 2;
 		public const double NMILES_COEF = 1852.216;
-		public const double METER_NMI_COEF = 0.00053989383d;
+		public const double METER_NMI_COEF = 1d / NMILES_COEF;
+		public const double EARTH_RADIUS = 6367449;
 
 		#endregion
 
@@ -195,7 +201,6 @@ namespace WF.Player.Core.Utils
 			}
 
 			// Computes the minimal distance to the Zone's edges.
-
 			c.SegmentPoint1 = c.TargetZonePoints.Last();
 			c.SegmentPoint2 = c.TargetZonePoints.First();
 			Vector minVec = VectorToSegmentCore(c);
@@ -235,6 +240,8 @@ namespace WF.Player.Core.Utils
 
 		private Vector VectorToSegmentCore(CalcInput c)
 		{
+			// http://www.movable-type.co.uk/scripts/latlong.html#crossTrack
+			
 			Point mainPoint = c.MainPoint;
 			Point firstLinePoint = c.SegmentPoint1;
 			Point secondLinePoint = c.SegmentPoint2;
@@ -243,13 +250,13 @@ namespace WF.Player.Core.Utils
 			c.TargetPoint = mainPoint;
 			Vector d1 = VectorToPointCore(c);
 			double b1 = d1.Bearing.GetValueOrDefault();
-			double dd1 = PI_180 * MetersToNauticalMiles(d1.Distance.Value) / 60;
+			double dd1 = PI_180 * MetersToNauticalMiles(d1.Distance.Value) / 60; // 1 nmi ~= 1'arc
 
 			c.MainPoint = firstLinePoint;
 			c.TargetPoint = secondLinePoint;
 			Vector ds = VectorToPointCore(c);
 			double bs = ds.Bearing.GetValueOrDefault();
-			double dds = PI_180 * MetersToNauticalMiles(ds.Distance.Value) / 60;
+			double dds = PI_180 * MetersToNauticalMiles(ds.Distance.Value) / 60; // 1 nmi ~= 1'arc
 
 			var dist = Math.Asin(Math.Sin(dd1) * Math.Sin(PI_180 * (b1 - bs)));
 			var dat = Math.Acos(Math.Cos(dd1) / Math.Cos(dist));
@@ -260,14 +267,14 @@ namespace WF.Player.Core.Utils
 				c.TargetPoint = firstLinePoint;
 				return VectorToPointCore(c);
 			}
-			else if (dat >= PI_180 * dds)
+			else if (dat >= dds)
 			{
 				c.TargetPoint = secondLinePoint;
 				return VectorToPointCore(c);
 			}
 
 			c.MainPoint = firstLinePoint;
-			c.TargetVector = new Vector(NauticalMilesToMeters(dat * 60), 0d);
+			c.TargetVector = new Vector(NauticalMilesToMeters(dat * 60 / PI_180), bs);
 			Point intersect = TranslatePointCore(c);
 
 			c.MainPoint = mainPoint;
@@ -291,16 +298,31 @@ namespace WF.Player.Core.Utils
 
 		private Vector VectorToPointCore(CalcInput c)
 		{
-			double lat1 = c.MainPoint.Lat;
-			double lon1 = c.MainPoint.Lon;
-			double lat2 = c.TargetPoint.Lat;
-			double lon2 = c.TargetPoint.Lon;
+			// http://www.movable-type.co.uk/scripts/latlong.html#ortho-dist
+			
+			double lat1 = c.MainPoint.Lat * PI_180;
+			double lon1 = c.MainPoint.Lon * PI_180;
+			double lat2 = c.TargetPoint.Lat * PI_180;
+			double lon2 = c.TargetPoint.Lon * PI_180;
 
-			double mx = Math.Abs(LatitudeToMeters(lat1 - lat2));
-			double my = Math.Abs(LongitudeToMeters(lat2, lon1 - lon2));
+			double dLat = lat2 - lat1;
+			double dLon = lon2 - lon1;
 
-			double distance = Math.Sqrt(mx * mx + my * my);
-			double bearing = (Math.Atan2(LatitudeToMeters(lat2 - lat1), LongitudeToMeters(lat2, lon2 - lon1)) + Math.PI / 2) * (180.0 / Math.PI);
+			double hvsLat = Math.Sin(dLat / 2);
+			double hvsLon = Math.Sin(dLon / 2);
+
+			double a = (hvsLat * hvsLat) + (hvsLon * hvsLon * Math.Cos(lat1) * Math.Cos(lat2));
+
+			double cc = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+
+			double distance = EARTH_RADIUS * cc;
+
+			// http://www.movable-type.co.uk/scripts/latlong.html#bearing
+
+			double bearing = Math.Atan2(
+				Math.Sin(dLon) * Math.Cos(lat2),
+				Math.Cos(lat1) * Math.Sin(lat2) - Math.Sin(lat1) * Math.Cos(lat2) * Math.Cos(dLon)
+				) / PI_180;
 
 			return new Vector(distance, bearing);
 		}
@@ -346,51 +368,26 @@ namespace WF.Player.Core.Utils
 			return meters * METER_NMI_COEF;
 		}
 
-		/// <summary>
-		/// Convert angle in degree for latitude into distance in meters.
-		/// </summary>
-		/// <param name="angle">Angle for latitude in degree.</param>
-		/// <returns>Distance in meters.</returns>
 		private double LatitudeToMeters(double degrees)
 		{
 			return degrees * LATITUDE_COEF;
 		}
 
-		/// <summary>
-		/// Convert angle in degree for longitude into distance in meters.
-		/// </summary>
-		/// <param name="angle">Angle for longitude in degree.</param>
-		/// <returns>Distance in meters.</returns>
 		private double LongitudeToMeters(double latitude, double degrees)
 		{
 			return degrees * PI_180 * Math.Cos(latitude * PI_180) * 6367449;
 		}
 
-		/// <summary>
-		/// Convert distance in meters to a latitude of a coordinate.
-		/// </summary>
-		/// <param name="meters">Distance in meters.</param>
-		/// <returns>Degree in latitude direction.</returns>
 		private double MetersToLatitude(double meters)
 		{
 			return meters * METER_COEF;
 		}
 
-		/// <summary>
-		/// Convert distance in meters to a longitude of a coordinate.
-		/// </summary>
-		/// <param name="meters">Distance in meters.</param>
-		/// <returns>Degree in longitude direction.</returns>
 		private double MetersToLongitude(double latitude, double meters)
 		{
-			return meters / (PI_180 * Math.Cos(latitude * PI_180) * 6367449);
+			return meters / (PI_180 * Math.Cos(latitude * PI_180) * EARTH_RADIUS);
 		}
 
-		/// <summary>
-		/// Convert radiant to angle.
-		/// </summary>
-		/// <param name="angle">Angle in radiant.</param>
-		/// <returns>Angle in degree.</returns>
 		private double AzimuthToAngle(double azim)
 		{
 			double ret = -(azim * PI_180) + PI_2;
