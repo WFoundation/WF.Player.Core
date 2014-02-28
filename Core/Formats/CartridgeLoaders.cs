@@ -30,11 +30,10 @@ namespace WF.Player.Core.Formats
 	{ 
 		Unknown, 
 		GWC, 
-		GWS, 
-		GWZ
+		GWS
 	};
 
-    public class FileFormats
+    public class CartridgeLoaders
     {
 		#region Members
 
@@ -44,11 +43,11 @@ namespace WF.Player.Core.Formats
 
 		#region Constructors
 
-		static FileFormats()
+		static CartridgeLoaders()
 		{
 			loaders = new List<ICartridgeLoader>();
 
-			loaders.Add(new FileGWC());
+			loaders.Add(new GWC());
 		}
 
 		#endregion

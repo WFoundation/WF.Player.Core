@@ -34,7 +34,7 @@ namespace WF.Player.Core.Formats
 	/// <summary>
 	/// A parser for Groundspeak Wherigo Cartridge files.
 	/// </summary>
-	public class FileGWC : ICartridgeLoader
+	public class GWC : ICartridgeLoader
 	{
 		/*
 		 File format of GWC files:

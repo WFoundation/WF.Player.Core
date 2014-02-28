@@ -66,13 +66,14 @@
     <Compile Include="Engines\DefaultPlatformHelper.cs" />
     <Compile Include="Engines\IPlatformHelper.cs" />
     <Compile Include="Engines\WinPhonePlatformHelper.cs" />
+    <Compile Include="Formats\FDL.cs" />
     <Compile Include="Formats\ICartridgeLoader.cs" />
     <Compile Include="Utils\GeoMathHelper.cs" />
     <Compile Include="Utils\MarkdownSharp.cs" />
     <Compile Include="Threading\ActionPump.cs" />
     <Compile Include="Threading\JobQueue.cs" />
     <Compile Include="Data\Lua\SafeLua.cs" />
-    <Compile Include="Formats\FileGWS.cs" />
+    <Compile Include="Formats\GWS.cs" />
     <Compile Include="Utils\Utils.cs" />
     <Compile Include="Utils\Extensions.cs" />
     <Compile Include="Threading\ExecutionQueue.cs" />
@@ -84,9 +85,8 @@
     <Compile Include="Command.cs" />
     <Compile Include="Distance.cs" />
     <Compile Include="Engines\Engine.cs" />
-    <Compile Include="Formats\FileFormats.cs" />
-    <Compile Include="Formats\FileGWC.cs" />
-    <Compile Include="Formats\FileGWZ.cs" />
+    <Compile Include="Formats\CartridgeLoaders.cs" />
+    <Compile Include="Formats\GWC.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Events.cs" />
     <Compile Include="Input.cs" />

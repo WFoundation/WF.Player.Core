@@ -725,7 +725,7 @@ namespace WF.Player.Core.Engines
 			GameState = EngineGameState.Initializing;
 
 			// Loads the cartridge code.
-			FileFormats.Load(input, cartridge);
+			CartridgeLoaders.Load(input, cartridge);
 
 			// Performs the init.
 			InitCore(cartridge);
@@ -870,7 +870,7 @@ namespace WF.Player.Core.Engines
 
 			GameState = EngineGameState.Restoring;
 
-			new FileGWS(
+			new GWS(
 				cartridge,
 				player,
 				platformHelper,
@@ -912,7 +912,7 @@ namespace WF.Player.Core.Engines
 			luaExecQueue.WaitEmpty();
 
 			// Serialize all objects
-			new FileGWS(
+			new GWS(
 				cartridge,
 				player,
 				platformHelper,

@@ -33,7 +33,7 @@ namespace WF.Player.Core.Formats
 	/// <summary>
 	/// A parser and generator of Wherigo save files.
 	/// </summary>
-	internal class FileGWS
+	internal class GWS
 	{
 		 /*
 		 Save File Data Format Emulator (GWS File)
@@ -94,7 +94,7 @@ namespace WF.Player.Core.Formats
 
 		private LuaDataContainer _allZObjects;
 
-		internal FileGWS(
+		internal GWS(
 			Cartridge cart, 
 			Character player, 
 			IPlatformHelper platformHelper, 
