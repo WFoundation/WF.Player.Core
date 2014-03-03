@@ -29,7 +29,7 @@ namespace WF.Player.Core.Data.Lua
     /// </summary>
 	internal class LuaDataProvider : IDataProvider
     {
-        #region Members
+        #region Fields
 
         protected LuaFunction _luaFunction;
         private SafeLua _luaState;

@@ -38,7 +38,7 @@ namespace WF.Player.Core.Data.Lua
 		/// </summary>
         private class SafeDictionaryEnumerator : IDictionaryEnumerator
 		{
-            #region Members
+            #region Fields
             private IEnumerator<KeyValuePair<LuaValue, LuaValue>> _baseEnumerator;
             private SafeLua _parent;
             private LuaRuntime _luaState;
@@ -134,7 +134,7 @@ namespace WF.Player.Core.Data.Lua
 
 		#endregion
 		
-		#region Members
+		#region Fields
 
 		/// <summary>
 		/// The underlying lua state, used both for lua operation and for locking lua operations.

@@ -36,7 +36,7 @@ namespace WF.Player.Core
 
 		#endregion
 		
-		#region Members
+		#region Fields
 
 		private string _html;
 

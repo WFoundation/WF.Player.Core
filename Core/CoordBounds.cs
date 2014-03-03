@@ -29,12 +29,12 @@ namespace WF.Player.Core
 	/// </summary>
 	public class CoordBounds
 	{
-        #region Members
+        #region Fields
 
-        double left = 360;
-        double top = -360;
-        double right = 360;
-        double bottom = 360;
+        double _left = 360;
+        double _top = -360;
+        double _right = 360;
+        double _bottom = 360;
 
         #endregion
 
@@ -45,10 +45,10 @@ namespace WF.Player.Core
         /// </summary>
         public CoordBounds()
         {
-            left = 360;
-            right = -360;
-            top = -360;
-            bottom = 360;
+            _left = 360;
+            _right = -360;
+            _top = -360;
+            _bottom = 360;
         }
 
         /// <summary>
@@ -63,23 +63,23 @@ namespace WF.Player.Core
         {
             if (l < r)
             {
-                left = l;
-                right = r;
+                _left = l;
+                _right = r;
             }
             else
             {
-                left = r;
-                right = l;
+                _left = r;
+                _right = l;
             }
             if (b < t)
             {
-                top = t;
-                bottom = b;
+                _top = t;
+                _bottom = b;
             }
             else
             {
-                top = b;
-                bottom = t;
+                _top = b;
+                _bottom = t;
             }
         }
 
@@ -125,15 +125,15 @@ namespace WF.Player.Core
         /// </summary>
 		public double Left {
 			get { 
-				return left; 
+				return _left; 
 			}
 			set { 
-				if (left != value) {
-					if (value < right) {
-						left = value;
+				if (_left != value) {
+					if (value < _right) {
+						_left = value;
 					} else {
-						left = right;
-						right = value;
+						_left = _right;
+						_right = value;
 					}
 				}
 			}
@@ -145,15 +145,15 @@ namespace WF.Player.Core
         /// </summary>
 		public double Right {
 			get { 
-				return right; 
+				return _right; 
 			}
 			set { 
-				if (right != value) {
-					if (value > left) {
-						right = value;
+				if (_right != value) {
+					if (value > _left) {
+						_right = value;
 					} else {
-						right = left;
-						left = value;
+						_right = _left;
+						_left = value;
 					}
 				}
 			}
@@ -165,15 +165,15 @@ namespace WF.Player.Core
         /// </summary>
 		public double Top {
 			get { 
-				return top; 
+				return _top; 
 			}
 			set { 
-				if (top != value) {
-					if (value > bottom) {
-						top = value;
+				if (_top != value) {
+					if (value > _bottom) {
+						_top = value;
 					} else {
-						top = bottom;
-						bottom = value;
+						_top = _bottom;
+						_bottom = value;
 					}
 				}
 			}
@@ -185,15 +185,15 @@ namespace WF.Player.Core
         /// </summary>
 		public double Bottom {
 			get { 
-				return bottom; 
+				return _bottom; 
 			}
 			set { 
-				if (bottom != value) {
-					if (value < top) {
-						bottom = value;
+				if (_bottom != value) {
+					if (value < _top) {
+						_bottom = value;
 					} else {
-						bottom = top;
-						bottom = value;
+						_bottom = _top;
+						_bottom = value;
 					}
 				}
 			}
@@ -208,7 +208,7 @@ namespace WF.Player.Core
         {
             get
             {
-                return left <= right && top >= bottom;
+                return _left <= _right && _top >= _bottom;
             }
         }
 
@@ -224,14 +224,14 @@ namespace WF.Player.Core
         /// <param name="lon">Longitude of the point in decimal degrees.</param>
         public void Inflate(double lat, double lon)
 		{
-			if (lat < left)
-				left = lat;
-			if (lat > right)
-				right = lat;
-			if (lon > top)
-				top = lon;
-			if (lon < bottom)
-				bottom = lon;
+			if (lat < _left)
+				_left = lat;
+			if (lat > _right)
+				_right = lat;
+			if (lon > _top)
+				_top = lon;
+			if (lon < _bottom)
+				_bottom = lon;
 		}
 
         /// <summary>

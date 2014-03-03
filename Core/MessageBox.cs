@@ -61,9 +61,9 @@ namespace WF.Player.Core
 
 		#endregion
 
-		#region Members
+		#region Fields
 
-		private Action<string> callback;
+		private Action<string> _callback;
 
 		#endregion
 
@@ -84,7 +84,7 @@ namespace WF.Player.Core
 			FirstButtonLabel = String.IsNullOrEmpty(btn1label) ? null : btn1label;
 			SecondButtonLabel = String.IsNullOrEmpty(btn2label) ? null : btn2label;
 
-			callback = cb;
+			_callback = cb;
 		} 
 
 		#endregion
@@ -97,7 +97,7 @@ namespace WF.Player.Core
 		public void GiveResult(MessageBoxResult result)
 		{
 			// Message boxes with no callbacks don't give result and silenty return.
-			if (callback == null)
+			if (_callback == null)
 			{
 				return;
 			}
@@ -110,7 +110,7 @@ namespace WF.Player.Core
 						throw new InvalidOperationException("There is no first button on this message box.");
 					}
 
-					callback("Button1");
+					_callback("Button1");
 
 					break;
 
@@ -121,14 +121,14 @@ namespace WF.Player.Core
 						throw new InvalidOperationException("There is no second button on this message box.");
 					}
 
-					callback("Button2");
+					_callback("Button2");
 
 					break;
 
 				case MessageBoxResult.Cancel:
 
 					// Cancelled message boxes call the callback with a nil parameter.
-					callback(null);
+					_callback(null);
 
 					break;
 

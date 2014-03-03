@@ -26,7 +26,7 @@ namespace WF.Player.Core
 {
 	public class WherigoObject
 	{
-		#region Members
+		#region Fields
 
 		private IDataContainer _dataContainer;
 

@@ -34,7 +34,7 @@ namespace WF.Player.Core.Engines
 		{
 			try
 			{
-				EntryAssemblyVersion = Version.Parse(Assembly.GetExecutingAssembly()
+				_entryAssemblyVersion = Version.Parse(Assembly.GetExecutingAssembly()
 						.GetCustomAttributes(false)
 						.OfType<AssemblyFileVersionAttribute>()
 						.First()
@@ -42,14 +42,14 @@ namespace WF.Player.Core.Engines
 			}
 			catch (Exception)
 			{
-				EntryAssemblyVersion = null;
+				_entryAssemblyVersion = null;
 			}
 		} 
 		#endregion
 
-		#region Members
+		#region Fields
 		
-		private static Version EntryAssemblyVersion; 
+		private static Version _entryAssemblyVersion; 
 
 		#endregion
 
@@ -139,7 +139,7 @@ namespace WF.Player.Core.Engines
 		{
 			get
 			{
-				return EntryAssemblyVersion != null ? EntryAssemblyVersion.ToString() : "Unknown";
+				return _entryAssemblyVersion != null ? _entryAssemblyVersion.ToString() : "Unknown";
 			}
 
 			// The value is set by the static constructor in order to catch the UI thread's 

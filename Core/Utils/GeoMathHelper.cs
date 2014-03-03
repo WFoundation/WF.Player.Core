@@ -113,7 +113,7 @@ namespace WF.Player.Core.Utils
 
 		#endregion
 
-		#region Members
+		#region Fields
 
 		private IDataFactory _dataFactory;
 

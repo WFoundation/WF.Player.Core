@@ -40,55 +40,55 @@ namespace WF.Player.Core
 	public class Cartridge : WherigoObject, INotifyPropertyChanged
     {
 
-        #region Members
+        #region Fields
 
-        private Live.WherigoCartridge.ActivityTypes activityType;
-        private string authorCompany;
-        private string authorName;
-        private DateTime createDate;
-        private bool complete;
-        private DateTime completedTime = DateTime.MinValue;
-        private string completionCode;
-        private Live.WherigoCartridge.CompletionTimes completionTime;
-        private int countryID;
-        private DateTime? dateAdded;
-        private DateTime? dateLastPlayed;
-        private DateTime? dateLastUpdated;
-        private string device;
-		private string emptyInventoryListText;
-		private string emptyTasksListText;
-		private string emptyYouSeeListText;
-		private string emptyZonesListText;
-        private string guid;
-        private Media icon;
-        private string iconFileURL;
-		private string internalDescription;
-		private string internalName;
-		private string internalStartingDescription;
-        private bool isArchived;
-        private bool isDisabled;
-        private bool isOpenSource;
-        private bool isPlayAnywhere;
-        private string[] linkedGeocacheNames;
-        private string[] linkedGeocacheGCs;
-        private Guid[] linkedGeocacheGUIDs;
-        private string longDescription;
-        private string name;
-        private int numberOfCompletions;
-        private int numberOfUsersWatching;
-        private string player;
-        private Media poster;
-        private string posterFileURL;
-        private Media[] resources;
-        private string shortDescription;
-        private string startingDescription;
-        private double startingLocationLatitude = 360.0;
-        private double startingLocationLongitude = 360.0;
-        private double startingLocationAltitude = 360.0;
-        private int stateID;
-        private int uniqueDownloads;
-        private bool userHasPartiallyPlayed;
-        private string version;
+        private Live.WherigoCartridge.ActivityTypes _activityType;
+        private string _authorCompany;
+        private string _authorName;
+        private DateTime _createDate;
+        private bool _complete;
+        private DateTime _completedTime = DateTime.MinValue;
+        private string _completionCode;
+        private Live.WherigoCartridge.CompletionTimes _completionTime;
+        private int _countryID;
+        private DateTime? _dateAdded;
+        private DateTime? _dateLastPlayed;
+        private DateTime? _dateLastUpdated;
+        private string _device;
+		private string _emptyInventoryListText;
+		private string _emptyTasksListText;
+		private string _emptyYouSeeListText;
+		private string _emptyZonesListText;
+        private string _guid;
+        private Media _icon;
+        private string _iconFileURL;
+		private string _internalDescription;
+		private string _internalName;
+		private string _internalStartingDescription;
+        private bool _isArchived;
+        private bool _isDisabled;
+        private bool _isOpenSource;
+        private bool _isPlayAnywhere;
+        private string[] _linkedGeocacheNames;
+        private string[] _linkedGeocacheGCs;
+        private Guid[] _linkedGeocacheGUIDs;
+        private string _longDescription;
+        private string _name;
+        private int _numberOfCompletions;
+        private int _numberOfUsersWatching;
+        private string _player;
+        private Media _poster;
+        private string _posterFileURL;
+        private Media[] _resources;
+        private string _shortDescription;
+        private string _startingDescription;
+        private double _startingLocationLatitude = 360.0;
+        private double _startingLocationLongitude = 360.0;
+        private double _startingLocationAltitude = 360.0;
+        private int _stateID;
+        private int _uniqueDownloads;
+        private bool _userHasPartiallyPlayed;
+        private string _version;
 
         #endregion
 
@@ -113,14 +113,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return activityType;
+                return _activityType;
             }
 
             internal set
             {
-                if (activityType != value)
+                if (_activityType != value)
                 {
-                    activityType = value;
+                    _activityType = value;
                     NotifyPropertyChanged("ActivityType");
                 }
             }
@@ -133,14 +133,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return authorCompany;
+                return _authorCompany;
             }
 
             internal set
             {
-                if (authorCompany != value)
+                if (_authorCompany != value)
                 {
-                    authorCompany = value;
+                    _authorCompany = value;
                     NotifyPropertyChanged("AuthorCompany");
                 }
             }
@@ -153,14 +153,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return authorName;
+                return _authorName;
             }
 
             internal set
             {
-                if (authorName != value)
+                if (_authorName != value)
                 {
-                    authorName = value;
+                    _authorName = value;
                     NotifyPropertyChanged("AuthorName");
                 }
             }
@@ -173,14 +173,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return createDate;
+                return _createDate;
             }
 
             internal set
             {
-                if (createDate != value)
+                if (_createDate != value)
                 {
-                    createDate = value;
+                    _createDate = value;
                     NotifyPropertyChanged("CreateDate");
                 }
             }
@@ -194,18 +194,18 @@ namespace WF.Player.Core
         {
             get
             {
-                return complete;
+                return _complete;
             }
 
             internal set
             {
-                if (complete != value)
+                if (_complete != value)
                 {
-                    complete = value;
+                    _complete = value;
                     NotifyPropertyChanged("Complete");
                 }
-                if (complete && completedTime == DateTime.MinValue)
-                    completedTime = DateTime.Now;
+                if (_complete && _completedTime == DateTime.MinValue)
+                    _completedTime = DateTime.Now;
             }
         }
 
@@ -216,14 +216,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return completionCode;
+                return _completionCode;
             }
 
             internal set
             {
-                if (completionCode != value)
+                if (_completionCode != value)
                 {
-                    completionCode = value;
+                    _completionCode = value;
                     NotifyPropertyChanged("CompletionCode");
                 }
             }
@@ -237,7 +237,7 @@ namespace WF.Player.Core
         {
             get
             {
-                return completedTime;
+                return _completedTime;
             }
         }
 
@@ -248,14 +248,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return completionTime;
+                return _completionTime;
             }
 
             internal set
             {
-                if (completionTime != value)
+                if (_completionTime != value)
                 {
-                    completionTime = value;
+                    _completionTime = value;
                     NotifyPropertyChanged("CompletionTime");
                 }
             }
@@ -268,14 +268,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return countryID;
+                return _countryID;
             }
 
             internal set
             {
-                if (countryID != value)
+                if (_countryID != value)
                 {
-                    countryID = value;
+                    _countryID = value;
                     NotifyPropertyChanged("CountryID");
                 }
             }
@@ -288,14 +288,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return dateAdded;
+                return _dateAdded;
             }
             
 			internal set
             {
-                if (dateAdded != value)
+                if (_dateAdded != value)
                 {
-                    dateAdded = value;
+                    _dateAdded = value;
                     NotifyPropertyChanged("DateAdded");
                 }
             }
@@ -308,14 +308,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return dateLastPlayed;
+                return _dateLastPlayed;
             }
             
 			internal set
             {
-                if (dateLastPlayed != value)
+                if (_dateLastPlayed != value)
                 {
-                    dateLastPlayed = value;
+                    _dateLastPlayed = value;
                     NotifyPropertyChanged("DateLastPlayed");
                 }
             }
@@ -328,14 +328,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return dateLastUpdated;
+                return _dateLastUpdated;
             }
 
             internal set
             {
-                if (dateLastUpdated != value)
+                if (_dateLastUpdated != value)
                 {
-                    dateLastUpdated = value;
+                    _dateLastUpdated = value;
                     NotifyPropertyChanged("DateLastUpdated");
                 }
             }
@@ -348,14 +348,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return device;
+                return _device;
             }
             
 			internal set
             {
-                if (device != value)
+                if (_device != value)
                 {
-                    device = value;
+                    _device = value;
                     NotifyPropertyChanged("Device");
                 }
             }
@@ -369,14 +369,14 @@ namespace WF.Player.Core
         {
 			get
 			{
-				return emptyInventoryListText;
+				return _emptyInventoryListText;
 			}
 
 			internal set
 			{
-				if (emptyInventoryListText != value)
+				if (_emptyInventoryListText != value)
 				{
-					emptyInventoryListText = value;
+					_emptyInventoryListText = value;
 					NotifyPropertyChanged("EmptyInventoryListText");
 				}
 			}
@@ -390,14 +390,14 @@ namespace WF.Player.Core
         {
 			get
 			{
-				return emptyTasksListText;
+				return _emptyTasksListText;
 			}
 
 			internal set
 			{
-				if (emptyTasksListText != value)
+				if (_emptyTasksListText != value)
 				{
-					emptyTasksListText = value;
+					_emptyTasksListText = value;
 					NotifyPropertyChanged("EmptyTasksListText");
 				}
 			}
@@ -411,14 +411,14 @@ namespace WF.Player.Core
         {
 			get
 			{
-				return emptyYouSeeListText;
+				return _emptyYouSeeListText;
 			}
 
 			internal set
 			{
-				if (emptyYouSeeListText != value)
+				if (_emptyYouSeeListText != value)
 				{
-					emptyYouSeeListText = value;
+					_emptyYouSeeListText = value;
 					NotifyPropertyChanged("EmptyYouSeeListText");
 				}
 			}
@@ -432,14 +432,14 @@ namespace WF.Player.Core
         {
 			get
 			{
-				return emptyZonesListText;
+				return _emptyZonesListText;
 			}
 
 			internal set
 			{
-				if (emptyZonesListText != value)
+				if (_emptyZonesListText != value)
 				{
-					emptyZonesListText = value;
+					_emptyZonesListText = value;
 					NotifyPropertyChanged("EmptyZonesListText");
 				}
 			}
@@ -461,14 +461,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return guid;
+                return _guid;
             }
             
 			internal set
             {
-                if (guid != value)
+                if (_guid != value)
                 {
-                    guid = value;
+                    _guid = value;
                     NotifyPropertyChanged("Guid");
                 }
             }
@@ -481,27 +481,27 @@ namespace WF.Player.Core
         {
             get
             {
-                if (icon == null && !String.IsNullOrEmpty(iconFileURL))
+                if (_icon == null && !String.IsNullOrEmpty(_iconFileURL))
                 {
                     // Load icon from URL
-					asyncDownloadFile(iconFileURL, ms =>
+					asyncDownloadFile(_iconFileURL, ms =>
 					{
 						if (ms != null)
 						{
-							icon = new Media();
-							icon.Data = ms.ToArray();
+							_icon = new Media();
+							_icon.Data = ms.ToArray();
 							NotifyPropertyChanged("Icon");
 						}
 					});
                 }
-                return icon;
+                return _icon;
             }
             
 			internal set
             {
-                if (icon != value)
+                if (_icon != value)
                 {
-                    icon = value;
+                    _icon = value;
                     NotifyPropertyChanged("Icon");
                 }
             }
@@ -514,19 +514,19 @@ namespace WF.Player.Core
         {
             get
             {
-                return iconFileURL;
+                return _iconFileURL;
             }
             
 			internal set
             {
-                if (iconFileURL != value)
+                if (_iconFileURL != value)
                 {
-                    iconFileURL = value;
+                    _iconFileURL = value;
                     // If there is an icon, than load the new one immediatly
-                    if (icon != null)
+                    if (_icon != null)
                     {
                         // Load icon from URL
-						asyncDownloadFile(iconFileURL, ms =>
+						asyncDownloadFile(_iconFileURL, ms =>
 						{
 							if (ms != null)
 							{
@@ -548,14 +548,14 @@ namespace WF.Player.Core
 		{
 			get
 			{
-				return internalDescription;
+				return _internalDescription;
 			}
 
 			internal set
 			{
-				if (internalDescription != value)
+				if (_internalDescription != value)
 				{
-					internalDescription = value;
+					_internalDescription = value;
 					NotifyPropertyChanged("InternalDescription");
 				}
 			}
@@ -569,14 +569,14 @@ namespace WF.Player.Core
 		{
 			get
 			{
-				return internalName;
+				return _internalName;
 			}
 
 			internal set
 			{
-				if (internalName != value)
+				if (_internalName != value)
 				{
-					internalName = value;
+					_internalName = value;
 					NotifyPropertyChanged("InternalName");
 				}
 			}
@@ -590,14 +590,14 @@ namespace WF.Player.Core
 		{
 			get
 			{
-				return internalStartingDescription;
+				return _internalStartingDescription;
 			}
 
 			internal set
 			{
-				if (internalStartingDescription != value)
+				if (_internalStartingDescription != value)
 				{
-					internalStartingDescription = value;
+					_internalStartingDescription = value;
 					NotifyPropertyChanged("InternalStartingDescription");
 				}
 			}
@@ -610,14 +610,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return isArchived;
+                return _isArchived;
             }
             
 			internal set
             {
-                if (isArchived != value)
+                if (_isArchived != value)
                 {
-                    isArchived = value;
+                    _isArchived = value;
                     NotifyPropertyChanged("IsArchived");
                 }
             }
@@ -630,14 +630,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return isDisabled;
+                return _isDisabled;
             }
             
 			internal set
             {
-                if (isDisabled != value)
+                if (_isDisabled != value)
                 {
-                    isDisabled = value;
+                    _isDisabled = value;
                     NotifyPropertyChanged("IsDisabled");
                 }
             }
@@ -661,14 +661,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return isOpenSource;
+                return _isOpenSource;
             }
             
 			internal set
             {
-                if (isOpenSource != value)
+                if (_isOpenSource != value)
                 {
-                    isOpenSource = value;
+                    _isOpenSource = value;
                     NotifyPropertyChanged("IsOpenSource");
                 }
             }
@@ -681,14 +681,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return isPlayAnywhere;
+                return _isPlayAnywhere;
             }
             
 			internal set
             {
-                if (isPlayAnywhere != value)
+                if (_isPlayAnywhere != value)
                 {
-                    isPlayAnywhere = value;
+                    _isPlayAnywhere = value;
                     NotifyPropertyChanged("IsPlayAnywhere");
                 }
             }
@@ -701,14 +701,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return linkedGeocacheNames;
+                return _linkedGeocacheNames;
             }
             
 			internal set
             {
-                if (linkedGeocacheNames != value)
+                if (_linkedGeocacheNames != value)
                 {
-                    linkedGeocacheNames = value;
+                    _linkedGeocacheNames = value;
                     NotifyPropertyChanged("LinkedGeocacheNames");
                 }
             }
@@ -721,14 +721,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return linkedGeocacheGCs;
+                return _linkedGeocacheGCs;
             }
             
 			internal set
             {
-                if (linkedGeocacheGCs != value)
+                if (_linkedGeocacheGCs != value)
                 {
-                    linkedGeocacheGCs = value;
+                    _linkedGeocacheGCs = value;
                     NotifyPropertyChanged("LinkedGeocacheGCs");
                 }
             }
@@ -741,14 +741,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return linkedGeocacheGUIDs;
+                return _linkedGeocacheGUIDs;
             }
             
 			internal set
             {
-                if (linkedGeocacheGUIDs != value)
+                if (_linkedGeocacheGUIDs != value)
                 {
-                    linkedGeocacheGUIDs = value;
+                    _linkedGeocacheGUIDs = value;
                     NotifyPropertyChanged("LinkedGeocacheGUIDs");
                 }
             }
@@ -773,14 +773,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return longDescription;
+                return _longDescription;
             }
             
 			internal set
             {
-                if (longDescription != value)
+                if (_longDescription != value)
                 {
-                    longDescription = value.ReplaceHTMLMarkup();
+                    _longDescription = value.ReplaceHTMLMarkup();
                     NotifyPropertyChanged("LongDescription");
                 }
             }
@@ -793,14 +793,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return name;
+                return _name;
             }
             
 			internal set
             {
-                if (name != value)
+                if (_name != value)
                 {
-                    name = value;
+                    _name = value;
                     NotifyPropertyChanged("Name");
                 }
             }
@@ -813,14 +813,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return numberOfCompletions;
+                return _numberOfCompletions;
             }
             
 			internal set
             {
-                if (numberOfCompletions != value)
+                if (_numberOfCompletions != value)
                 {
-                    numberOfCompletions = value;
+                    _numberOfCompletions = value;
                     NotifyPropertyChanged("NumberOfCompletions");
                 }
             }
@@ -833,14 +833,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return numberOfUsersWatching;
+                return _numberOfUsersWatching;
             }
             
 			internal set
             {
-                if (numberOfUsersWatching != value)
+                if (_numberOfUsersWatching != value)
                 {
-                    numberOfUsersWatching = value;
+                    _numberOfUsersWatching = value;
                     NotifyPropertyChanged("NumberOfUsersWatching");
                 }
             }
@@ -853,14 +853,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return player;
+                return _player;
             }
             
 			internal set
             {
-                if (player != value)
+                if (_player != value)
                 {
-                    player = value;
+                    _player = value;
                     NotifyPropertyChanged("Player");
                 }
             }
@@ -873,28 +873,28 @@ namespace WF.Player.Core
         {
             get
             {
-                if (poster == null && !String.IsNullOrEmpty(posterFileURL))
+                if (_poster == null && !String.IsNullOrEmpty(_posterFileURL))
                 {
                     // Load icon from URL
-					asyncDownloadFile(posterFileURL, ms =>
+					asyncDownloadFile(_posterFileURL, ms =>
 					{
 						if (ms != null)
 						{
-							poster = new Media();
-							poster.Data = ms.ToArray();
+							_poster = new Media();
+							_poster.Data = ms.ToArray();
 							NotifyPropertyChanged("Poster");
 						}
 					});
                 }
 
-                return poster;
+                return _poster;
             }
             
 			internal set
             {
-                if (poster != value)
+                if (_poster != value)
                 {
-                    poster = value;
+                    _poster = value;
                     NotifyPropertyChanged("Poster");
                 }
             }
@@ -907,19 +907,19 @@ namespace WF.Player.Core
         {
             get
             {
-                return posterFileURL;
+                return _posterFileURL;
             }
             
 			internal set
             {
-                if (posterFileURL != value)
+                if (_posterFileURL != value)
                 {
-                    posterFileURL = value;
+                    _posterFileURL = value;
                     // If there is a poster, than load the new one immediatly
-                    if (poster != null)
+                    if (_poster != null)
                     {
                         // Load icon from URL
-						asyncDownloadFile(posterFileURL, ms =>
+						asyncDownloadFile(_posterFileURL, ms =>
 						{
 							if (ms != null)
 							{
@@ -942,14 +942,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return resources;
+                return _resources;
             }
             
 			internal set
             {
-                if (resources != value)
+                if (_resources != value)
                 {
-                    resources = value;
+                    _resources = value;
                     NotifyPropertyChanged("Resources");
                 }
             }
@@ -974,14 +974,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return shortDescription;
+                return _shortDescription;
             }
             
 			internal set
             {
-                if (shortDescription != value)
+                if (_shortDescription != value)
                 {
-                    shortDescription = value;
+                    _shortDescription = value;
                     NotifyPropertyChanged("ShortDescription");
                 }
             }
@@ -994,14 +994,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return startingDescription;
+                return _startingDescription;
             }
             
 			internal set
             {
-                if (startingDescription != value)
+                if (_startingDescription != value)
                 {
-                    startingDescription = value;
+                    _startingDescription = value;
                     NotifyPropertyChanged("StartingDescription");
                 }
             }
@@ -1014,14 +1014,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return startingLocationLatitude;
+                return _startingLocationLatitude;
             }
             
 			internal set
             {
-                if (startingLocationLatitude != value)
+                if (_startingLocationLatitude != value)
                 {
-                    startingLocationLatitude = value;
+                    _startingLocationLatitude = value;
                     NotifyPropertyChanged("StartingLocationLatitude");
                 }
             }
@@ -1034,14 +1034,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return startingLocationLongitude;
+                return _startingLocationLongitude;
             }
             
 			internal set
             {
-                if (startingLocationLongitude != value)
+                if (_startingLocationLongitude != value)
                 {
-                    startingLocationLongitude = value;
+                    _startingLocationLongitude = value;
                     NotifyPropertyChanged("StartingLocationLongitude");
                 }
             }
@@ -1054,14 +1054,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return startingLocationAltitude;
+                return _startingLocationAltitude;
             }
             
 			internal set
             {
-                if (startingLocationAltitude != value)
+                if (_startingLocationAltitude != value)
                 {
-                    startingLocationAltitude = value;
+                    _startingLocationAltitude = value;
                     NotifyPropertyChanged("StartingLocationAltitude");
                 }
             }
@@ -1074,14 +1074,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return stateID;
+                return _stateID;
             }
             
 			internal set
             {
-                if (stateID != value)
+                if (_stateID != value)
                 {
-                    stateID = value;
+                    _stateID = value;
                     NotifyPropertyChanged("StateID");
                 }
             }
@@ -1094,14 +1094,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return uniqueDownloads;
+                return _uniqueDownloads;
             }
             
 			internal set
             {
-                if (uniqueDownloads != value)
+                if (_uniqueDownloads != value)
                 {
-                    uniqueDownloads = value;
+                    _uniqueDownloads = value;
                     NotifyPropertyChanged("UniqueDownloads");
                 }
             }
@@ -1114,14 +1114,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return userHasPartiallyPlayed;
+                return _userHasPartiallyPlayed;
             }
             
 			internal set
             {
-                if (userHasPartiallyPlayed != value)
+                if (_userHasPartiallyPlayed != value)
                 {
-                    userHasPartiallyPlayed = value;
+                    _userHasPartiallyPlayed = value;
                     NotifyPropertyChanged("UserHasPartiallyPlayed");
                 }
             }
@@ -1134,14 +1134,14 @@ namespace WF.Player.Core
         {
             get
             {
-                return version;
+                return _version;
             }
             
 			internal set
             {
-                if (version != value)
+                if (_version != value)
                 {
-                    version = value;
+                    _version = value;
                     NotifyPropertyChanged("Version");
                 }
             }

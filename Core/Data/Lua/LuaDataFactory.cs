@@ -117,7 +117,7 @@ namespace WF.Player.Core.Data.Lua
 
         #endregion
         
-        #region Members
+        #region Fields
 
         private SafeLua _luaState;
 

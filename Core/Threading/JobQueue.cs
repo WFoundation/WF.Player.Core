@@ -33,7 +33,7 @@ namespace WF.Player.Core.Threading
 
 		private class FilterQueue
 		{
-			#region Members
+			#region Fields
 			private Queue<Job> _queue;
 			private Dictionary<string, int> _ignoredTags;
 			private int _dequeuesSinceLastIgnoreCheck = 0;
@@ -206,17 +206,17 @@ namespace WF.Player.Core.Threading
 
         #endregion
         
-        #region Members
+        #region Fields
 
-		private FilterQueue jobQueue = new FilterQueue();
-		private Thread jobThread;
-		private bool isDisposed = false;
-		private bool isSleeping = true;
-		private bool isActive = true;
-		private bool isAutoProcessing = true;
-		private TimeSpan delayBetweenJobs = TimeSpan.FromMilliseconds(50);
-		private AutoResetEvent jobThreadCanResumeEvent;
-		private object syncRoot = new object();
+		private FilterQueue _jobQueue = new FilterQueue();
+		private Thread _jobThread;
+		private bool _isDisposed = false;
+		private bool _isSleeping = true;
+		private bool _isActive = true;
+		private bool _isAutoProcessing = true;
+		private TimeSpan _delayBetweenJobs = TimeSpan.FromMilliseconds(50);
+		private AutoResetEvent _jobThreadCanResumeEvent;
+		private object _syncRoot = new object();
 
 		#endregion
 
@@ -230,7 +230,7 @@ namespace WF.Player.Core.Threading
 		{
 			get
 			{
-				return jobThread != null && jobThread.ManagedThreadId == Thread.CurrentThread.ManagedThreadId;
+				return _jobThread != null && _jobThread.ManagedThreadId == Thread.CurrentThread.ManagedThreadId;
 			}
 		}
 
@@ -242,9 +242,9 @@ namespace WF.Player.Core.Threading
 		{
 			get
 			{
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					return !isDisposed && !isSleeping;
+					return !_isDisposed && !_isSleeping;
 				}
 			}
 		}
@@ -256,14 +256,14 @@ namespace WF.Player.Core.Threading
 		{
 			get
 			{
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					if (isDisposed)
+					if (_isDisposed)
 					{
 						throw new ObjectDisposedException("jobQueue");
 					}
 
-					return jobQueue.Count;
+					return _jobQueue.Count;
 				}
 			}
 		}
@@ -277,9 +277,9 @@ namespace WF.Player.Core.Threading
 		{
 			get
 			{
-				lock (this.syncRoot)
+				lock (this._syncRoot)
 				{
-					return this.isActive;
+					return this._isActive;
 				}
 			}
 
@@ -287,12 +287,12 @@ namespace WF.Player.Core.Threading
 			{
 				bool valueChanged = false;
 
-				lock (this.syncRoot)
+				lock (this._syncRoot)
 				{
-					if (isActive != value)
+					if (_isActive != value)
 					{
 						valueChanged = true;
-						isActive = value;
+						_isActive = value;
 					}
 				}
 
@@ -312,9 +312,9 @@ namespace WF.Player.Core.Threading
 		{
 			get
 			{
-				lock (this.syncRoot)
+				lock (this._syncRoot)
 				{
-					return this.isAutoProcessing;
+					return this._isAutoProcessing;
 				}
 			}
 
@@ -322,12 +322,12 @@ namespace WF.Player.Core.Threading
 			{
 				bool valueChanged = false;
 
-				lock (this.syncRoot)
+				lock (this._syncRoot)
 				{
-					if (isAutoProcessing != value)
+					if (_isAutoProcessing != value)
 					{
 						valueChanged = true;
-						isAutoProcessing = value;
+						_isAutoProcessing = value;
 					}
 				}
 
@@ -347,17 +347,17 @@ namespace WF.Player.Core.Threading
 		{
 			get
 			{
-				lock (this.syncRoot)
+				lock (this._syncRoot)
 				{
-					return this.delayBetweenJobs;
+					return this._delayBetweenJobs;
 				}
 			}
 
 			set
 			{
-				lock (this.syncRoot)
+				lock (this._syncRoot)
 				{
-					this.delayBetweenJobs = value;
+					this._delayBetweenJobs = value;
 				}
 			}
 		}
@@ -369,9 +369,9 @@ namespace WF.Player.Core.Threading
 		{
 			get
 			{
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					return isDisposed;
+					return _isDisposed;
 				}
 			}
 
@@ -379,10 +379,10 @@ namespace WF.Player.Core.Threading
 			{
 				bool isBusyChanged;
 
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
 					isBusyChanged = IsBusy;
-					isDisposed = value;
+					_isDisposed = value;
 					isBusyChanged = isBusyChanged ^ IsBusy;
 				}
 
@@ -400,9 +400,9 @@ namespace WF.Player.Core.Threading
 		{
 			get
 			{
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					return isSleeping;
+					return _isSleeping;
 				}
 			}
 
@@ -410,10 +410,10 @@ namespace WF.Player.Core.Threading
 			{
 				bool isBusyChanged;
 
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
 					isBusyChanged = IsBusy;
-					isSleeping = value;
+					_isSleeping = value;
 					isBusyChanged = isBusyChanged ^ IsBusy;
 				}
 
@@ -445,24 +445,24 @@ namespace WF.Player.Core.Threading
 			// Marks this object as disposed.
 			// Bye bye queue.
 			IsDisposed = true;
-			lock (syncRoot)
+			lock (_syncRoot)
 			{
-				jobQueue.Clear();
+				_jobQueue.Clear();
 			}
 
-			if (jobThread != null)
+			if (_jobThread != null)
 			{
 				// Bye bye thread: just wakes it up, it will die on its own
 				// now that _isDisposed is true.
-				jobThreadCanResumeEvent.Set();
+				_jobThreadCanResumeEvent.Set();
 
 				// Waits for the thread to die and then dispose other related resources.
-				jobThread.Join();
-				jobThreadCanResumeEvent.Dispose();
+				_jobThread.Join();
+				_jobThreadCanResumeEvent.Dispose();
 
 				// Bye bye.
-				jobThread = null;
-				jobThreadCanResumeEvent = null;
+				_jobThread = null;
+				_jobThreadCanResumeEvent = null;
 			}
 
 			// Bye bye other things?
@@ -498,9 +498,9 @@ namespace WF.Player.Core.Threading
 			}
 
 			// Adds the job to the queue.
-			lock (this.syncRoot)
+			lock (this._syncRoot)
 			{
-                this.jobQueue.Enqueue(new Job() { 
+                this._jobQueue.Enqueue(new Job() { 
                     Action = job,
 					Tag = tag
 #if DEBUG
@@ -515,7 +515,7 @@ namespace WF.Player.Core.Threading
 			// Signals the thread to go on if it is waiting.
 			if (wakeUpThread)
 			{
-				this.jobThreadCanResumeEvent.Set(); 
+				this._jobThreadCanResumeEvent.Set(); 
 			}
 		}
 
@@ -531,23 +531,23 @@ namespace WF.Player.Core.Threading
 			}
 			
 			// Creates the thread if it does not exist.
-			if (this.jobThread == null)
+			if (this._jobThread == null)
 			{
 				// Creates the thread.
-				this.jobThread = new Thread(ThreadMain)
+				this._jobThread = new Thread(ThreadMain)
 				{
-					Name = this.GetType().Name + "_" + this.syncRoot.GetHashCode(),
+					Name = this.GetType().Name + "_" + this._syncRoot.GetHashCode(),
 					IsBackground = true
 				};
 
 				// Creates the signaling event.
-				this.jobThreadCanResumeEvent = new AutoResetEvent(true);
+				this._jobThreadCanResumeEvent = new AutoResetEvent(true);
 			}
 
 			// Starts the thread if it is not alive.
-			if (!this.jobThread.IsAlive)
+			if (!this._jobThread.IsAlive)
 			{
-				this.jobThread.Start();
+				this._jobThread.Start();
 			}
 		}
 
@@ -558,27 +558,27 @@ namespace WF.Player.Core.Threading
 		/// <param name="tag">A tag to compare. Must not be null.</param>
 		protected void RemoveJobsWithTag(string tag)
 		{
-			lock (syncRoot)
+			lock (_syncRoot)
 			{
-				jobQueue.IgnoreTagUntilCurrentEndOfQueue(tag);
+				_jobQueue.IgnoreTagUntilCurrentEndOfQueue(tag);
 			}
 		}
 
 		private void OnContinuesOnCompletionChanged(bool newValue)
 		{
-			if (newValue && this.jobThread != null && this.jobThread.IsAlive)
+			if (newValue && this._jobThread != null && this._jobThread.IsAlive)
 			{
 				// Wakes the thread up, there may be some new things to do.
-				this.jobThreadCanResumeEvent.Set();
+				this._jobThreadCanResumeEvent.Set();
 			}
 		}
 
 		private void OnIsActiveChanged(bool value)
 		{
-			if (value && this.jobThread != null && this.jobThread.IsAlive)
+			if (value && this._jobThread != null && this._jobThread.IsAlive)
 			{
 				// Wakes the thread up, there may be some new things to do.
-				this.jobThreadCanResumeEvent.Set();
+				this._jobThreadCanResumeEvent.Set();
 			}
 		}
 
@@ -588,7 +588,7 @@ namespace WF.Player.Core.Threading
 
 		private void ThreadMain()
 		{
-			while (!this.isDisposed)
+			while (!this._isDisposed)
 			{
 				if (IsActive)
 				{
@@ -599,16 +599,16 @@ namespace WF.Player.Core.Threading
 					int jobsLeftToDo = 0;
 
 					// Gets the next job, if any.
-					lock (this.syncRoot)
+					lock (this._syncRoot)
 					{
 						// If the instance just got disposed, return immediately.
-						if (this.isDisposed)
+						if (this._isDisposed)
 						{
 							return;
 						}
 
 						// Gets the next job, or null if none is found.
-						nextJob = this.jobQueue.Dequeue();
+						nextJob = this._jobQueue.Dequeue();
 					}
 
 					// If there is a job to execute, do it.
@@ -618,9 +618,9 @@ namespace WF.Player.Core.Threading
 					}
 
 					// Gets how many jobs are still in queue.
-					lock (syncRoot)
+					lock (_syncRoot)
 					{
-						jobsLeftToDo = this.jobQueue.Count;
+						jobsLeftToDo = this._jobQueue.Count;
 					}
 
 					// If there are more jobs to do and we should do them, let's go!
@@ -639,7 +639,7 @@ namespace WF.Player.Core.Threading
 				}
 
 				// Zzzz.
-				this.jobThreadCanResumeEvent.WaitOne();
+				this._jobThreadCanResumeEvent.WaitOne();
 			}
 		}
 

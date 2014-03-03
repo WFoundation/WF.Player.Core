@@ -34,7 +34,7 @@ namespace WF.Player.Core
 
 		#endregion
 
-		#region Members
+		#region Fields
 
 		private RunOnGetInput _runOnGetInput;
 

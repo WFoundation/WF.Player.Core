@@ -30,7 +30,7 @@ namespace WF.Player.Core.Threading
 	/// </summary>
 	internal class ExecutionQueue : JobQueue
 	{
-		#region Members
+		#region Fields
 
         private List<ManualResetEvent> _waitEmptyResetEvents = new List<ManualResetEvent>();
         private object _syncRoot = new object();
