@@ -14,7 +14,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Wherigo Foundation")]
 [assembly: AssemblyProduct("Wherigo")]
-[assembly: AssemblyCopyright("Wherigo Foundation, 2012-2013")]
+[assembly: AssemblyCopyright("Wherigo Foundation, 2012-2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
