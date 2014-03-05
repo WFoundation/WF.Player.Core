@@ -35,9 +35,9 @@ namespace WF.Player.Core
 			IPlatformHelper platform = null;
 #if WINDOWS_PHONE
 			platform = new WinPhonePlatformHelper();
-#elif ANDROID
-			platform = new AndroidPlatformHelper();
-#elif iOS
+#elif MONODROID
+			platform = new AndroidPlatformHelper(null);
+#elif MONOTOUCH
 			platform = new iOSPlatformHelper();
 #else
 			platform = new DefaultPlatformHelper()

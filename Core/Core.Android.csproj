@@ -119,12 +119,12 @@
     <AndroidNativeLibrary Include="lib\x86\liblua5.1.so" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\Wherigo.luac" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Eluant\Eluant\Eluant.Android.csproj">
       <Project>{5913825E-0C80-4660-81B3-C2C55B35ADB6}</Project>
       <Name>Eluant.Android</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\Wherigo.luac" />
   </ItemGroup>
 </Project>
