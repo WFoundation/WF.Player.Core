@@ -242,23 +242,66 @@ namespace WF.Player.Core.Engines
 			EngineGameState? duringState = EngineGameState.Disposing, 
 			EngineGameState? afterState = EngineGameState.Disposed)
 		{
-			// Sets the state as disposed. Returns if it is already.
+			// Returns if the engine is already disposed.
 			lock (_syncRoot)
 			{
 				if (_gameState == EngineGameState.Disposed)
 				{
 					return;
 				}
+			}
 
-				// State change?
-				if (duringState.HasValue)
+			// State change?
+			if (duringState.HasValue)
+			{
+				GameState = duringState.Value; 
+			}
+
+			// Safe lua goes into disposal mode.
+			_dataFactory.LuaStateRethrowsExceptions = false;
+
+			// Let's clean managed resources first, since some of them may still try
+			// to access this instance's properties while this method is executing.
+			if (disposeManagedResources)
+			{
+				// Bye bye timers.
+				DisposeTimers();
+
+				// Bye bye threads.
+
+				// This is disposed before the dispatch pump, because it may still
+				// be executing actions that will try to use the pump.
+				if (_luaExecQueue != null)
 				{
-					GameState = duringState.Value; 
+					_luaExecQueue.IsBusyChanged -= new EventHandler(HandleLuaExecQueueIsBusyChanged);
+					_luaExecQueue.Dispose();
+					lock (_syncRoot)
+					{
+						_luaExecQueue = null;
+					}
 				}
 
-				// Safe lua goes into disposal mode.
-				_dataFactory.LuaStateRethrowsExceptions = false;
+				// This is disposed before this instance's properties because it
+				// may still be firing events that will try to access them.
+				if (_uiDispatchPump != null)
+				{
+					_uiDispatchPump.IsBusyChanged -= new EventHandler(HandleUIDispatchPumpIsBusyChanged);
+					_uiDispatchPump.Dispose();
+					lock (_syncRoot)
+					{
+						_uiDispatchPump = null;
+					}
+				}
 
+				// Disposes the data factory last.
+				_dataFactory.Dispose();
+			}
+
+			// Now that resources that may rely on the following resources
+			// are either disposed or purposely ignored, the rest of
+			// this instance's resources can be disposed.
+			lock(_syncRoot)
+			{
 				// Clears some members set by Init().
 				if (_cartridge != null)
 				{
@@ -287,41 +330,10 @@ namespace WF.Player.Core.Engines
 				VisibleObjects = null;
 			}
 
-			// Cleans managed resources in here.
-			if (disposeManagedResources)
+			// State change.
+			if (afterState.HasValue)
 			{
-				// Bye bye timers.
-				DisposeTimers();
-
-				// Bye bye threads.
-				if (_luaExecQueue != null)
-				{
-					_luaExecQueue.IsBusyChanged -= new EventHandler(HandleLuaExecQueueIsBusyChanged);
-					_luaExecQueue.Dispose();
-					lock (_syncRoot)
-					{
-						_luaExecQueue = null;
-					}
-				}
-
-				if (_uiDispatchPump != null)
-				{
-					_uiDispatchPump.IsBusyChanged -= new EventHandler(HandleUIDispatchPumpIsBusyChanged);
-					_uiDispatchPump.Dispose();
-					lock (_syncRoot)
-					{
-						_uiDispatchPump = null;
-					}
-				}
-
-				// Disposes the underlying objects.
-				_dataFactory.Dispose();
-
-				// State change.
-				if (afterState.HasValue)
-				{
-					GameState = afterState.Value;
-				}
+				GameState = afterState.Value;
 			}
 		}
 
