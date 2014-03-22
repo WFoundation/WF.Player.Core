@@ -1,7 +1,7 @@
 ///
 /// WF.Player.Core - A Wherigo Player Core for different platforms.
-/// Copyright (C) 2012-2013  Dirk Weltz <web@weltz-online.de>
-/// Copyright (C) 2012-2013  Brice Clocher <contact@cybisoft.net>
+/// Copyright (C) 2012-2014  Dirk Weltz <web@weltz-online.de>
+/// Copyright (C) 2012-2014  Brice Clocher <contact@cybisoft.net>
 ///
 /// This program is free software: you can redistribute it and/or modify
 /// it under the terms of the GNU Lesser General Public License as
@@ -39,13 +39,13 @@ namespace WF.Player.Core.Engines
 #endif
 	public class WIGInternalImpl
 	{
-		#region Private variables
+		#region Fields
 
-		private Engine engine;
+		private Engine _engine;
 
-		private LuaDataFactory dataFactory;
+		private LuaDataFactory _dataFactory;
 
-		private GeoMathHelper mathHelper;
+		private GeoMathHelper _mathHelper;
 
 		#endregion
 
@@ -78,9 +78,9 @@ namespace WF.Player.Core.Engines
 
 		internal WIGInternalImpl(Engine engine, LuaDataFactory dataFactory)
 		{
-			this.engine = engine;
-			this.dataFactory = dataFactory;
-			this.mathHelper = new GeoMathHelper(dataFactory);
+			this._engine = engine;
+			this._dataFactory = dataFactory;
+			this._mathHelper = new GeoMathHelper(dataFactory);
 			LuaDataContainer wiginternal = dataFactory.CreateContainerAt("WIGInternal");
 
 			// WIGInternal Lua hooks: UI-related events
@@ -136,7 +136,7 @@ namespace WF.Player.Core.Engines
 			int nlevel = Convert.ToInt32(level);
 			string nmessage = message ?? "";
 
-			engine.HandleLogMessage(nlevel, nmessage);
+			_engine.HandleLogMessage(nlevel, nmessage);
 		}
 
 		public void MessageBox(string text, double idxMediaObj, string btn1Label, string btn2Label, LuaFunction provider)
@@ -145,11 +145,11 @@ namespace WF.Player.Core.Engines
 			int nidxMediaObj = Convert.ToInt32(idxMediaObj);
 			string nbtn1Label = btn1Label == null ? "" : (string)btn1Label;
 			string nbtn2Label = btn2Label == null ? "" : (string)btn2Label;
-			IDataProvider nprovider = dataFactory.GetProvider((LuaFunction)provider, protectFromGC: true);
+			IDataProvider nprovider = _dataFactory.GetProvider((LuaFunction)provider, protectFromGC: true);
 
-			engine.HandleShowMessage(
+			_engine.HandleShowMessage(
 				ntext,
-				dataFactory.GetWherigoObject<Media>(nidxMediaObj),
+				_dataFactory.GetWherigoObject<Media>(nidxMediaObj),
 				nbtn1Label,
 				nbtn2Label,
 				nprovider
@@ -159,23 +159,23 @@ namespace WF.Player.Core.Engines
 		public void GetInput(LuaTable input)
 		{
 			if (input != null)
-				engine.HandleGetInput(dataFactory.GetWherigoObject<Input>(input));
+				_engine.HandleGetInput(_dataFactory.GetWherigoObject<Input>(input));
 		}
 
 		public void MediaEvent(double type, LuaTable media)
 		{
 			int ntype = Convert.ToInt32(type);
 
-			Media mediaObj = media == null ? null : dataFactory.GetWherigoObject<Media>(media);
+			Media mediaObj = media == null ? null : _dataFactory.GetWherigoObject<Media>(media);
 
-			engine.HandlePlayMedia(ntype, mediaObj);
+			_engine.HandlePlayMedia(ntype, mediaObj);
 		}
 
 		public void ShowStatusText(string text)
 		{
 			string ntext = text == null ? "" : (string)text;
 
-			engine.HandleShowStatusText(ntext);
+			_engine.HandleShowStatusText(ntext);
 		}
 
 		public void ShowScreen(double screen, double idxObj)
@@ -183,14 +183,14 @@ namespace WF.Player.Core.Engines
 			int nscreen = Convert.ToInt32(screen);
 			int nidxObj = Convert.ToInt32(idxObj);
 
-			engine.HandleShowScreen(nscreen, nidxObj);
+			_engine.HandleShowScreen(nscreen, nidxObj);
 		}
 
 		public void NotifyOS(string command)
 		{
 			string ncommand = command == null ? "" : (string)command;
 
-			engine.HandleNotifyOS(ncommand);
+			_engine.HandleNotifyOS(ncommand);
 		}
 
 		#endregion
@@ -211,7 +211,7 @@ namespace WF.Player.Core.Engines
 			// "Complete"
 			// "CorrectState"
 
-			engine.HandleAttributeChanged(dataFactory.GetWherigoObject(obj), type);
+			_engine.HandleAttributeChanged(_dataFactory.GetWherigoObject(obj), type);
 
 		}
 
@@ -221,20 +221,20 @@ namespace WF.Player.Core.Engines
 			// "complete"
 			// "sync"
 
-			engine.HandleCartridgeChanged(type);
+			_engine.HandleCartridgeChanged(type);
 		}
 
 		public void CommandChangedEvent(LuaTable zcmd)
 		{
-			engine.HandleCommandChanged(dataFactory.GetWherigoObject<Command>(zcmd));
+			_engine.HandleCommandChanged(_dataFactory.GetWherigoObject<Command>(zcmd));
 		}
 
 		public void InventoryEvent(LuaTable obj, LuaTable fromContainer, LuaTable toContainer)
 		{
-			engine.HandleInventoryChanged(
-				dataFactory.GetWherigoObject<Thing>(obj),
-				dataFactory.GetWherigoObject<Thing>(fromContainer),
-				dataFactory.GetWherigoObject<Thing>(toContainer)
+			_engine.HandleInventoryChanged(
+				_dataFactory.GetWherigoObject<Thing>(obj),
+				_dataFactory.GetWherigoObject<Thing>(fromContainer),
+				_dataFactory.GetWherigoObject<Thing>(toContainer)
 			);
 		}
 
@@ -242,20 +242,20 @@ namespace WF.Player.Core.Engines
 		{
 			string ntype = type == null ? "" : (string)type;
 
-			Timer timerObj = dataFactory.GetWherigoObject<Timer>(timer);
+			Timer timerObj = _dataFactory.GetWherigoObject<Timer>(timer);
 
 			if ("start".Equals(ntype))
-				engine.HandleTimerStarted(timerObj);
+				_engine.HandleTimerStarted(timerObj);
 
 			else if ("stop".Equals(ntype))
-				engine.HandleTimerStopped(timerObj);
+				_engine.HandleTimerStopped(timerObj);
 		}
 
 		public void ZoneStateChangedEvent(LuaTable zoneList)
 		{
-			IDataContainer zones = zoneList == null ? dataFactory.CreateContainer() : dataFactory.GetContainer(zoneList);
+			IDataContainer zones = zoneList == null ? _dataFactory.CreateContainer() : _dataFactory.GetContainer(zoneList);
 
-			engine.HandleZoneStateChanged(dataFactory.GetWherigoObjectList<Zone>(zones));
+			_engine.HandleZoneStateChanged(_dataFactory.GetWherigoObjectList<Zone>(zones));
 		}
 
 		#endregion
@@ -270,11 +270,11 @@ namespace WF.Player.Core.Engines
 			}
 
 			// Gets the data model entities.
-			ZonePoint zonePointEntity = dataFactory.GetWherigoObject<ZonePoint>(zonePoint);
-			Zone zoneEntity = dataFactory.GetWherigoObject<Zone>(zone);
+			ZonePoint zonePointEntity = _dataFactory.GetWherigoObject<ZonePoint>(zonePoint);
+			Zone zoneEntity = _dataFactory.GetWherigoObject<Zone>(zone);
 
 			// Computes and returns.
-			return mathHelper.IsPointInZone(zonePointEntity, zoneEntity);
+			return _mathHelper.IsPointInZone(zonePointEntity, zoneEntity);
 		}
 
 		public LuaVararg VectorToZoneLua(LuaTable zonePoint, LuaTable zone)
@@ -287,14 +287,14 @@ namespace WF.Player.Core.Engines
 			}
 
 			// Gets the data model entities.
-			ZonePoint zonePointEntity = dataFactory.GetWherigoObject<ZonePoint>(zonePoint);
-			Zone zoneEntity = dataFactory.GetWherigoObject<Zone>(zone);
+			ZonePoint zonePointEntity = _dataFactory.GetWherigoObject<ZonePoint>(zonePoint);
+			Zone zoneEntity = _dataFactory.GetWherigoObject<Zone>(zone);
 
 			// Performs the computation.
-			LocationVector vector = mathHelper.VectorToZone(zonePointEntity, zoneEntity);
+			LocationVector vector = _mathHelper.VectorToZone(zonePointEntity, zoneEntity);
 
 			// Prepares the lua return.
-			ret.Add(vector.Distance != null ? (LuaValue)dataFactory.GetNativeContainer(vector.Distance) : LuaNil.Instance);
+			ret.Add(vector.Distance != null ? (LuaValue)_dataFactory.GetNativeContainer(vector.Distance) : LuaNil.Instance);
 			ret.Add(vector.Bearing);
 
 			return new LuaVararg(ret, true);
@@ -313,19 +313,19 @@ namespace WF.Player.Core.Engines
 			}
 
 			// Gets the data model entities.
-			ZonePoint zonePointEntity = dataFactory.GetWherigoObject<ZonePoint>(zonePoint);
-			ZonePoint firstLinezonePointEntity = dataFactory.GetWherigoObject<ZonePoint>(firstLineZonePoint);
-			ZonePoint secondLinezonePointEntity = dataFactory.GetWherigoObject<ZonePoint>(secondLineZonePoint);
+			ZonePoint zonePointEntity = _dataFactory.GetWherigoObject<ZonePoint>(zonePoint);
+			ZonePoint firstLinezonePointEntity = _dataFactory.GetWherigoObject<ZonePoint>(firstLineZonePoint);
+			ZonePoint secondLinezonePointEntity = _dataFactory.GetWherigoObject<ZonePoint>(secondLineZonePoint);
 
 			// Performs the computation.
-			LocationVector lv = mathHelper.VectorToSegment(
-				dataFactory.GetWherigoObject<ZonePoint>(zonePoint),
-				dataFactory.GetWherigoObject<ZonePoint>(firstLineZonePoint),
-				dataFactory.GetWherigoObject<ZonePoint>(secondLineZonePoint)
+			LocationVector lv = _mathHelper.VectorToSegment(
+				_dataFactory.GetWherigoObject<ZonePoint>(zonePoint),
+				_dataFactory.GetWherigoObject<ZonePoint>(firstLineZonePoint),
+				_dataFactory.GetWherigoObject<ZonePoint>(secondLineZonePoint)
 			);
 
 			// Prepares the lua return.
-			ret.Add(dataFactory.GetNativeContainer(lv.Distance));
+			ret.Add(_dataFactory.GetNativeContainer(lv.Distance));
 			ret.Add(lv.Bearing.GetValueOrDefault());
 			return new LuaVararg(ret, true);
 		}
@@ -335,17 +335,17 @@ namespace WF.Player.Core.Engines
 			List<LuaValue> ret = new List<LuaValue>(2);
 
 			// Gets the data model entities.
-			ZonePoint zonePoint1Entity = dataFactory.GetWherigoObject<ZonePoint>(zonePoint1);
-			ZonePoint zonePoint2Entity = dataFactory.GetWherigoObject<ZonePoint>(zonePoint2);
+			ZonePoint zonePoint1Entity = _dataFactory.GetWherigoObject<ZonePoint>(zonePoint1);
+			ZonePoint zonePoint2Entity = _dataFactory.GetWherigoObject<ZonePoint>(zonePoint2);
 
 			// Performs the computation.
-			LocationVector lv = mathHelper.VectorToPoint(
-				dataFactory.GetWherigoObject<ZonePoint>(zonePoint1),
-				dataFactory.GetWherigoObject<ZonePoint>(zonePoint2)
+			LocationVector lv = _mathHelper.VectorToPoint(
+				_dataFactory.GetWherigoObject<ZonePoint>(zonePoint1),
+				_dataFactory.GetWherigoObject<ZonePoint>(zonePoint2)
 			);
 
 			// Prepares the lua return.
-			ret.Add(dataFactory.GetNativeContainer(lv.Distance));
+			ret.Add(_dataFactory.GetNativeContainer(lv.Distance));
 			ret.Add(lv.Bearing.GetValueOrDefault());
 			return new LuaVararg(ret, true);
 		}
@@ -353,19 +353,19 @@ namespace WF.Player.Core.Engines
 		public LuaTable TranslatePointLua(LuaTable zonePoint, LuaTable distance, double bearing)
 		{
 			// Gets the data model entities.
-			ZonePoint zonePointEntity = dataFactory.GetWherigoObject<ZonePoint>(zonePoint);
-			Distance distanceEntity = dataFactory.GetWherigoObject<Distance>(distance);
+			ZonePoint zonePointEntity = _dataFactory.GetWherigoObject<ZonePoint>(zonePoint);
+			Distance distanceEntity = _dataFactory.GetWherigoObject<Distance>(distance);
 
 			// Performs the computation.
-			ZonePoint ret = mathHelper.TranslatePoint(
-				dataFactory.GetWherigoObject<ZonePoint>(zonePoint),
+			ZonePoint ret = _mathHelper.TranslatePoint(
+				_dataFactory.GetWherigoObject<ZonePoint>(zonePoint),
 				new LocationVector(
-					dataFactory.GetWherigoObject<Distance>(distance),
+					_dataFactory.GetWherigoObject<Distance>(distance),
 					bearing
 				)
 			);
 
-			return dataFactory.GetNativeContainer(ret);
+			return _dataFactory.GetNativeContainer(ret);
 		}
 
 		#endregion

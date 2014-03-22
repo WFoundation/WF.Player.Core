@@ -1,7 +1,7 @@
 ///
 /// WF.Player.Core - A Wherigo Player Core for different platforms.
-/// Copyright (C) 2012-2013  Dirk Weltz <web@weltz-online.de>
-/// Copyright (C) 2012-2013  Brice Clocher <contact@cybisoft.net>
+/// Copyright (C) 2012-2014  Dirk Weltz <web@weltz-online.de>
+/// Copyright (C) 2012-2014  Brice Clocher <contact@cybisoft.net>
 ///
 /// This program is free software: you can redistribute it and/or modify
 /// it under the terms of the GNU Lesser General Public License as
@@ -51,17 +51,17 @@ namespace WF.Player.Core.Engines
 
 			public ExecutionQueue LuaExecutionQueue
 			{
-				get { return _engine.luaExecQueue; }
+				get { return _engine._luaExecQueue; }
 			}
 
 			public Character Player
 			{
-				get { return _engine.player; }
+				get { return _engine._player; }
 			}
 
 			public Cartridge Cartridge
 			{
-				get { return _engine.cartridge; }
+				get { return _engine._cartridge; }
 			}
 
 			internal LuaDataFactoryHelper(Engine engine)
@@ -72,51 +72,51 @@ namespace WF.Player.Core.Engines
 
 		#endregion
 
-		#region Private variables
+		#region Fields
 
-		private IPlatformHelper platformHelper;
+		private IPlatformHelper _platformHelper;
 
-		private Cartridge cartridge;
-		private Character player;
+		private Cartridge _cartridge;
+		private Character _player;
 
-		private double lat = 0;
-		private double lon = 0;
-		private double alt = 0;
-		private double accuracy = 0;
-		private bool hasValidLocation = false;
-		private bool hasDirtyLocation = false;
+		private double _lat = 0;
+		private double _lon = 0;
+		private double _alt = 0;
+		private double _accuracy = 0;
+		private bool _hasValidLocation = false;
+		private bool _hasDirtyLocation = false;
 		//private double heading = 0;
 
-		private WherigoCollection<Thing> visibleInventory;
-		private WherigoCollection<Thing> visibleObjects;
-		private WherigoCollection<Zone> activeVisibleZones;
-		private WherigoCollection<Task> activeVisibleTasks;
+		private WherigoCollection<Thing> _visibleInventory;
+		private WherigoCollection<Thing> _visibleObjects;
+		private WherigoCollection<Zone> _activeVisibleZones;
+		private WherigoCollection<Task> _activeVisibleTasks;
 
-		private EngineGameState gameState;
-		private bool isReady;
-		private bool isBusy;
+		private EngineGameState _gameState;
+		private bool _isReady;
+		private bool _isBusy;
 
-		private ExecutionQueue luaExecQueue;
-		private ActionPump uiDispatchPump;
+		private ExecutionQueue _luaExecQueue;
+		private ActionPump _uiDispatchPump;
 
-		private WIGInternalImpl wherigo;
+		private WIGInternalImpl _wigInternal;
 
-		private Dictionary<int, System.Threading.Timer> timers;
+		private Dictionary<int, System.Threading.Timer> _timers;
 
-		private LuaDataFactory dataFactory;
+		private LuaDataFactory _dataFactory;
 
-		private GeoMathHelper geoMathHelper;
+		private GeoMathHelper _geoMathHelper;
 
-		private object syncRoot = new object();
+		private object _syncRoot = new object();
 
 		#endregion
 
 		#region Constants
 
-		private const int internalTimerDuration = 1000;
+		private const int INTERNAL_TIMER_DURATION = 1000;
 
-		public static readonly string CorePlatform = "WF.Player.Core";
-		public static readonly string CoreVersion = "0.3.0";
+		public const string CORE_PLATFORM = "WF.Player.Core";
+		public const string CORE_VERSION = "0.3.0";
 
 		#endregion
 
@@ -168,16 +168,16 @@ namespace WF.Player.Core.Engines
 				throw new ArgumentNullException("platform");
 
 			// Base objects.
-			platformHelper = platform;
-			timers = new Dictionary<int, System.Threading.Timer>();
-			dataFactory = new LuaDataFactory(new LuaDataFactoryHelper(this));
-			geoMathHelper = new GeoMathHelper(dataFactory);
+			_platformHelper = platform;
+			_timers = new Dictionary<int, System.Threading.Timer>();
+			_dataFactory = new LuaDataFactory(new LuaDataFactoryHelper(this));
+			_geoMathHelper = new GeoMathHelper(_dataFactory);
 
 			// Create Wherigo environment
-			wherigo = new WIGInternalImpl(this, dataFactory);
+			_wigInternal = new WIGInternalImpl(this, _dataFactory);
 
 			// Set definitions from Wherigo for ShowScreen
-			LuaDataContainer wherigoTable = dataFactory.GetContainerAt("Wherigo");
+			LuaDataContainer wherigoTable = _dataFactory.GetContainerAt("Wherigo");
 			wherigoTable["MAINSCREEN"] = (int)ScreenType.Main;
 			wherigoTable["LOCATIONSCREEN"] = (int)ScreenType.Locations;
 			wherigoTable["ITEMSCREEN"] = (int)ScreenType.Items;
@@ -193,32 +193,32 @@ namespace WF.Player.Core.Engines
 			wherigoTable["LOGERROR"] = (int)LogLevel.Error;
 
 			// Get information about the player
-			LuaDataContainer env = dataFactory.CreateContainerAt("Env");
+			LuaDataContainer env = _dataFactory.CreateContainerAt("Env");
 
 			// Set defaults
-			env["Ok"] = platformHelper.Ok;
-			env["EmptyYouSeeListText"] = platformHelper.EmptyYouSeeListText;
-			env["EmptyInventoryListText"] = platformHelper.EmptyInventoryListText;
-			env["EmptyTasksListText"] = platformHelper.EmptyTasksListText;
-			env["EmptyZonesListText"] = platformHelper.EmptyZonesListText;
-			env["EmptyTargetListText"] = platformHelper.EmptyTargetListText;
-			env["CartFolder"] = platformHelper.CartridgeFolder;
-			env["SyncFolder"] = platformHelper.SavegameFolder;
-			env["LogFolder"] = platformHelper.LogFolder;
-			env["PathSep"] = platformHelper.PathSeparator;
+			env["Ok"] = _platformHelper.Ok;
+			env["EmptyYouSeeListText"] = _platformHelper.EmptyYouSeeListText;
+			env["EmptyInventoryListText"] = _platformHelper.EmptyInventoryListText;
+			env["EmptyTasksListText"] = _platformHelper.EmptyTasksListText;
+			env["EmptyZonesListText"] = _platformHelper.EmptyZonesListText;
+			env["EmptyTargetListText"] = _platformHelper.EmptyTargetListText;
+			env["CartFolder"] = _platformHelper.CartridgeFolder;
+			env["SyncFolder"] = _platformHelper.SavegameFolder;
+			env["LogFolder"] = _platformHelper.LogFolder;
+			env["PathSep"] = _platformHelper.PathSeparator;
 			env["Downloaded"] = 0.0;
-			env["Platform"] = String.Format("{0} ({1})", CorePlatform, platformHelper.Platform);
-			env["Device"] = platformHelper.Device;
-			env["DeviceID"] = platformHelper.DeviceId;
-			env["Version"] = String.Format("{0} ({1} {2})", platformHelper.ClientVersion, CorePlatform, CoreVersion);
+			env["Platform"] = String.Format("{0} ({1})", CORE_PLATFORM, _platformHelper.Platform);
+			env["Device"] = _platformHelper.Device;
+			env["DeviceID"] = _platformHelper.DeviceId;
+			env["Version"] = String.Format("{0} ({1} {2})", _platformHelper.ClientVersion, CORE_PLATFORM, CORE_VERSION);
 
 			// Creates job queues that runs in another thread.
-			luaExecQueue = new ExecutionQueue();
-			uiDispatchPump = new ActionPump();
+			_luaExecQueue = new ExecutionQueue();
+			_uiDispatchPump = new ActionPump();
 
 			// Sets some event handlers for the job queues.
-			luaExecQueue.IsBusyChanged += new EventHandler(HandleLuaExecQueueIsBusyChanged);
-			uiDispatchPump.IsBusyChanged += new EventHandler(HandleUIDispatchPumpIsBusyChanged);
+			_luaExecQueue.IsBusyChanged += new EventHandler(HandleLuaExecQueueIsBusyChanged);
+			_uiDispatchPump.IsBusyChanged += new EventHandler(HandleUIDispatchPumpIsBusyChanged);
 
 			// Sets the game state.
 			GameState = EngineGameState.Uninitialized;
@@ -242,42 +242,85 @@ namespace WF.Player.Core.Engines
 			EngineGameState? duringState = EngineGameState.Disposing, 
 			EngineGameState? afterState = EngineGameState.Disposed)
 		{
-			// Sets the state as disposed. Returns if it is already.
-			lock (syncRoot)
+			// Returns if the engine is already disposed.
+			lock (_syncRoot)
 			{
-				if (gameState == EngineGameState.Disposed)
+				if (_gameState == EngineGameState.Disposed)
 				{
 					return;
 				}
+			}
 
-				// State change?
-				if (duringState.HasValue)
+			// State change?
+			if (duringState.HasValue)
+			{
+				GameState = duringState.Value; 
+			}
+
+			// Safe lua goes into disposal mode.
+			_dataFactory.LuaStateRethrowsExceptions = false;
+
+			// Let's clean managed resources first, since some of them may still try
+			// to access this instance's properties while this method is executing.
+			if (disposeManagedResources)
+			{
+				// Bye bye timers.
+				DisposeTimers();
+
+				// Bye bye threads.
+
+				// This is disposed before the dispatch pump, because it may still
+				// be executing actions that will try to use the pump.
+				if (_luaExecQueue != null)
 				{
-					GameState = duringState.Value; 
+					_luaExecQueue.IsBusyChanged -= new EventHandler(HandleLuaExecQueueIsBusyChanged);
+					_luaExecQueue.Dispose();
+					lock (_syncRoot)
+					{
+						_luaExecQueue = null;
+					}
 				}
 
-				// Safe lua goes into disposal mode.
-				dataFactory.LuaStateRethrowsExceptions = false;
-
-				// Clears some members set by Init().
-				if (cartridge != null)
+				// This is disposed before this instance's properties because it
+				// may still be firing events that will try to access them.
+				if (_uiDispatchPump != null)
 				{
-					cartridge.DataContainer = null;
-					cartridge = null;
+					_uiDispatchPump.IsBusyChanged -= new EventHandler(HandleUIDispatchPumpIsBusyChanged);
+					_uiDispatchPump.Dispose();
+					lock (_syncRoot)
+					{
+						_uiDispatchPump = null;
+					}
+				}
+
+				// Disposes the data factory last.
+				_dataFactory.Dispose();
+			}
+
+			// Now that resources that may rely on the following resources
+			// are either disposed or purposely ignored, the rest of
+			// this instance's resources can be disposed.
+			lock(_syncRoot)
+			{
+				// Clears some members set by Init().
+				if (_cartridge != null)
+				{
+					_cartridge.DataContainer = null;
+					_cartridge = null;
 					RaisePropertyChanged("Cartridge", false);
 				}
-				if (player != null)
+				if (_player != null)
 				{
-					player.DataContainer = null;
-					player = null;
+					_player.DataContainer = null;
+					_player = null;
 					RaisePropertyChanged("Player", false);
 				}
-				geoMathHelper = null;
+				_geoMathHelper = null;
 
 				// Unhooks WIGInternal.
-				if (wherigo != null)
+				if (_wigInternal != null)
 				{
-					wherigo = null;
+					_wigInternal = null;
 				}
 
 				// Clears the different lists.
@@ -287,41 +330,10 @@ namespace WF.Player.Core.Engines
 				VisibleObjects = null;
 			}
 
-			// Cleans managed resources in here.
-			if (disposeManagedResources)
+			// State change.
+			if (afterState.HasValue)
 			{
-				// Bye bye timers.
-				DisposeTimers();
-
-				// Bye bye threads.
-				if (luaExecQueue != null)
-				{
-					luaExecQueue.IsBusyChanged -= new EventHandler(HandleLuaExecQueueIsBusyChanged);
-					luaExecQueue.Dispose();
-					lock (syncRoot)
-					{
-						luaExecQueue = null;
-					}
-				}
-
-				if (uiDispatchPump != null)
-				{
-					uiDispatchPump.IsBusyChanged -= new EventHandler(HandleUIDispatchPumpIsBusyChanged);
-					uiDispatchPump.Dispose();
-					lock (syncRoot)
-					{
-						uiDispatchPump = null;
-					}
-				}
-
-				// Disposes the underlying objects.
-				dataFactory.Dispose();
-
-				// State change.
-				if (afterState.HasValue)
-				{
-					GameState = afterState.Value;
-				}
+				GameState = afterState.Value;
 			}
 		}
 
@@ -329,15 +341,15 @@ namespace WF.Player.Core.Engines
 		{
 			AutoResetEvent waitHandle = new AutoResetEvent(false);
 
-			foreach (var timer in timers.Values.ToList())
+			foreach (var timer in _timers.Values.ToList())
 			{
 				timer.Dispose(waitHandle);
 				waitHandle.WaitOne();
 			}
 
-			lock (syncRoot)
+			lock (_syncRoot)
 			{
-				timers.Clear();
+				_timers.Clear();
 			}
 		}
 
@@ -350,9 +362,9 @@ namespace WF.Player.Core.Engines
 		{
 			get
 			{
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					return alt;
+					return _alt;
 				}
 			}
 		}
@@ -361,9 +373,9 @@ namespace WF.Player.Core.Engines
 		{
 			get
 			{
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					return accuracy;
+					return _accuracy;
 				}
 			}
 		}
@@ -394,9 +406,9 @@ namespace WF.Player.Core.Engines
 		{
 			get
 			{
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					return cartridge;
+					return _cartridge;
 				}
 			}
 		}
@@ -416,9 +428,9 @@ namespace WF.Player.Core.Engines
 		{
 			get
 			{
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					return lat;
+					return _lat;
 				}
 			}
 		}
@@ -427,9 +439,9 @@ namespace WF.Player.Core.Engines
 		{
 			get
 			{
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					return lon;
+					return _lon;
 				}
 			}
 		}
@@ -438,9 +450,9 @@ namespace WF.Player.Core.Engines
 		{
 			get
 			{
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					return player;
+					return _player;
 				}
 			}
 		}
@@ -449,9 +461,9 @@ namespace WF.Player.Core.Engines
 		{
 			get
 			{
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					return activeVisibleTasks ?? new WherigoCollection<Task>();
+					return _activeVisibleTasks ?? new WherigoCollection<Task>();
 				}
 			}
 
@@ -460,11 +472,11 @@ namespace WF.Player.Core.Engines
 				bool valueChanged = false;
 
 				// Thread-safely sets the value.
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					if (activeVisibleTasks != value)
+					if (_activeVisibleTasks != value)
 					{
-						activeVisibleTasks = value;
+						_activeVisibleTasks = value;
 						valueChanged = true;
 					}
 				}
@@ -479,9 +491,9 @@ namespace WF.Player.Core.Engines
 		{
 			get
 			{
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					return activeVisibleZones ?? new WherigoCollection<Zone>();
+					return _activeVisibleZones ?? new WherigoCollection<Zone>();
 				}
 			}
 
@@ -490,11 +502,11 @@ namespace WF.Player.Core.Engines
 				bool valueChanged = false;
 
 				// Thread-safely sets the value.
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					if (activeVisibleZones != value)
+					if (_activeVisibleZones != value)
 					{
-						activeVisibleZones = value;
+						_activeVisibleZones = value;
 						valueChanged = true;
 					}
 				}
@@ -512,9 +524,9 @@ namespace WF.Player.Core.Engines
 		{
 			get
 			{
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					return visibleInventory ?? new WherigoCollection<Thing>();
+					return _visibleInventory ?? new WherigoCollection<Thing>();
 				}
 			}
 
@@ -523,11 +535,11 @@ namespace WF.Player.Core.Engines
 				bool valueChanged = false;
 
 				// Thread-safely sets the value.
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					if (visibleInventory != value)
+					if (_visibleInventory != value)
 					{
-						visibleInventory = value;
+						_visibleInventory = value;
 						valueChanged = true;
 					}
 				}
@@ -542,9 +554,9 @@ namespace WF.Player.Core.Engines
 		{
 			get
 			{
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					return visibleObjects ?? new WherigoCollection<Thing>();
+					return _visibleObjects ?? new WherigoCollection<Thing>();
 				}
 			}
 
@@ -553,11 +565,11 @@ namespace WF.Player.Core.Engines
 				bool valueChanged = false;
 
 				// Thread-safely sets the value.
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					if (visibleObjects != value)
+					if (_visibleObjects != value)
 					{
-						visibleObjects = value;
+						_visibleObjects = value;
 						valueChanged = true;
 					}
 				}
@@ -575,26 +587,26 @@ namespace WF.Player.Core.Engines
 		{
 			get
 			{
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					return gameState;
+					return _gameState;
 				}
 			}
 
 			private set
 			{
 				EngineGameState gs;
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					gs = gameState;
+					gs = _gameState;
 				}
 
 				if (gs != value)
 				{
 					// Changes the game state.
-					lock (syncRoot)
+					lock (_syncRoot)
 					{
-						gameState = value;
+						_gameState = value;
 					}
 
 					// Checks if IsReady needs to be changed.
@@ -621,25 +633,25 @@ namespace WF.Player.Core.Engines
 		{
 			get
 			{
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					return isReady;
+					return _isReady;
 				}
 			}
 
 			private set
 			{
 				bool ir;
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					ir = isReady;
+					ir = _isReady;
 				}
 
 				if (ir != value)
 				{
-					lock (syncRoot)
+					lock (_syncRoot)
 					{
-						isReady = value;
+						_isReady = value;
 					}
 
 					// This event is raised bypassing the ui dispatch pump because
@@ -654,25 +666,25 @@ namespace WF.Player.Core.Engines
 		{
 			get
 			{
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					return isBusy;
+					return _isBusy;
 				}
 			}
 
 			private set
 			{
 				bool ib;
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					ib = isBusy;
+					ib = _isBusy;
 				}
 
 				if (ib != value)
 				{
-					lock (syncRoot)
+					lock (_syncRoot)
 					{
-						isBusy = value;
+						_isBusy = value;
 					}
 
 					// This event is raised bypassing the ui dispatch pump because
@@ -753,29 +765,29 @@ namespace WF.Player.Core.Engines
 		private void InitCore(Cartridge cart)
 		{
 			// Various sets.
-			this.cartridge = cart;
-			dataFactory.GetContainerAt("Env")["CartFilename"] = cartridge.Filename;
+			this._cartridge = cart;
+			_dataFactory.GetContainerAt("Env")["CartFilename"] = _cartridge.Filename;
 
 			// Set player relevant data
-			player = dataFactory.GetWherigoObjectAt<Character>("Wherigo.Player");
-			LuaDataContainer playerTable = (LuaDataContainer)player.DataContainer;
-			playerTable["CompletionCode"] = cartridge.CompletionCode;
-			playerTable["Name"] = cartridge.Player;
+			_player = _dataFactory.GetWherigoObjectAt<Character>("Wherigo.Player");
+			LuaDataContainer playerTable = (LuaDataContainer)_player.DataContainer;
+			playerTable["CompletionCode"] = _cartridge.CompletionCode;
+			playerTable["Name"] = _cartridge.Player;
 
 			LuaDataContainer objLoc = playerTable.GetContainer("ObjectLocation");
-			objLoc["latitude"] = lat;
-			objLoc["longitude"] = lon;
-			objLoc["altitude"] = alt;
+			objLoc["latitude"] = _lat;
+			objLoc["longitude"] = _lon;
+			objLoc["altitude"] = _alt;
 
 			// Now start Lua binary chunk
-			byte[] luaBytes = cartridge.Resources[0].Data;
+			byte[] luaBytes = _cartridge.Resources[0].Data;
 
 			// TODO: Asynchronize below!
 
 			// Runs the init code.
-			LuaDataContainer cartridgeTable = dataFactory.LoadProvider(luaBytes, cartridge.Filename).FirstContainerOrDefault();
+			LuaDataContainer cartridgeTable = _dataFactory.LoadProvider(luaBytes, _cartridge.Filename).FirstContainerOrDefault();
 			playerTable["Cartridge"] = cartridgeTable;
-			cartridge.DataContainer = cartridgeTable;
+			_cartridge.DataContainer = cartridgeTable;
 
 			// State change.
 			GameState = EngineGameState.Initialized;
@@ -799,7 +811,7 @@ namespace WF.Player.Core.Engines
 			Dispose(true, EngineGameState.Uninitializing, null);
 
 			// Reinit instance.
-			InitInstance(this.platformHelper);
+			InitInstance(this._platformHelper);
 
 			// State change.
 			GameState = EngineGameState.Uninitialized;
@@ -818,8 +830,8 @@ namespace WF.Player.Core.Engines
 			GameState = EngineGameState.Starting;
 
 			// Starts the game.
-			luaExecQueue.BeginCallSelf(cartridge, "Start");
-			luaExecQueue.WaitEmpty();
+			_luaExecQueue.BeginCallSelf(_cartridge, "Start");
+			_luaExecQueue.WaitEmpty();
 
 			// Refreshes the values.
 			RefreshActiveVisibleTasksAsync();
@@ -847,8 +859,8 @@ namespace WF.Player.Core.Engines
 
 			DisposeTimers();
 
-			luaExecQueue.BeginCallSelf(cartridge, "Stop");
-			luaExecQueue.WaitEmpty();
+			_luaExecQueue.BeginCallSelf(_cartridge, "Stop");
+			_luaExecQueue.WaitEmpty();
 
 			// The last one stops the sound ;)
 			// Should be done immediately before the handler is gone
@@ -871,14 +883,14 @@ namespace WF.Player.Core.Engines
 			GameState = EngineGameState.Restoring;
 
 			new GWS(
-				cartridge,
-				player,
-				platformHelper,
-				dataFactory
+				_cartridge,
+				_player,
+				_platformHelper,
+				_dataFactory
 			).Load(stream);
 
-			luaExecQueue.BeginCallSelf(cartridge, "OnRestore");
-			luaExecQueue.WaitEmpty();
+			_luaExecQueue.BeginCallSelf(_cartridge, "OnRestore");
+			_luaExecQueue.WaitEmpty();
 
 			// Refreshes the values.
 			RefreshActiveVisibleTasksAsync();
@@ -908,15 +920,15 @@ namespace WF.Player.Core.Engines
 			GameState = EngineGameState.Saving;
 
 			// Informs the cartridge that saving starts.
-			luaExecQueue.BeginCallSelf(cartridge, "OnSync");
-			luaExecQueue.WaitEmpty();
+			_luaExecQueue.BeginCallSelf(_cartridge, "OnSync");
+			_luaExecQueue.WaitEmpty();
 
 			// Serialize all objects
 			new GWS(
-				cartridge,
-				player,
-				platformHelper,
-				dataFactory
+				_cartridge,
+				_player,
+				_platformHelper,
+				_dataFactory
 			).Save(stream);
 
 			// State change.
@@ -938,8 +950,8 @@ namespace WF.Player.Core.Engines
 			DisposeTimers();
 
 			// Pauses the action queues.
-			uiDispatchPump.IsPumping = false;
-			luaExecQueue.IsRunning = false;
+			_uiDispatchPump.IsPumping = false;
+			_luaExecQueue.IsRunning = false;
 
 			// State change.
 			GameState = EngineGameState.Paused;
@@ -957,8 +969,8 @@ namespace WF.Player.Core.Engines
 			GameState = EngineGameState.Resuming;
 
 			// Resumes the action queues.
-			uiDispatchPump.IsPumping = true;
-			luaExecQueue.IsRunning = true;
+			_uiDispatchPump.IsPumping = true;
+			_luaExecQueue.IsRunning = true;
 
 			// Restarts the timers.
 			RestartTimers();
@@ -969,7 +981,7 @@ namespace WF.Player.Core.Engines
 
 		public void FreeMemory()
 		{
-			dataFactory.RunScript("collectgarbage(\"collect\")");
+			_dataFactory.RunScript("collectgarbage(\"collect\")");
 		}
 
 		#endregion
@@ -986,7 +998,7 @@ namespace WF.Player.Core.Engines
 		/// required type.</exception>
 		public T GetWherigoObject<T>(int id) where T : WherigoObject
 		{
-			return dataFactory.GetWherigoObject<T>(id);
+			return _dataFactory.GetWherigoObject<T>(id);
 		}
 
 		/// <summary>
@@ -1001,7 +1013,7 @@ namespace WF.Player.Core.Engines
 		{
 			try
 			{
-				wObj = dataFactory.GetWherigoObject<T>(id) as T;
+				wObj = _dataFactory.GetWherigoObject<T>(id) as T;
 			}
 			catch (Exception)
 			{
@@ -1027,13 +1039,13 @@ namespace WF.Player.Core.Engines
 			// Sanity checks.
 			CheckStateForLuaAccess();
 
-			lock (syncRoot)
+			lock (_syncRoot)
 			{
-				this.lat = lat;
-				this.lon = lon;
-				this.alt = alt;
-				this.accuracy = accuracy;
-				this.hasValidLocation = true;
+				this._lat = lat;
+				this._lon = lon;
+				this._alt = alt;
+				this._accuracy = accuracy;
+				this._hasValidLocation = true;
 			}
 
 			ProcessLocationInternal();
@@ -1043,25 +1055,25 @@ namespace WF.Player.Core.Engines
 		{
 			// Checks if the location should be processed.
 			bool shouldProcessLocation = false;
-			lock (syncRoot)
+			lock (_syncRoot)
 			{
 				shouldProcessLocation =
 					GameState == EngineGameState.Playing &&
-					(this.hasValidLocation || this.hasDirtyLocation);
+					(this._hasValidLocation || this._hasDirtyLocation);
 			}
 
 			// If so, processes it.
 			if (shouldProcessLocation)
 			{
 				//System.Diagnostics.Debug.WriteLine("Engine: Will process location: {0} {1} {2} {3}", lat, lon, alt, accuracy);
-				luaExecQueue.BeginCallSelfUnique(player, "ProcessLocation", lat, lon, alt, accuracy);
+				_luaExecQueue.BeginCallSelfUnique(_player, "ProcessLocation", _lat, _lon, _alt, _accuracy);
 			}
 
 			// Marks the location clean or dirty depending on whether it was
 			// processed this time or not.
-			lock (syncRoot)
+			lock (_syncRoot)
 			{
-				this.hasDirtyLocation = !shouldProcessLocation;
+				this._hasDirtyLocation = !shouldProcessLocation;
 			}
 		}
 
@@ -1082,9 +1094,9 @@ namespace WF.Player.Core.Engines
 
 		public string CreateLogMessage(string message)
 		{
-			lock (syncRoot)
+			lock (_syncRoot)
 			{
-				return String.Format("{0:yyyyMMddhhmmss}|{1:+0.00000}|{2:+0.00000}|{3:+0.00000}|{4:+0.00000}|{5}", DateTime.Now.ToLocalTime(), lat, lon, alt, accuracy, message);
+				return String.Format("{0:yyyyMMddhhmmss}|{1:+0.00000}|{2:+0.00000}|{3:+0.00000}|{4:+0.00000}|{5}", DateTime.Now.ToLocalTime(), _lat, _lon, _alt, _accuracy, message);
 			}
 		}
 
@@ -1101,17 +1113,17 @@ namespace WF.Player.Core.Engines
 			}
 
 			// If we're not in the lua exec thread, be in it!
-			if (!luaExecQueue.IsSameThread)
+			if (!_luaExecQueue.IsSameThread)
 			{
-				luaExecQueue.BeginAction(RefreshActiveVisibleTasksAsync);
+				_luaExecQueue.BeginAction(RefreshActiveVisibleTasksAsync);
 				return;
 			}
 
-			if (player == null)
+			if (_player == null)
 				ActiveVisibleTasks = null;
 
 			// This executes in the lua exec thread, so it's fine to block.
-			ActiveVisibleTasks = player.DataContainer.GetWherigoObjectListFromProvider<Task>("GetActiveVisibleTasks");
+			ActiveVisibleTasks = _player.DataContainer.GetWherigoObjectListFromProvider<Task>("GetActiveVisibleTasks");
 		}
 
 		private void RefreshActiveVisibleZonesAsync()
@@ -1123,17 +1135,17 @@ namespace WF.Player.Core.Engines
 			}
 
 			// If we're not in the lua exec thread, be in it!
-			if (!luaExecQueue.IsSameThread)
+			if (!_luaExecQueue.IsSameThread)
 			{
-				luaExecQueue.BeginAction(RefreshActiveVisibleZonesAsync);
+				_luaExecQueue.BeginAction(RefreshActiveVisibleZonesAsync);
 				return;
 			}
 
-			if (player == null)
+			if (_player == null)
 				ActiveVisibleZones = null;
 
 			// This executes in the lua exec thread, so it's fine to block.
-			ActiveVisibleZones = player.DataContainer.GetWherigoObjectListFromProvider<Zone>("GetActiveVisibleZones");
+			ActiveVisibleZones = _player.DataContainer.GetWherigoObjectListFromProvider<Zone>("GetActiveVisibleZones");
 		}
 
 		private void RefreshVisibleInventoryAsync()
@@ -1145,17 +1157,17 @@ namespace WF.Player.Core.Engines
 			}
 
 			// If we're not in the lua exec thread, be in it!
-			if (!luaExecQueue.IsSameThread)
+			if (!_luaExecQueue.IsSameThread)
 			{
-				luaExecQueue.BeginAction(RefreshVisibleInventoryAsync);
+				_luaExecQueue.BeginAction(RefreshVisibleInventoryAsync);
 				return;
 			}
 
-			if (player == null)
+			if (_player == null)
 				VisibleInventory = null;
 
 			// This executes in the lua exec thread, so it's fine to block.
-			VisibleInventory = player.DataContainer.GetWherigoObjectListFromProvider<Thing>("GetVisibleInventory");
+			VisibleInventory = _player.DataContainer.GetWherigoObjectListFromProvider<Thing>("GetVisibleInventory");
 		}
 
 		private void RefreshVisibleObjectsAsync()
@@ -1167,17 +1179,17 @@ namespace WF.Player.Core.Engines
 			}
 
 			// If we're not in the lua exec thread, be in it!
-			if (!luaExecQueue.IsSameThread)
+			if (!_luaExecQueue.IsSameThread)
 			{
-				luaExecQueue.BeginAction(RefreshVisibleObjectsAsync);
+				_luaExecQueue.BeginAction(RefreshVisibleObjectsAsync);
 				return;
 			}
 
-			if (player == null)
+			if (_player == null)
 				VisibleObjects = null;
 
 			// This executes in the lua exec thread, so it's fine to block.
-			VisibleObjects = player.DataContainer.GetWherigoObjectListFromProvider<Thing>("GetVisibleObjects");
+			VisibleObjects = _player.DataContainer.GetWherigoObjectListFromProvider<Thing>("GetVisibleObjects");
 		}
 
 		private void RefreshThingVectorFromPlayerAsync(Thing t)
@@ -1189,9 +1201,9 @@ namespace WF.Player.Core.Engines
 			}
 
 			// If we're not in the lua exec thread, be in it!
-			if (!luaExecQueue.IsSameThread)
+			if (!_luaExecQueue.IsSameThread)
 			{
-				luaExecQueue.BeginAction(() => RefreshThingVectorFromPlayerAsync(t));
+				_luaExecQueue.BeginAction(() => RefreshThingVectorFromPlayerAsync(t));
 				return;
 			}
 
@@ -1214,11 +1226,11 @@ namespace WF.Player.Core.Engines
 			LocationVector ret;
 			if (isZone)
 			{
-				ret = geoMathHelper.VectorToZone(player.ObjectLocation, (Zone)t);
+				ret = _geoMathHelper.VectorToZone(_player.ObjectLocation, (Zone)t);
 			}
 			else
 			{
-				ret = geoMathHelper.VectorToPoint(player.ObjectLocation, thingLoc);
+				ret = _geoMathHelper.VectorToPoint(_player.ObjectLocation, thingLoc);
 			}
 
 			t.VectorFromPlayer = ret;
@@ -1238,7 +1250,7 @@ namespace WF.Player.Core.Engines
 		/// <param name="attribute">String with the name of the attribute that has changed.</param>
 		internal void HandleAttributeChanged(WherigoObject obj, string attribute)
 		{
-			if (cartridge == null)
+			if (_cartridge == null)
 			{
 				System.Diagnostics.Debug.WriteLine("Engine: WARNING: HandleAttributeChanged called with null cartridge.");
 				return;
@@ -1253,7 +1265,7 @@ namespace WF.Player.Core.Engines
 			// Raises the NotifyPropertyChanged event if this is a Cartridge or UIObject.
 			if (obj is Cartridge)
 			{
-				RaisePropertyChangedInObject(cartridge, attribute);
+				RaisePropertyChangedInObject(_cartridge, attribute);
 			}
 			else if (obj is UIObject)
 			{
@@ -1306,15 +1318,15 @@ namespace WF.Player.Core.Engines
 			if ("complete".Equals(ls))
 			{
 				// Marks the cartridge as completed.
-				cartridge.Complete = true;
+				_cartridge.Complete = true;
 
 				// Raises the event.
-				RaiseCartridgeCompleted(cartridge);
+				RaiseCartridgeCompleted(_cartridge);
 			}
 			else if ("sync".Equals(ls))
 			{
 				// Raises the event.
-				RaiseSaveRequested(cartridge, false);
+				RaiseSaveRequested(_cartridge, false);
 			}
 
 		}
@@ -1398,7 +1410,7 @@ namespace WF.Player.Core.Engines
 		{
 			if ("SaveClose".Equals(command))
 			{
-				RaiseSaveRequested(cartridge, true);
+				RaiseSaveRequested(_cartridge, true);
 			}
 			else if ("DriveTo".Equals(command))
 			{
@@ -1448,7 +1460,7 @@ namespace WF.Player.Core.Engines
 				media,
 				btn1Label,
 				btn2Label,
-				(retValue) => luaExecQueue.BeginCall(provider, retValue)));
+				(retValue) => _luaExecQueue.BeginCall(provider, retValue)));
 		}
 
 		/// <summary>
@@ -1466,7 +1478,7 @@ namespace WF.Player.Core.Engines
 			if (st == ScreenType.Details && idxObj > -1)
 			{
 				// Tries to get the object as an UIObject.
-				obj = dataFactory.GetWherigoObject<WherigoObject>(idxObj) as UIObject;
+				obj = _dataFactory.GetWherigoObject<WherigoObject>(idxObj) as UIObject;
 
 				// If the object is not a UIObject, discards the event because
 				// it is not part of the Wherigo spec.
@@ -1520,20 +1532,20 @@ namespace WF.Player.Core.Engines
 
 		private void HandleLuaExecQueueIsBusyChanged(object sender, EventArgs e)
 		{
-			bool leqIsBusy = luaExecQueue.IsBusy;
+			bool leqIsBusy = _luaExecQueue.IsBusy;
 
 			// Sets the UI dispatching action pump to be pumping when the lua exec queue
 			// is not busy.
-			uiDispatchPump.IsPumping = !leqIsBusy;
+			_uiDispatchPump.IsPumping = !leqIsBusy;
 
 			// The engine is busy if the lua execution queue or the ui dispatch pump are busy.
-			IsBusy = leqIsBusy || uiDispatchPump.IsBusy;
+			IsBusy = leqIsBusy || _uiDispatchPump.IsBusy;
 		}
 
 		private void HandleUIDispatchPumpIsBusyChanged(object sender, EventArgs e)
 		{
 			// The engine is busy if the lua execution queue or the ui dispatch pump are busy.
-			IsBusy = luaExecQueue.IsBusy || uiDispatchPump.IsBusy;
+			IsBusy = _luaExecQueue.IsBusy || _uiDispatchPump.IsBusy;
 		}
 
 		#endregion
@@ -1560,18 +1572,18 @@ namespace WF.Player.Core.Engines
 		private System.Threading.Timer CreateAndStartInternalTimer(int objIndex)
 		{
 			// Initializes a corresponding internal timer, but do not start it yet.
-			System.Threading.Timer timer = new System.Threading.Timer(InternalTimerTick, objIndex, Timeout.Infinite, internalTimerDuration);
+			System.Threading.Timer timer = new System.Threading.Timer(InternalTimerTick, objIndex, Timeout.Infinite, INTERNAL_TIMER_DURATION);
 
 			// Keeps track of the timer.
 			// TODO: What happens if the timer is already in the dictionary?
-			lock (syncRoot)
+			lock (_syncRoot)
 			{
-				if (!timers.ContainsKey(objIndex))
-					timers.Add(objIndex, timer);
+				if (!_timers.ContainsKey(objIndex))
+					_timers.Add(objIndex, timer);
 			}
 
 			// Starts the timer, now that it is registered.
-			timer.Change(internalTimerDuration, internalTimerDuration);
+			timer.Change(INTERNAL_TIMER_DURATION, INTERNAL_TIMER_DURATION);
 
 			return timer;
 		}
@@ -1585,18 +1597,18 @@ namespace WF.Player.Core.Engines
 
 			// TODO: What happens if the timer is not in the dictionary?
 			bool shouldRemove = false;
-			lock (syncRoot)
+			lock (_syncRoot)
 			{
-				shouldRemove = timers.ContainsKey(objIndex);
+				shouldRemove = _timers.ContainsKey(objIndex);
 			}
 			if (shouldRemove)
 			{
-				System.Threading.Timer timer = timers[objIndex];
+				System.Threading.Timer timer = _timers[objIndex];
 
 				timer.Dispose();
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					timers.Remove(objIndex);
+					_timers.Remove(objIndex);
 				}
 			}
 
@@ -1612,7 +1624,7 @@ namespace WF.Player.Core.Engines
 		{
 			int objIndex = (int)source;
 
-			LuaDataContainer t = dataFactory.GetContainer(objIndex);
+			LuaDataContainer t = _dataFactory.GetContainer(objIndex);
 
 			// Gets the ZTimer's properties.
 			double elapsedRaw = t.GetDouble("Elapsed").GetValueOrDefault();
@@ -1622,12 +1634,12 @@ namespace WF.Player.Core.Engines
 				remainingRaw = t.GetDouble("Duration").GetValueOrDefault();
 			}
 
-			double elapsed = elapsedRaw * internalTimerDuration;
-			double remaining = remainingRaw.Value * internalTimerDuration;
+			double elapsed = elapsedRaw * INTERNAL_TIMER_DURATION;
+			double remaining = remainingRaw.Value * INTERNAL_TIMER_DURATION;
 
 			// Updates the ZTimer properties and considers if it should tick.
-			elapsed += internalTimerDuration;
-			remaining -= internalTimerDuration;
+			elapsed += INTERNAL_TIMER_DURATION;
+			remaining -= INTERNAL_TIMER_DURATION;
 
 			bool shoudTimerTick = false;
 			if (remaining <= 0.0d)
@@ -1637,28 +1649,28 @@ namespace WF.Player.Core.Engines
 				shoudTimerTick = true;
 			}
 
-			t["Elapsed"] = elapsed / internalTimerDuration;
-			t["Remaining"] = remaining / internalTimerDuration;
+			t["Elapsed"] = elapsed / INTERNAL_TIMER_DURATION;
+			t["Remaining"] = remaining / INTERNAL_TIMER_DURATION;
 
 			// Call only, if timer still exists.
 			// It could be, that function is called from thread, even if the timer didn't exists anymore.
 			bool timerExists = false;
-			lock (syncRoot)
+			lock (_syncRoot)
 			{
-				timerExists = timers.ContainsKey(objIndex);
+				timerExists = _timers.ContainsKey(objIndex);
 			}
 			if (shoudTimerTick && timerExists)
 			{
 				// Disables and removes the current timer.
-				System.Threading.Timer timer = timers[objIndex];
+				System.Threading.Timer timer = _timers[objIndex];
 				timer.Dispose();
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					timers.Remove(objIndex);
+					_timers.Remove(objIndex);
 				}
 
 				// Call OnTick of this timer
-				luaExecQueue.BeginCallSelf(t, "Tick");
+				_luaExecQueue.BeginCallSelf(t, "Tick");
 			}
 		}
 
@@ -1669,7 +1681,7 @@ namespace WF.Player.Core.Engines
 		private void RestartTimers()
 		{
 			// Gets the active timers.
-			var timers = player.DataContainer.GetWherigoObjectListFromProvider<Timer>("GetActiveTimers");
+			var timers = _player.DataContainer.GetWherigoObjectListFromProvider<Timer>("GetActiveTimers");
 
 			// Restart those whose Restart provider gives true.
 			foreach (Timer t in timers.Where(tim => tim.DataContainer.GetProvider("Restart").FirstOrDefault<bool>()))
@@ -1700,7 +1712,7 @@ namespace WF.Player.Core.Engines
 		private void BeginInvokeInUIThread(Action action, bool usePump = false)
 		{
 			// Throws an exception if there is no handler for this.
-			if (!platformHelper.CanDispatchOnUIThread)
+			if (!_platformHelper.CanDispatchOnUIThread)
 				throw new InvalidOperationException("Unable to dispatch on UI Thread. Make sure to construct Engine with a IPlatformHelper that implements DispatchOnUIThread() and has CanDispatchOnUIThread return true.");
 
 			// The pump cannot be used when the engine is resetting or disposing.
@@ -1709,10 +1721,10 @@ namespace WF.Player.Core.Engines
 			{
 				bool isNotReadyForPump = false;
 				EngineGameState currentGameState;
-				lock (syncRoot)
+				lock (_syncRoot)
 				{
-					currentGameState = gameState;
-					isNotReadyForPump = !isReady && gameState != EngineGameState.Initializing;
+					currentGameState = _gameState;
+					isNotReadyForPump = !_isReady && _gameState != EngineGameState.Initializing;
 				}
 
 				if (isNotReadyForPump)
@@ -1725,12 +1737,12 @@ namespace WF.Player.Core.Engines
 			if (usePump)
 			{
 				// Adds a sync request action to the action pump.
-				uiDispatchPump.AcceptAction(new Action(() => platformHelper.BeginDispatchOnUIThread(action)));
+				_uiDispatchPump.AcceptAction(new Action(() => _platformHelper.BeginDispatchOnUIThread(action)));
 			}
 			else
 			{
 				// Invokes the event right away.
-				platformHelper.BeginDispatchOnUIThread(action);
+				_platformHelper.BeginDispatchOnUIThread(action);
 			}
 		}
 
@@ -1794,7 +1806,7 @@ namespace WF.Player.Core.Engines
 			{
 				if (LogMessageRequested != null)
 				{
-					LogMessageRequested(this, new LogMessageEventArgs(cartridge, level, message));
+					LogMessageRequested(this, new LogMessageEventArgs(_cartridge, level, message));
 				}
 			});
 		}
@@ -1815,7 +1827,7 @@ namespace WF.Player.Core.Engines
 					}
 				}
 
-				InputRequested(this, new ObjectEventArgs<Input>(cartridge, input));
+				InputRequested(this, new ObjectEventArgs<Input>(_cartridge, input));
 			});
 		}
 
@@ -1835,7 +1847,7 @@ namespace WF.Player.Core.Engines
 					}
 				}
 
-				ShowMessageBoxRequested(this, new MessageBoxEventArgs(cartridge, mb));
+				ShowMessageBoxRequested(this, new MessageBoxEventArgs(_cartridge, mb));
 			});
 		}
 
@@ -1855,7 +1867,7 @@ namespace WF.Player.Core.Engines
 					}
 				}
 
-				PlayMediaRequested(this, new ObjectEventArgs<Media>(cartridge, media));
+				PlayMediaRequested(this, new ObjectEventArgs<Media>(_cartridge, media));
 			});
 		}
 
@@ -1875,7 +1887,7 @@ namespace WF.Player.Core.Engines
 					}
 				}
 
-				ShowScreenRequested(this, new ScreenEventArgs(cartridge, kind, obj));
+				ShowScreenRequested(this, new ScreenEventArgs(_cartridge, kind, obj));
 			});
 		}
 
@@ -1885,7 +1897,7 @@ namespace WF.Player.Core.Engines
 			{
 				if (InventoryChanged != null)
 				{
-					InventoryChanged(this, new InventoryChangedEventArgs(cartridge, obj, fromContainer, toContainer));
+					InventoryChanged(this, new InventoryChangedEventArgs(_cartridge, obj, fromContainer, toContainer));
 				}
 			});
 		}
@@ -1898,7 +1910,7 @@ namespace WF.Player.Core.Engines
 				{
 					if (AttributeChanged != null)
 					{
-						AttributeChanged(this, new AttributeChangedEventArgs(cartridge, obj, propName));
+						AttributeChanged(this, new AttributeChangedEventArgs(_cartridge, obj, propName));
 					}
 				}
 				else
@@ -1914,7 +1926,7 @@ namespace WF.Player.Core.Engines
 			{
 				if (CommandChanged != null)
 				{
-					CommandChanged(this, new ObjectEventArgs<Command>(cartridge, command));
+					CommandChanged(this, new ObjectEventArgs<Command>(_cartridge, command));
 				}
 			});
 		}
@@ -1956,7 +1968,7 @@ namespace WF.Player.Core.Engines
 			{
 				if (ZoneStateChanged != null)
 				{
-					ZoneStateChanged(this, new ZoneStateChangedEventArgs(cartridge, list));
+					ZoneStateChanged(this, new ZoneStateChangedEventArgs(_cartridge, list));
 				}
 			});
 		}
@@ -1977,7 +1989,7 @@ namespace WF.Player.Core.Engines
 					}
 				}
 
-				StopSoundsRequested(this, new WherigoEventArgs(cartridge));
+				StopSoundsRequested(this, new WherigoEventArgs(_cartridge));
 			});
 		}
 
@@ -1997,7 +2009,7 @@ namespace WF.Player.Core.Engines
 					}
 				}
 
-				PlayAlertRequested(this, new WherigoEventArgs(cartridge));
+				PlayAlertRequested(this, new WherigoEventArgs(_cartridge));
 			});
 		}
 
@@ -2017,7 +2029,7 @@ namespace WF.Player.Core.Engines
 					}
 				}
 
-				ShowStatusTextRequested(this, new StatusTextEventArgs(cartridge, text));
+				ShowStatusTextRequested(this, new StatusTextEventArgs(_cartridge, text));
 			});
 		}
 

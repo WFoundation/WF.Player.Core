@@ -1,7 +1,7 @@
 ﻿///
 /// WF.Player.Core - A Wherigo Player Core for different platforms.
-/// Copyright (C) 2012-2013  Dirk Weltz <web@weltz-online.de>
-/// Copyright (C) 2012-2013  Brice Clocher <contact@cybisoft.net>
+/// Copyright (C) 2012-2014  Dirk Weltz <web@weltz-online.de>
+/// Copyright (C) 2012-2014  Brice Clocher <contact@cybisoft.net>
 ///
 /// This program is free software: you can redistribute it and/or modify
 /// it under the terms of the GNU Lesser General Public License as
@@ -38,7 +38,7 @@ namespace WF.Player.Core.Data.Lua
 		/// </summary>
         private class SafeDictionaryEnumerator : IDictionaryEnumerator
 		{
-            #region Members
+            #region Fields
             private IEnumerator<KeyValuePair<LuaValue, LuaValue>> _baseEnumerator;
             private SafeLua _parent;
             private LuaRuntime _luaState;
@@ -134,7 +134,7 @@ namespace WF.Player.Core.Data.Lua
 
 		#endregion
 		
-		#region Members
+		#region Fields
 
 		/// <summary>
 		/// The underlying lua state, used both for lua operation and for locking lua operations.

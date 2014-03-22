@@ -1,7 +1,7 @@
 ﻿///
 /// WF.Player.Core - A Wherigo Player Core for different platforms.
-/// Copyright (C) 2012-2013  Dirk Weltz <web@weltz-online.de>
-/// Copyright (C) 2012-2013  Brice Clocher <contact@cybisoft.net>
+/// Copyright (C) 2012-2014  Dirk Weltz <web@weltz-online.de>
+/// Copyright (C) 2012-2014  Brice Clocher <contact@cybisoft.net>
 ///
 /// This program is free software: you can redistribute it and/or modify
 /// it under the terms of the GNU Lesser General Public License as
@@ -26,18 +26,11 @@ using System.Text;
 
 namespace WF.Player.Core.Formats
 {
-	public enum CartridgeFileFormat 
-	{ 
-		Unknown, 
-		GWC, 
-		GWS
-	};
-
     public class CartridgeLoaders
     {
-		#region Members
+		#region Fields
 
-		private static List<ICartridgeLoader> loaders;
+		private static List<ICartridgeLoader> _loaders;
 
 		#endregion
 
@@ -45,9 +38,9 @@ namespace WF.Player.Core.Formats
 
 		static CartridgeLoaders()
 		{
-			loaders = new List<ICartridgeLoader>();
+			_loaders = new List<ICartridgeLoader>();
 
-			loaders.Add(new GWC());
+			_loaders.Add(new GWC());
 		}
 
 		#endregion
@@ -63,7 +56,7 @@ namespace WF.Player.Core.Formats
         {
 			CartridgeFileFormat current = CartridgeFileFormat.Unknown;
 
-			foreach (ICartridgeLoader loader in loaders)
+			foreach (ICartridgeLoader loader in _loaders)
 			{
 				// Gets the file format.
 				current = loader.GetFileFormat(inputStream);
@@ -98,7 +91,7 @@ namespace WF.Player.Core.Formats
         {
             // Gets the first loader that can load the stream.
 			CartridgeFileFormat fFormat = GetFileFormat(inputStream);
-			ICartridgeLoader loader = loaders.FirstOrDefault(icl => icl.CanLoad(fFormat));
+			ICartridgeLoader loader = _loaders.FirstOrDefault(icl => icl.CanLoad(fFormat));
 
 			if (loader == null)
 				throw new InvalidOperationException("The file format is not supported.");
@@ -116,7 +109,7 @@ namespace WF.Player.Core.Formats
         {
 			// Gets the first loader that can load the stream.
 			CartridgeFileFormat fFormat = GetFileFormat(inputStream);
-			ICartridgeLoader loader = loaders.FirstOrDefault(icl => icl.CanLoad(fFormat));
+			ICartridgeLoader loader = _loaders.FirstOrDefault(icl => icl.CanLoad(fFormat));
 
 			if (loader == null)
 				throw new InvalidOperationException("The file format is not supported.");

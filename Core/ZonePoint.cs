@@ -1,7 +1,7 @@
 ///
 /// WF.Player.Core - A Wherigo Player Core for different platforms.
-/// Copyright (C) 2012-2013  Dirk Weltz <web@weltz-online.de>
-/// Copyright (C) 2012-2013  Brice Clocher <contact@cybisoft.net>
+/// Copyright (C) 2012-2014  Dirk Weltz <web@weltz-online.de>
+/// Copyright (C) 2012-2014  Brice Clocher <contact@cybisoft.net>
 ///
 /// This program is free software: you can redistribute it and/or modify
 /// it under the terms of the GNU Lesser General Public License as
@@ -177,8 +177,6 @@ namespace WF.Player.Core
             
             bool isDmOrDms = unit == GeoCoordinateUnit.DegreesMinutes
                 || unit == GeoCoordinateUnit.DegreesMinutesSeconds;
-            
-            string fmtProtectString = "'{0}'";
 
             /// 1. Creates the two format strings for decimal and floats.
             StringBuilder formatBuilder = new StringBuilder();

@@ -16,20 +16,16 @@
 /// You should have received a copy of the GNU Lesser General Public License
 /// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ///
+/// 
 
 using System;
 
-namespace WF.Player.Core.Data.Lua
+namespace WF.Player.Core.Formats
 {
-    /// <summary>
-    /// Provides extensions for Lua-related data structures.
-    /// </summary>
-    internal static class LuaDataExtensions
-    {
-		internal static void CallSelf(this WherigoObject wo, string funcName, params object[] parameters)
-        {
-            // Gets the self-provider and calls it.
-            ((LuaDataContainer)wo.DataContainer).CallSelf(funcName, parameters);
-        }
-    }
+	public enum CartridgeFileFormat
+	{
+		Unknown,
+		GWC,
+		GWS
+	};
 }

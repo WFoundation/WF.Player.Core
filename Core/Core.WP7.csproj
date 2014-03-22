@@ -66,6 +66,7 @@
     <Compile Include="Engines\DefaultPlatformHelper.cs" />
     <Compile Include="Engines\IPlatformHelper.cs" />
     <Compile Include="Engines\WinPhonePlatformHelper.cs" />
+    <Compile Include="Formats\CartridgeFileFormat.cs" />
     <Compile Include="Formats\FDL.cs" />
     <Compile Include="Formats\ICartridgeLoader.cs" />
     <Compile Include="Utils\GeoMathHelper.cs" />

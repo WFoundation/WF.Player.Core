@@ -12,7 +12,7 @@ namespace WF.Player.Core
     /// <typeparam name="T">A kind of Wherigo object that this collection contains.</typeparam>
     public class WherigoCollection<T> : ReadOnlyCollection<T> where T : WherigoObject
     {
-        #region Members
+        #region Fields
 
         private IEnumerable<T> _byDistance;
 

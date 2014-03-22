@@ -1,7 +1,7 @@
 ﻿///
 /// WF.Player.Core - A Wherigo Player Core for different platforms.
-/// Copyright (C) 2012-2013  Dirk Weltz <web@weltz-online.de>
-/// Copyright (C) 2012-2013  Brice Clocher <contact@cybisoft.net>
+/// Copyright (C) 2012-2014  Dirk Weltz <web@weltz-online.de>
+/// Copyright (C) 2012-2014  Brice Clocher <contact@cybisoft.net>
 ///
 /// This program is free software: you can redistribute it and/or modify
 /// it under the terms of the GNU Lesser General Public License as
@@ -30,7 +30,7 @@ namespace WF.Player.Core.Threading
 	/// </summary>
 	internal class ExecutionQueue : JobQueue
 	{
-		#region Members
+		#region Fields
 
         private List<ManualResetEvent> _waitEmptyResetEvents = new List<ManualResetEvent>();
         private object _syncRoot = new object();
