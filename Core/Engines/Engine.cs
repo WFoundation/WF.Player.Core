@@ -161,7 +161,6 @@ namespace WF.Player.Core.Engines
 			InitInstance(platform);
 		}
 
-		//[DirectLuaUsage(ShouldBeRefactored=true)]
 		private void InitInstance(IPlatformHelper platform)
 		{
 			if (platform == null)
@@ -2040,7 +2039,7 @@ namespace WF.Player.Core.Engines
 		/// <summary>
 		/// Checks if this Engine's internal state is ready to provide access to its Lua resources.
 		/// </summary>
-		internal void CheckStateForLuaAccess()
+		protected void CheckStateForLuaAccess()
 		{
 			switch (GameState)
 			{
@@ -2068,7 +2067,7 @@ namespace WF.Player.Core.Engines
 		/// Checks if this Engine's internal state is ready to perform a state-changing game operation
 		/// such as Start, Stop or Resume.
 		/// </summary>
-		private void CheckStateForConcurrentGameOperation()
+		protected void CheckStateForConcurrentGameOperation()
 		{
 			switch (GameState)
 			{
@@ -2101,7 +2100,7 @@ namespace WF.Player.Core.Engines
 		/// <param name="target">Target state to compare.</param>
 		/// <param name="exMessage">Exception message in the case the two states are not equal.</param>
 		/// <param name="exShowsDetails">True to show details about the internal state in the exception.</param>
-		private void CheckStateIs(EngineGameState target, string exMessage, bool exShowsDetails = false)
+		protected void CheckStateIs(EngineGameState target, string exMessage, bool exShowsDetails = false)
 		{
 			EngineGameState gs = GameState;
 
@@ -2117,7 +2116,7 @@ namespace WF.Player.Core.Engines
 		/// <param name="target">Target state to compare.</param>
 		/// <param name="exMessage">Exception message in the case the two states are equal.</param>
 		/// <param name="exShowsDetails">True to show details about the internal state in the exception.</param>
-		private void CheckStateIsNot(EngineGameState target, string exMessage, bool exShowsDetails = false)
+		protected void CheckStateIsNot(EngineGameState target, string exMessage, bool exShowsDetails = false)
 		{
 			if (GameState == target)
 			{

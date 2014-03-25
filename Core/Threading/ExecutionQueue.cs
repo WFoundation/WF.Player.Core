@@ -275,14 +275,19 @@ namespace WF.Player.Core.Threading
 
         private bool IsWaitEmptyResetEventInvalid(ManualResetEvent re)
         {
-            bool isInList;
+			if (IsDisposed)
+			{
+				return true;
+			}
+			
+			bool isInList;
 
             lock (_syncRoot)
             {
                 isInList = _waitEmptyResetEvents.Contains(re);
             }
 
-            return IsDisposed || !isInList;
+            return !isInList;
         }
 
         private ManualResetEvent CreateWaitEmptyResetEvent()
@@ -306,7 +311,6 @@ namespace WF.Player.Core.Threading
 
         #endregion
 		
-
 		#region Job Creation
 
         private Action GetJob(IDataContainer obj, string func, object[] parameters, bool isSelf)
