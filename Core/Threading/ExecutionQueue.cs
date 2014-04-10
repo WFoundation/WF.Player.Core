@@ -236,7 +236,17 @@ namespace WF.Player.Core.Threading
                 if (!leq.IsBusy && leq.QueueCount == 0)
                 {
                     // Time to wake the thread up!
-                    re.Set();
+					try
+					{
+						re.Set();
+					}
+					catch (ObjectDisposedException)
+					{
+						// This is probably a race-condition, where DisposeWaitEmptyResetEvent
+						// has been called after IsWaitEmptyResetEventInvalid returned false.
+						// There is nothing to do because DisposeWaitEmptyResetEvent() has already
+						// woken the thread up.
+					}
                 }
             });
 
