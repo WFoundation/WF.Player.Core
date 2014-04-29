@@ -181,6 +181,24 @@ namespace WF.Player.Core
 			return obj != null && obj.GetType().Equals(GetType()) && ((UIObject)obj).ObjIndex == ObjIndex;
 		}
 
+		public override string ToString()
+		{
+			// Gets the name of the object.
+			string nameExtra;
+			try
+			{
+				// We don't want this to crash.
+				nameExtra = ": " + Name;
+			}
+			catch (Exception)
+			{
+				nameExtra = "";
+			}
+
+			// Returns the name if possible.
+			return base.ToString() + nameExtra;
+		}
+
 		#endregion
 		
 		#region Notify Property Change
