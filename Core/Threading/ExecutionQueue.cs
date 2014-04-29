@@ -30,6 +30,16 @@ namespace WF.Player.Core.Threading
 	/// </summary>
 	internal class ExecutionQueue : JobQueue
 	{
+		#region Delegates
+
+		/// <summary>
+		/// An action that can be scheduled to run when a job has failed.
+		/// </summary>
+		/// <param name="ex">The exception that made the job fail.</param>
+		public delegate void FallbackAction(Exception ex);
+
+		#endregion
+		
 		#region Fields
 
         private List<ManualResetEvent> _waitEmptyResetEvents = new List<ManualResetEvent>();
@@ -143,6 +153,23 @@ namespace WF.Player.Core.Threading
 		{
 			// Conforms the parameters and enqueues a job.
 			AcceptJob(GetJob(obj, func, ConformParameters(parameters), true));
+		}
+
+		/// <summary>
+		/// Executes asynchronously a call to a Lua self-function on the thread this ExecutionQueue is associated with.
+		/// </summary>
+		/// <remarks>This method returns once the call job is queued.</remarks>
+		/// <param name="obj">IDataContainer that contains the self-function.</param>
+		/// <param name="func">Field name in <paramref name="obj"/> that corresponds to the function to call.</param>
+		/// <param name="fallback">Action that is executed if an exception occurs during the
+		/// execution of the job. If this parameter is null, any exception occuring will be
+		/// rethrown.</param>
+		/// <param name="parameters">Optional parameters to pass to the function. <paramref name="obj"/> is automatically
+		/// added as first parameter.</param>
+		public void BeginCallSelf(IDataContainer obj, string func, FallbackAction fallback, params object[] parameters)
+		{
+			// Conforms the parameters and enqueues a job.
+			AcceptJob(GetJob(obj, func, ConformParameters(parameters), true, fallback));
 		}
 
 		/// <summary>
@@ -323,9 +350,14 @@ namespace WF.Player.Core.Threading
 		
 		#region Job Creation
 
+		private Action GetJob(IDataContainer obj, string func, object[] parameters, bool isSelf, FallbackAction fallbackAction)
+		{
+			return new Action(() => RunCall(obj, func, parameters, isSelf, fallbackAction));
+		}
+
         private Action GetJob(IDataContainer obj, string func, object[] parameters, bool isSelf)
         {
-            return new Action(() => RunCall(obj, func, parameters, isSelf));
+            return new Action(() => RunCall(obj, func, parameters, isSelf, null));
         }
 
 		private Action GetJob(IDataContainer obj, string func, object[] parameters)
@@ -348,7 +380,7 @@ namespace WF.Player.Core.Threading
 
 		#region Job Processing
 
-        private void RunCall(IDataContainer obj, string func, object[] parameters, bool isSelf)
+        private void RunCall(IDataContainer obj, string func, object[] parameters, bool isSelf, FallbackAction fallback)
         {
             // This executes in the job thread.
 
@@ -367,7 +399,29 @@ namespace WF.Player.Core.Threading
                 return;
 
             // Calls the function.
-            lf.Execute(parameters);
+			try
+			{
+				lf.Execute(parameters);
+			}
+			catch (InvalidOperationException ex)
+			{
+				// Last chance fallback action, if any.
+				if (fallback != null)
+				{
+					fallback(ex);
+				}
+				else
+				{
+					// No fallback action: let's rethrow this.
+					throw;
+				}
+			}
+			catch (Exception)
+			{
+				// Other exceptions than InvalidOperationException are
+				// immediately rethrown because they are, indeed, unexpected.
+				throw;
+			}
         }
 
 		private void RunCall(IDataContainer obj, string func, object[] parameters)

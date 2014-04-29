@@ -1067,7 +1067,33 @@ namespace WF.Player.Core.Data.Lua
 
         private Input.RunOnGetInput MakeInputRunOnGetInputInstance(LuaDataContainer ldc)
         {
-            return new Input.RunOnGetInput(s => _helper.LuaExecutionQueue.BeginCallSelf(ldc, "OnGetInput", s));
+			// Defines an action that can queue giving a result to the relevant input entity.
+			Action<string, ExecutionQueue.FallbackAction> onGetInput = new Action<string,ExecutionQueue.FallbackAction>(
+				(s, fa) => _helper.LuaExecutionQueue.BeginCallSelf(ldc, "OnGetInput", fa, s)
+					);
+
+			// Defines a function that can create a fallback action in case giving a null
+			// result to the relevant input entity raises an exception.
+			// In that case, another try is done using an empty string instead.
+			// No fallback action is given if the input answer is not null.
+			Func<string, ExecutionQueue.FallbackAction> getFallback = new Func<string,ExecutionQueue.FallbackAction>(
+				s => {
+					if (s == null) 
+					{
+						return new ExecutionQueue.FallbackAction(
+							ex => onGetInput("", null)
+						);
+					} 
+					else
+					{
+						return null;
+					}
+				});
+
+			// Returns an action that queues giving a result to this input, allowing
+			// to do it again if the first attempt has been made with a null string
+			// and failed.
+			return new Input.RunOnGetInput(s => onGetInput(s, getFallback(s)));
         }
 
         private Command.ExecuteCommand MakeCommandExecuteCommandInstance(LuaDataContainer ldc)
