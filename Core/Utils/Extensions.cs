@@ -122,7 +122,7 @@ namespace WF.Player.Core.Utils
 
 			return s
 				.Replace("<BR/?>\n?", "\n", ro)
-				.Replace("&nbsp; ?", " ", ro)
+				.Replace("(?:&nbsp; ?)+", " ", ro)
 				.Replace("&lt;", "<", sc)
 				.Replace("&gt;", ">", sc)
 				.Replace("(?:&amp;)+", "&", ro)
