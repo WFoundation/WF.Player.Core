@@ -88,7 +88,7 @@ namespace WF.Player.Core.Live
                 if (File.Exists(fileName))
                 {
                     Cartridge cart = new Cartridge(fileName);
-					FileFormats.LoadMetadata(new FileStream(fileName, FileMode.Open), cart);
+					CartridgeLoaders.LoadMetadata(new FileStream(fileName, FileMode.Open), cart);
                     Add(cart);
                 }
             }

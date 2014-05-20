@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>10.0.0</ProductVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{47C98C7A-1A47-457B-9A22-6D621F344B56}</ProjectGuid>
     <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -49,10 +49,6 @@
     <Compile Include="Engines\IPlatformHelper.cs" />
     <Compile Include="Engines\Engine.cs" />
     <Compile Include="Engines\WIGInternalImpl.cs" />
-    <Compile Include="Formats\FileGWS.cs" />
-    <Compile Include="Formats\FileGWZ.cs" />
-    <Compile Include="Formats\FileGWC.cs" />
-    <Compile Include="Formats\FileFormats.cs" />
     <Compile Include="Formats\ICartridgeLoader.cs" />
     <Compile Include="Live\Reference.cs" />
     <Compile Include="Live\Cartridges.cs" />
@@ -93,6 +89,11 @@
     <Compile Include="WherigoCollection.cs" />
     <Compile Include="Utils\GeoMathHelper.cs" />
     <Compile Include="CoordBounds.cs" />
+    <Compile Include="Formats\CartridgeLoaders.cs" />
+    <Compile Include="Formats\FDL.cs" />
+    <Compile Include="Formats\GWC.cs" />
+    <Compile Include="Formats\GWS.cs" />
+    <Compile Include="Formats\CartridgeFileFormat.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
