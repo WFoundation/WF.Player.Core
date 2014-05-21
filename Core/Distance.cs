@@ -30,6 +30,19 @@ namespace WF.Player.Core
 
 		#region Constructor
 
+		/// <summary>
+		/// Creates a new Distance expressed in a specified unit.
+		/// </summary>
+		/// <param name="value">The value of the distance.</param>
+		/// <param name="unit">The unit in which the value is expressed.</param>
+		public Distance(double value, DistanceUnit unit)
+			: base(new Data.Native.NativeDataContainer())
+		{
+			// Converts and stores the value in meters.
+			double convertedValue = value / unit.GetConversionFactor();
+			((Data.Native.NativeDataContainer)DataContainer)["value"] = convertedValue;
+		}
+
 		internal Distance(WF.Player.Core.Data.IDataContainer data)
 			: base(data)
 		{

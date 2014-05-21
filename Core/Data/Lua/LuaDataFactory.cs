@@ -31,7 +31,7 @@ namespace WF.Player.Core.Data.Lua
 	/// <summary>
 	/// A Lua implementation of a data factory.
 	/// </summary>
-    internal class LuaDataFactory : IDataFactory
+    internal class LuaDataFactory : IDataFactory, IDisposable
     {
         #region Nested Classes
 

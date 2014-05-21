@@ -20,6 +20,7 @@
 using System;
 using System.Text;
 using System.Globalization;
+using WF.Player.Core.Data.Native;
 
 namespace WF.Player.Core
 {
@@ -29,6 +30,21 @@ namespace WF.Player.Core
 	public class ZonePoint : WherigoObject
 	{
 		#region Constructor
+
+		public ZonePoint(double latitude, double longitude, double altitude)
+			: base (new NativeDataContainer())
+		{
+			// Sets the desired values.
+			NativeDataContainer dc = ((NativeDataContainer)DataContainer);
+
+			bool isValidLat = latitude >= -90 && latitude <= 90;
+			bool isValidLong = longitude >= -180 && longitude <= 180;
+			bool isValidPoint = isValidLat && isValidLong;
+
+			dc["latitude"] = isValidPoint ? latitude : 360;
+			dc["longitude"] = isValidPoint ? longitude : 360;
+			dc["altitude"] = isValidPoint ? altitude : 360;
+		}
 
 		internal ZonePoint(WF.Player.Core.Data.IDataContainer data)
 			: base(data)
@@ -229,7 +245,7 @@ namespace WF.Player.Core
             }
 
             // Computes and appends the first subcomponent.
-            double degrees = isDmOrDms ? Math.Abs(value) : value;
+            double degrees = isDmOrDms ? Math.Floor(Math.Abs(value)) : value;
             coordBuilder.Append(degrees.ToString(formatBuilder.ToString(), format.NumberFormat));
 
             // Adds the symbols.

@@ -42,7 +42,7 @@ namespace WF.Player.Core
 
 		#region Constructors
 
-		internal LocationVector(Distance dist, double? bearing)
+		public LocationVector(Distance dist, double? bearing)
 		{
 			Distance = dist;
 			Bearing = bearing;

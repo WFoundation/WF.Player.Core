@@ -45,7 +45,7 @@ namespace WF.Player.Core
         }
 
         internal WherigoCollection(IList<T> list)
-            : base(list)
+            : base(list ?? new List<T>())
         {
 
         }

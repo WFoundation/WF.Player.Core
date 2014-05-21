@@ -63,6 +63,12 @@
     <Compile Include="Data\Lua\LuaDataExtensions.cs" />
     <Compile Include="Data\Lua\LuaDataFactory.cs" />
     <Compile Include="Data\Lua\LuaDataProvider.cs" />
+    <Compile Include="Data\Native\NativeDataContainer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Data\Native\NativeDataFactory.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Engines\DefaultPlatformHelper.cs" />
     <Compile Include="Engines\IPlatformHelper.cs" />
     <Compile Include="Engines\WinPhonePlatformHelper.cs" />

@@ -25,7 +25,7 @@ namespace WF.Player.Core.Data
 	/// <summary>
 	/// A factory of data containers, data providers and Wherigo objects.
 	/// </summary>
-	interface IDataFactory : IDisposable
+	interface IDataFactory
 	{
 		/// <summary>
 		/// Constructs a WherigoObject of a particular type.
