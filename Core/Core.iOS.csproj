@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">iPhoneSimulator</Platform>
-    <ProductVersion>10.0.0</ProductVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{DFD85D7E-251B-4D9E-BF44-2F054386F46F}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -44,7 +44,7 @@
     <DebugType>full</DebugType>
     <Optimize>False</Optimize>
     <OutputPath>bin\iPhone\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
+    <DefineConstants>DEBUG;__IOS__</DefineConstants>
     <WarningLevel>4</WarningLevel>
     <MtouchProfiling>True</MtouchProfiling>
     <ConsolePause>False</ConsolePause>
@@ -89,10 +89,6 @@
     <Compile Include="Engines\WIGInternalImpl.cs" />
     <Compile Include="Live\Cartridges.cs" />
     <Compile Include="Live\Reference.cs" />
-    <Compile Include="Formats\FileFormats.cs" />
-    <Compile Include="Formats\FileGWC.cs" />
-    <Compile Include="Formats\FileGWS.cs" />
-    <Compile Include="Formats\FileGWZ.cs" />
     <Compile Include="Formats\ICartridgeLoader.cs" />
     <Compile Include="Cartridge.cs" />
     <Compile Include="Character.cs" />
@@ -132,6 +128,13 @@
     <Compile Include="WherigoCollection.cs" />
     <Compile Include="CoordBounds.cs" />
     <Compile Include="Utils\GeoMathHelper.cs" />
+    <Compile Include="Formats\CartridgeFileFormat.cs" />
+    <Compile Include="Formats\CartridgeLoaders.cs" />
+    <Compile Include="Formats\FDL.cs" />
+    <Compile Include="Formats\GWC.cs" />
+    <Compile Include="Formats\GWS.cs" />
+    <Compile Include="Data\Native\NativeDataContainer.cs" />
+    <Compile Include="Data\Native\NativeDataFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -159,6 +162,7 @@
     <Folder Include="Properties\" />
     <Folder Include="Data\" />
     <Folder Include="Threading\" />
+    <Folder Include="Data\Native\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\Wherigo.luac">
