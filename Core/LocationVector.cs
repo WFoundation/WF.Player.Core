@@ -45,7 +45,11 @@ namespace WF.Player.Core
 		public LocationVector(Distance dist, double? bearing)
 		{
 			Distance = dist;
-			Bearing = bearing;
+			// No bearing above 360.0
+			Bearing = bearing % 360.0;
+			// No negativ bearings
+			if (Bearing < 0)
+				Bearing = 360.0 + Bearing;
 		}
 
 		#endregion
