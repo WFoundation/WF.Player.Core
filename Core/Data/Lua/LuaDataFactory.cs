@@ -936,8 +936,8 @@ namespace WF.Player.Core.Data.Lua
                 }
 
                 // Gets the AllZObjects table and queries for the field at objIndex.
-                LuaTable allZObjs = GetNativeContainerCore(_helper.Cartridge.DataContainer);
-                LuaTable zObj = _luaState.SafeGetField<LuaTable>(allZObjs, objIndex);
+				LuaTable allZObjs = GetNativeContainerCore(_helper.Cartridge.DataContainer.GetContainer("AllZObjects"));
+				LuaTable zObj = _luaState.SafeGetField<LuaTable>(allZObjs, objIndex);
 
                 if (zObj == null)
                 {
