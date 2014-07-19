@@ -33,7 +33,7 @@ namespace WF.Player.Core
 
         double _left = 360;
         double _top = -360;
-        double _right = 360;
+        double _right = -360;
         double _bottom = 360;
 
         #endregion
@@ -90,7 +90,7 @@ namespace WF.Player.Core
         /// <param name="zp1"></param>
         /// <param name="zp2"></param>
         public CoordBounds(ZonePoint zp1, ZonePoint zp2)
-            : this(zp1.Latitude, zp1.Longitude, zp2.Latitude, zp2.Longitude)
+            : this(zp1.Longitude, zp1.Latitude, zp2.Longitude, zp2.Latitude)
         {
         }
 
@@ -199,16 +199,55 @@ namespace WF.Player.Core
 			}
 		}
 
+		/// <summary>
+		/// Gets the point corresponding to the north-west vertex of 
+		/// these bounds.
+		/// </summary>
+		public ZonePoint NorthWest
+		{
+			get
+			{
+				return new ZonePoint(_top, _left, 0);
+			}
+		}
+
+		/// <summary>
+		/// Gets the point corresponding to the south-east vertex of 
+		/// these bounds.
+		/// </summary>
+		public ZonePoint SouthEast
+		{
+			get
+			{
+				return new ZonePoint(_bottom, _right, 0);
+			}
+		}
+
+		/// <summary>
+		/// Gets the point corresponding to the center of these bounds.
+		/// </summary>
+		public ZonePoint Center
+		{
+			get
+			{
+				return new ZonePoint((_top + _bottom) / 2, (_left + _right) / 2, 0);
+			}
+		}
+
         /// <summary>
         /// Gets if the coordinates of the current bounds are valid.
         /// </summary>
         /// <value>True if and only if left is less than or equal to right
-        /// and top is greater than or equal to bottom.</value>
+        /// and top is greater than or equal to bottom, and latitudes are
+		/// between -90 and 90 degrees, and longitudes are between -180
+		/// and 180 degrees.</value>
         public bool IsValid
         {
             get
             {
-                return _left <= _right && _top >= _bottom;
+                return _left <= _right && _top >= _bottom &&
+					Math.Abs(_left) < 180 && Math.Abs(_right) < 180 &&
+					Math.Abs(_top) < 90 && Math.Abs(_bottom) < 90;
             }
         }
 
@@ -224,14 +263,14 @@ namespace WF.Player.Core
         /// <param name="lon">Longitude of the point in decimal degrees.</param>
         public void Inflate(double lat, double lon)
 		{
-			if (lat < _left)
-				_left = lat;
-			if (lat > _right)
-				_right = lat;
-			if (lon > _top)
-				_top = lon;
-			if (lon < _bottom)
-				_bottom = lon;
+			if (lon < _left)
+				_left = lon;
+			if (lon > _right)
+				_right = lon;
+			if (lat > _top)
+				_top = lat;
+			if (lat < _bottom)
+				_bottom = lat;
 		}
 
         /// <summary>
@@ -249,8 +288,8 @@ namespace WF.Player.Core
         /// <param name="bounds"></param>
         public void Inflate(CoordBounds bounds)
 		{
-            Inflate(bounds.Left, bounds.Top);
-            Inflate(bounds.Right, bounds.Bottom);
+            Inflate(bounds.Top, bounds.Left);
+            Inflate(bounds.Bottom, bounds.Right);
 		}
 
         /// <summary>
