@@ -347,29 +347,6 @@ namespace WF.Player.Core
         }
 
         #endregion
-
-        #region Equality
-
-        /// <summary>
-        /// Determines if two ZonePoints are equal.
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns>True if and only if <paramref name="obj"/> is a ZonePoint
-        /// whose altitude, latitude and longitudes are equal to those of
-        /// the current ZonePoint.</returns>
-        public override bool Equals(object obj)
-        {
-            ZonePoint zp = obj as ZonePoint;
-
-            if (zp == null)
-            {
-                return false;
-            }
-
-            return Latitude == zp.Latitude && Longitude == zp.Longitude && Altitude == zp.Altitude;
-        }
-
-        #endregion
 	}
 
     /// <summary>
