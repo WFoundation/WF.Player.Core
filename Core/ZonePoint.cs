@@ -53,6 +53,15 @@ namespace WF.Player.Core
 
 		#endregion
 
+		#region Constants
+
+		/// <summary>
+		/// A default and invalid ZonePoint.
+		/// </summary>
+		public static readonly ZonePoint Invalid = new ZonePoint(360, 360, 360); 
+
+		#endregion
+
 		#region Properties
 
 		/// <summary>

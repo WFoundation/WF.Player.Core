@@ -147,8 +147,10 @@ namespace WF.Player.Core
 		}
 
 		/// <summary>
-		/// Gets the location of the object.
+		/// Gets the location of the object, or null if no location is set.
 		/// </summary>
+		/// <remarks>If the object has a non-null container and no own location, 
+		/// the container's <code>ObjectLocation</code> is returned.</remarks>
 		public ZonePoint ObjectLocation
 		{
 			get

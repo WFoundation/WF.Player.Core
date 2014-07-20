@@ -1007,6 +1007,17 @@ namespace WF.Player.Core
             }
         }
 
+		/// <summary>
+		/// Gets a point representing the starting location of this cartridge.
+		/// </summary>
+		public ZonePoint StartingLocation
+		{
+			get
+			{
+				return new ZonePoint(StartingLocationLatitude, StartingLocationLongitude, StartingLocationAltitude);
+			}
+		}
+
         /// <summary>
         /// Gets the latitude of the starting location.
         /// </summary>
