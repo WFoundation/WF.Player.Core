@@ -378,6 +378,26 @@ namespace WF.Player.Core.Utils
 			return new Point(lat + x, lon + y);
 		}
 
+		public ZonePoint[] GetCircle(ZonePoint center, double radius, int points)
+		{
+			// Computes the input.
+			CalcInput c = new CalcInput();
+			c.MainPoint = new Point(center);
+			c.TargetVector = new Vector(radius, null);
+			
+			// For each needed point, translate the center "radius meters"
+			// towards "i * 360/points".
+			ZonePoint[] pts = new ZonePoint[points];
+			double step = 360d / points;
+			for (int i = 0; i < points; i++)
+			{
+				c.TargetVector.Bearing = step * i;
+				pts[i] = TranslatePointCore(c).ToZonePoint(_dataFactory);
+			}
+
+			return pts;
+		}
+
 		#endregion
 
 		#region Numeric Location Math
