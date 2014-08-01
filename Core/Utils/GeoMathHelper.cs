@@ -380,6 +380,12 @@ namespace WF.Player.Core.Utils
 
 		public ZonePoint[] GetCircle(ZonePoint center, double radius, int points)
 		{
+			// Sanity check.
+			if (points < 3)
+			{
+				throw new ArgumentOutOfRangeException("points", "Cannot compute a circle with fewer than 3 points.");
+			}
+			
 			// Computes the input.
 			CalcInput c = new CalcInput();
 			c.MainPoint = new Point(center);
