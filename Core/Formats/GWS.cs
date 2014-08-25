@@ -33,9 +33,9 @@ namespace WF.Player.Core.Formats
 	/// <summary>
 	/// A parser and generator of Wherigo save files.
 	/// </summary>
-	internal class GWS
+	public class GWS
 	{
-		 /*
+		/*
 		 Save File Data Format Emulator (GWS File)
 		 
 		 Signature: 02 0A 53 59 4E 43 00
@@ -83,136 +83,220 @@ namespace WF.Player.Core.Formats
 		 08: object + 4 byte length of type name string 
 		 */
 
+		#region Nested Classes
+
+		/// <summary>
+		/// Describes the metadata of a GWS file.
+		/// </summary>
+		public class Metadata
+		{
+			/// <summary>
+			/// Gets the name of the cartridge this save file corresponds to.
+			/// </summary>
+			public string CartridgeName { get; internal set; }
+
+			/// <summary>
+			/// Gets the creation date of the cartridge this save file corresponds to.
+			/// </summary>
+			public DateTime CartridgeCreateDate { get; internal set; }
+
+			/// <summary>
+			/// Gets the player name that the cartridge this save file corresponds to
+			/// was built for.
+			/// </summary>
+			public string CartridgePlayerName { get; internal set; }
+
+			/// <summary>
+			/// Gets the name of the device this save file has been created on.
+			/// </summary>
+			public string SaveDeviceName { get; internal set; }
+
+			/// <summary>
+			/// Gets the ID of the device this save file has been created on.
+			/// </summary>
+			public string SaveDeviceId { get; internal set; }
+
+			/// <summary>
+			/// Gets the date at which this save file was created.
+			/// </summary>
+			public DateTime SaveCreateDate { get; internal set; }
+
+			/// <summary>
+			/// Gets the name of this save file.
+			/// </summary>
+			public string SaveName { get; internal set; }
+
+			/// <summary>
+			/// Gets the last known location of the player, at the time
+			/// this save file was created.
+			/// </summary>
+			public ZonePoint LastPlayerLocation { get; internal set; }
+		}
+
+		#endregion
+
+		#region Fields
+		private static readonly byte[] Signature = new byte[] { 0x02, 0x0A, 0x53, 0x59, 0x4E, 0x43, 0x00 };
+
 		private Cartridge _cartridgeEntity;
-        private LuaDataContainer _cartridge;
-        private LuaDataContainer _player;
+		private LuaDataContainer _cartridge;
+		private LuaDataContainer _player;
 		private IPlatformHelper _platformHelper;
 		private LuaDataFactory _dataFactory;
 		private double _latitude;
 		private double _longitude;
 		private double _altitude;
-
 		private LuaDataContainer _allZObjects;
+		#endregion
 
+		#region Constructors
 		internal GWS(
-			Cartridge cart, 
-			Character player, 
-			IPlatformHelper platformHelper, 
+			Cartridge cart,
+			Character player,
+			IPlatformHelper platformHelper,
 			LuaDataFactory dataFactory)
 		{
 			this._dataFactory = dataFactory;
 
 			this._cartridgeEntity = cart;
-            this._cartridge = (LuaDataContainer)cart.DataContainer;
-            this._player = (LuaDataContainer)player.DataContainer;
+			this._cartridge = (LuaDataContainer)cart.DataContainer;
+			this._player = (LuaDataContainer)player.DataContainer;
 
 			this._platformHelper = platformHelper;
 
-            ZonePoint pos = player.ObjectLocation;
+			ZonePoint pos = player.ObjectLocation;
 
 			this._latitude = pos.Latitude;
 			this._longitude = pos.Longitude;
 			this._altitude = pos.Latitude;
-		}
+		} 
+		#endregion
 
         #region Loading
+
+		/// <summary>
+		/// Loads the metadata of a GWS file stream.
+		/// </summary>
+		/// <param name="stream">Stream of a GWS file, set at the beginning of the GWS
+		/// file.</param>
+		/// <returns>A GWS.Metadata instance describing the metadata of the file.</returns>
+		public static Metadata LoadMetadata(Stream stream)
+		{
+			using (BinaryReader input = new BinaryReader(stream))
+			{
+				return LoadMetadata(input);
+			}
+		}
+
+		private static Metadata LoadMetadata(BinaryReader input)
+		{
+			Metadata md = new Metadata();
+
+			// Read signature and version
+			byte[] signature = input.ReadBytes(7);
+
+			// Check, if signature is of GWS file
+			if (!Signature.SequenceEqual(signature))
+				throw new Exception("Trying to load a file that is not a GWS.");
+
+			int lengthOfHeader = input.ReadInt32();
+			md.CartridgeName = ReadCString(input);
+			md.CartridgeCreateDate = new DateTime(2004, 02, 10, 01, 00, 00).AddSeconds(input.ReadInt64());
+
+			md.CartridgePlayerName = ReadCString(input);
+			md.SaveDeviceName = ReadCString(input);
+			md.SaveDeviceId = ReadCString(input);
+			md.SaveCreateDate = new DateTime(2004, 02, 10, 01, 00, 00).AddSeconds(input.ReadInt64());
+			md.SaveName = ReadCString(input);
+			md.LastPlayerLocation = new ZonePoint(input.ReadDouble(), input.ReadDouble(), input.ReadDouble());
+
+			return md;
+		}
+
 		/// <summary>
 		/// Loads a save game for the current cartridge from a stream.
 		/// </summary>
 		/// <param name="stream">Stream to load the game from.</param>
-        public void Load(Stream stream)
+		/// <returns>The metadata of the file.</returns>
+        public Metadata Load(Stream stream)
         {
-            string objectType;
-            byte[] signatureGWS = new byte[] { 0x02, 0x0A, 0x53, 0x59, 0x4E, 0x43, 0x00 };
+			int numAllZObjects;
+			Metadata metadata;
 
-            BinaryReader input = new BinaryReader(stream);
+			using (BinaryReader input = new BinaryReader(stream))
+			{
+				// Loads the GWS metadata.
+				metadata = LoadMetadata(input);
 
-            // Read signature and version
-            byte[] signature = input.ReadBytes(7);
+				// Belongs this GWS file to the cartridge
+				if (!metadata.CartridgeCreateDate.Equals(_cartridgeEntity.CreateDate))
+					throw new Exception("Trying to load a GWS file with different creation date of cartridge.");
 
-            // Check, if signature is of GWS file
-            if (!signatureGWS.SequenceEqual(signature))
-                throw new Exception("Trying to load a file that is not a GWS.");
+				// TODO
+				// Check, if all fields are the same as the fields from the GWC cartridge.
+				// If not, than ask, if we should go on, even it could get problems.
 
-            int lengthOfHeader = input.ReadInt32();
-            string cartName = readCString(input);
-            DateTime cartCreateDate = new DateTime(2004, 02, 10, 01, 00, 00).AddSeconds(input.ReadInt64());
+				int numOfObjects = input.ReadInt32();
+				_allZObjects = _cartridge.GetContainer("AllZObjects");
+				numAllZObjects = _allZObjects.Count;
+				string objectType = null;
 
-            // Belongs this GWS file to the cartridge
-            if (!cartCreateDate.Equals(_cartridgeEntity.CreateDate))
-				throw new Exception("Trying to load a GWS file with different creation date of cartridge.");
+				for (int i = 1; i < numOfObjects; i++)
+				{
+					objectType = readString(input);
+					if (i > numAllZObjects - 1)
+					{
+						// Object creation can be done using:
+						WherigoObject wo = _dataFactory.CreateWherigoObject(objectType, _cartridge);
+					}
+					else
+					{
+						// TODO: Check, if objectType and real type of object are the same
+					}
+				}
 
-            string cartPlayerName = readCString(input);
-            string cartDeviceName = readCString(input);
-            string cartDeviceID = readCString(input);
-            DateTime cartSaveDate = new DateTime(2004, 02, 10, 01, 00, 00).AddSeconds(input.ReadInt64());
-            string cartSaveName = readCString(input);
-            input.ReadDouble();	// Latitude of last position
-            input.ReadDouble();	// Longitude of last position
-            input.ReadDouble();	// Altitude of last position
+				// Now update allZObjects, because it could be, that new ones are created
+				_allZObjects = _cartridge.GetContainer("AllZObjects");
+				numAllZObjects = _allZObjects.Count;
 
-            // TODO
-            // Check, if all fields are the same as the fields from the GWC cartridge.
-            // If not, than ask, if we should go on, even it could get problems.
+				//LuaTable obj = _player;
+				LuaDataContainer obj = _player;
+				objectType = readString(input);
 
-            int numOfObjects = input.ReadInt32();
-			_allZObjects = _cartridge.GetContainer("AllZObjects");
-            int numAllZObjects = _allZObjects.Count;
+				// Read begin table (5) for player
+				byte b = input.ReadByte();
 
-			for (int i = 1; i < numOfObjects; i++)
-            {
-                objectType = readString(input);
-				if (i > numAllZObjects - 1)
-                {
-                    // Object creation can be done using:
-					WherigoObject wo = _dataFactory.CreateWherigoObject(objectType, _cartridge);
-                }
-                else
-                {
-                    // TODO: Check, if objectType and real type of object are the same
-                }
-            }
+				// Read data for player
+				readTable(input, obj);
 
-			// Now update allZObjects, because it could be, that new ones are created
-			_allZObjects = _cartridge.GetContainer ("AllZObjects");
-			numAllZObjects = _allZObjects.Count;
+				for (int i = 0; i < numAllZObjects; i++)
+				{
+					objectType = readString(input);
+					b = input.ReadByte();
+					if (b != 5)
+					{
+						// error
+						throw new InvalidOperationException();
+					}
+					else
+					{
+						obj = (LuaDataContainer)_allZObjects.GetContainer(i);
+						readTable(input, obj);
+					}
+				}
 
-            //LuaTable obj = _player;
-            LuaDataContainer obj = _player;
-            objectType = readString(input);
-
-			// Read begin table (5) for player
-            byte b = input.ReadByte();
-
-			// Read data for player
-            readTable(input, obj);
-
-			for (int i = 0; i < numAllZObjects; i++)
-            {
-                objectType = readString(input);
-                b = input.ReadByte();
-                if (b != 5)
-                {
-                    // error
-                    throw new InvalidOperationException();
-                }
-                else
-                {
-					obj = (LuaDataContainer)_allZObjects.GetContainer(i);
-                    readTable(input, obj);
-                }
-            }
-
-            input.Close();
+				input.Close(); 
+			}
 
 			// Now deserialize all ZObjects
 			for (int i = 0; i < numAllZObjects; i++)
 			{
-				obj = (LuaDataContainer)_allZObjects.GetContainer(i);
-				obj.CallSelf ("deserialize");
+				((LuaDataContainer)_allZObjects.GetContainer(i)).CallSelf("deserialize");
 			}
 
 			// TODO: Update all lists
+
+			return metadata;
         }
 
         private void readTable(BinaryReader input, LuaDataContainer obj)
@@ -310,6 +394,7 @@ namespace WF.Player.Core.Formats
         } 
         #endregion
 
+		#region Saving
 		/// <summary>
 		/// Saves the current cartridge to a GWS file.
 		/// </summary>
@@ -317,63 +402,64 @@ namespace WF.Player.Core.Formats
 		/// <param name="saveName">Description for the save file, which is put into the file.</param>
 		public void Save(Stream stream, string saveName = "UI initiated sync")
 		{
-			BinaryWriter output = new BinaryWriter(stream);
-
-			// Write signature and version
-			output.Write(new byte[] { 0x02, 0x0A, 0x53, 0x59, 0x4E, 0x43, 0x00 });
-			output.Write(new byte[] { 0x00, 0x00, 0x00, 0x00 });
-			int lengthOfHeader = 0;
-			lengthOfHeader += writeCString(output, _cartridgeEntity.Name);
-			output.Write(BitConverter.GetBytes((long)((_cartridgeEntity.CreateDate.Ticks - new DateTime(2004, 02, 10, 01, 00, 00).Ticks) / TimeSpan.TicksPerSecond)));
-			lengthOfHeader += 8;
-			lengthOfHeader += writeCString(output, _cartridgeEntity.Player);
-			// MUST be "Windows PPC" for Emulator
-			lengthOfHeader += writeCString(output, _platformHelper.Device);
-			// MUST be "Desktop" for Emulator
-			lengthOfHeader += writeCString(output, _platformHelper.DeviceId);
-			output.Write(BitConverter.GetBytes((long)((DateTime.Now.Ticks - new DateTime(2004, 02, 10, 01, 00, 00).Ticks) / TimeSpan.TicksPerSecond)));
-			lengthOfHeader += 8;
-			lengthOfHeader += writeCString(output, saveName);
-			output.Write(BitConverter.GetBytes(_latitude));
-			lengthOfHeader += 8;
-			output.Write(BitConverter.GetBytes(_longitude));
-			lengthOfHeader += 8;
-			output.Write(BitConverter.GetBytes(_altitude));
-			lengthOfHeader += 8;
-
-			var pos = output.BaseStream.Position;
-			output.BaseStream.Position = 7;
-			output.Write(BitConverter.GetBytes(lengthOfHeader));
-			output.BaseStream.Position = pos;
-
-			_allZObjects = _cartridge.GetContainer ("AllZObjects");
-            int numAllZObjects = _allZObjects.Count;
-			output.Write(numAllZObjects);
-
-			for (int i = 1; i < numAllZObjects; i++)
+			using (BinaryWriter output = new BinaryWriter(stream))
 			{
-				writeString(output, _allZObjects.GetContainer(i).GetString("ClassName"));
-			}
+				// Write signature and version
+				output.Write(Signature);
+				output.Write(new byte[] { 0x00, 0x00, 0x00, 0x00 });
+				int lengthOfHeader = 0;
+				lengthOfHeader += writeCString(output, _cartridgeEntity.Name);
+				output.Write(BitConverter.GetBytes((long)((_cartridgeEntity.CreateDate.Ticks - new DateTime(2004, 02, 10, 01, 00, 00).Ticks) / TimeSpan.TicksPerSecond)));
+				lengthOfHeader += 8;
+				lengthOfHeader += writeCString(output, _cartridgeEntity.Player);
+				// MUST be "Windows PPC" for Emulator
+				lengthOfHeader += writeCString(output, _platformHelper.Device);
+				// MUST be "Desktop" for Emulator
+				lengthOfHeader += writeCString(output, _platformHelper.DeviceId);
+				output.Write(BitConverter.GetBytes((long)((DateTime.Now.Ticks - new DateTime(2004, 02, 10, 01, 00, 00).Ticks) / TimeSpan.TicksPerSecond)));
+				lengthOfHeader += 8;
+				lengthOfHeader += writeCString(output, saveName);
+				output.Write(BitConverter.GetBytes(_latitude));
+				lengthOfHeader += 8;
+				output.Write(BitConverter.GetBytes(_longitude));
+				lengthOfHeader += 8;
+				output.Write(BitConverter.GetBytes(_altitude));
+				lengthOfHeader += 8;
 
-			LuaDataContainer obj = _player;
+				var pos = output.BaseStream.Position;
+				output.BaseStream.Position = 7;
+				output.Write(BitConverter.GetBytes(lengthOfHeader));
+				output.BaseStream.Position = pos;
 
-			writeString(output, obj.GetString("ClassName"));
+				_allZObjects = _cartridge.GetContainer("AllZObjects");
+				int numAllZObjects = _allZObjects.Count;
+				output.Write(numAllZObjects);
 
-			LuaDataContainer data = obj.CallSelf("serialize");
-			writeTable(output, data);
+				for (int i = 1; i < numAllZObjects; i++)
+				{
+					writeString(output, _allZObjects.GetContainer(i).GetString("ClassName"));
+				}
 
-			for (int i = 0; i < numAllZObjects; i++)
-			{
-				obj = (LuaDataContainer)_allZObjects.GetContainer(i);
+				LuaDataContainer obj = _player;
 
 				writeString(output, obj.GetString("ClassName"));
 
-                data = obj.CallSelf("serialize");
+				LuaDataContainer data = obj.CallSelf("serialize");
 				writeTable(output, data);
-			}
 
-			output.Flush();
-			output.Close();
+				for (int i = 0; i < numAllZObjects; i++)
+				{
+					obj = (LuaDataContainer)_allZObjects.GetContainer(i);
+
+					writeString(output, obj.GetString("ClassName"));
+
+					data = obj.CallSelf("serialize");
+					writeTable(output, data);
+				}
+
+				output.Flush();
+				output.Close(); 
+			}
 		}
 
 		/// <summary>
@@ -385,9 +471,9 @@ namespace WF.Player.Core.Formats
 		{
 			output.Write((byte)5);
 
-            var entry = obj.GetEnumerator();
-            while (entry.MoveNext())
-            {				
+			var entry = obj.GetEnumerator();
+			while (entry.MoveNext())
+			{
 				// Save key
 				if (entry.Key is bool)
 				{
@@ -436,8 +522,8 @@ namespace WF.Player.Core.Formats
 				}
 				if (entry.Value is LuaDataContainer)
 				{
-                    LuaDataContainer dc = (LuaDataContainer)entry.Value;
-                    string className = dc.GetString("ClassName");
+					LuaDataContainer dc = (LuaDataContainer)entry.Value;
+					string className = dc.GetString("ClassName");
 
 					if (className != null && (className.Equals("Distance") || className.Equals("ZonePoint") || className.Equals("ZCommand") || className.Equals("ZReciprocalCommand")))
 					{
@@ -451,18 +537,19 @@ namespace WF.Player.Core.Formats
 						className.Equals("ZMedia") || className.Equals("Zone") || className.Equals("ZTask") || className.Equals("ZTimer")))
 					{
 						output.Write((byte)7);
-                       output.Write(Convert.ToInt16(dc.GetInt("ObjIndex").Value));
+						output.Write(Convert.ToInt16(dc.GetInt("ObjIndex").Value));
 					}
 					else
 					{
 						// New: It is a normal LuaTable or an unknown new ZObject type
-                        LuaDataContainer data = dc;
-						if (className != null) {
+						LuaDataContainer data = dc;
+						if (className != null)
+						{
 							// New: If we are here, than this is a new ZObject class, so call serialize before.
 							// New: That means, that it is a normal LuaTable, so save it
-							LuaDataProvider lf = dc.GetProvider ("serialize", true);
+							LuaDataProvider lf = dc.GetProvider("serialize", true);
 							if (lf != null)
-                	            data = lf.FirstContainerOrDefault ();
+								data = lf.FirstContainerOrDefault();
 						}
 						writeTable(output, data);
 					}
@@ -470,14 +557,16 @@ namespace WF.Player.Core.Formats
 			}
 
 			output.Write((byte)6);
-		}
+		} 
+		#endregion
 
+		#region I/O Utils
 		/// <summary>
 		/// Reads a null terminated string from binary stream.
 		/// </summary>
 		/// <param name="reader">Binary stream with file as input.</param>
 		/// <returns>String, which represents the C# string.</returns>
-		private string readCString(BinaryReader input)
+		private static string ReadCString(BinaryReader input)
 		{
 			var bytes = new List<byte>();
 			byte b;
@@ -566,6 +655,7 @@ namespace WF.Player.Core.Formats
 				result[i] = (byte)(str[i] & 0xff);
 
 			return result;
-		}
+		} 
+		#endregion
 	}
 }
