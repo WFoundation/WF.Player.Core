@@ -236,6 +236,11 @@ namespace WF.Player.Core.Engines
 			GC.SuppressFinalize(this);
 		}
 
+		protected virtual void DisposeOverride(bool disposeManagedResources)
+		{
+
+		}
+
 		private void Dispose(
 			bool disposeManagedResources, 
 			EngineGameState? duringState = EngineGameState.Disposing, 
@@ -328,6 +333,9 @@ namespace WF.Player.Core.Engines
 				VisibleInventory = null;
 				VisibleObjects = null;
 			}
+
+			// Children can dispose things now.
+			DisposeOverride(disposeManagedResources);
 
 			// State change.
 			if (afterState.HasValue)
@@ -1089,13 +1097,13 @@ namespace WF.Player.Core.Engines
 
 		#endregion
 
-		#region Global functions for all players
+		#region Utilities for Players
 
 		public string CreateLogMessage(string message)
 		{
 			lock (_syncRoot)
 			{
-				return String.Format("{0:yyyyMMddhhmmss}|{1:+0.00000}|{2:+0.00000}|{3:+0.00000}|{4:+0.00000}|{5}", DateTime.Now.ToLocalTime(), _lat, _lon, _alt, _accuracy, message);
+				return String.Format("{0:yyyyMMddhhmmss}|{1:+0.00000;-0.00000}|{2:+0.00000;-0.00000}|{3:+0.00000;-0.00000}|{4:+0.00000;-0.00000}|{5}", DateTime.Now.ToLocalTime(), _lat, _lon, _alt, _accuracy, message);
 			}
 		}
 
