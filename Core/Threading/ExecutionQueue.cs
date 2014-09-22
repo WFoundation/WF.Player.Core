@@ -65,6 +65,12 @@ namespace WF.Player.Core.Threading
 			}
 		}
 
+		/// <summary>
+		/// Gets or sets the default fallback action, to execute when
+		/// a job fails because of an exception.
+		/// </summary>
+		public FallbackAction DefaultFallbackAction { get; set; }
+
 		#endregion
 
 		#region Constructors and Destructor
@@ -410,6 +416,10 @@ namespace WF.Player.Core.Threading
 				{
 					fallback(ex);
 				}
+				else if (DefaultFallbackAction != null)
+				{
+					DefaultFallbackAction(ex);
+				}
 				else
 				{
 					// No fallback action: let's rethrow this.
@@ -439,7 +449,23 @@ namespace WF.Player.Core.Threading
 				return;
 
 			// Calls the function.
-            lf.Execute(parameters);
+			try
+			{
+				lf.Execute(parameters);
+			}
+			catch (Exception ex)
+			{
+				// Fallback action, if any.
+				if (DefaultFallbackAction != null)
+				{
+					DefaultFallbackAction(ex);
+				}
+				else
+				{
+					// No fallback action: let's rethrow this.
+					throw;
+				}
+			}
 		}
 
         private void RunCall(IDataProvider func, object[] parameters)
@@ -451,7 +477,23 @@ namespace WF.Player.Core.Threading
                 return;
 
             // Calls the function.
-            func.Execute(parameters);
+			try
+			{
+				func.Execute(parameters);
+			}
+			catch (Exception ex)
+			{
+				// Fallback action, if any.
+				if (DefaultFallbackAction != null)
+				{
+					DefaultFallbackAction(ex);
+				}
+				else
+				{
+					// No fallback action: let's rethrow this.
+					throw;
+				}
+			}
         }
 
 		#endregion

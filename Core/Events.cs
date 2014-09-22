@@ -173,6 +173,22 @@ namespace WF.Player.Core
 	}
 
 	/// <summary>
+	/// Event args for a cartridge-related crash.
+	/// </summary>
+	public class CrashEventArgs : WherigoEventArgs
+	{
+		/// <summary>
+		/// Gets the exception object that was thrown during the crash.
+		/// </summary>
+		public Exception ExceptionObject { get; private set; }
+
+		internal CrashEventArgs(Cartridge cart, Exception exception) : base(cart)
+		{
+			ExceptionObject = exception;
+		}
+	}
+
+	/// <summary>
 	/// Base class for arguments of a Wherigo-related event.
 	/// </summary>
 	public class WherigoEventArgs : EventArgs

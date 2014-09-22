@@ -124,6 +124,7 @@ namespace WF.Player.Core.Engines
 
 		public event EventHandler<AttributeChangedEventArgs> AttributeChanged;
 		public event EventHandler<WherigoEventArgs> CartridgeCompleted;
+		public event EventHandler<CrashEventArgs> CartridgeCrashed;
 		public event EventHandler<ObjectEventArgs<Command>> CommandChanged;
 		public event EventHandler<ObjectEventArgs<Input>> InputRequested;
 		public event EventHandler<InventoryChangedEventArgs> InventoryChanged;
@@ -212,7 +213,7 @@ namespace WF.Player.Core.Engines
 			env["Version"] = String.Format("{0} ({1} {2})", _platformHelper.ClientVersion, CORE_PLATFORM, CORE_VERSION);
 
 			// Creates job queues that runs in another thread.
-			_luaExecQueue = new ExecutionQueue();
+			_luaExecQueue = new ExecutionQueue() { DefaultFallbackAction = HandleLuaExecQueueJobException };
 			_uiDispatchPump = new ActionPump();
 
 			// Sets some event handlers for the job queues.
@@ -1555,6 +1556,13 @@ namespace WF.Player.Core.Engines
 			IsBusy = _luaExecQueue.IsBusy || _uiDispatchPump.IsBusy;
 		}
 
+		private void HandleLuaExecQueueJobException(Exception ex)
+		{
+			// An exception occurred while executing a job.
+			// The engine can no longer play.
+			RaiseCartridgeCrashed(ex, true);
+		}
+
 		#endregion
 
 		#region Timers
@@ -1946,6 +1954,26 @@ namespace WF.Player.Core.Engines
 				{
 					CartridgeCompleted(this, new WherigoEventArgs(cartridge));
 				}
+			});
+		}
+
+		private void RaiseCartridgeCrashed(Exception exception, bool throwIfNoHandler = true)
+		{
+			BeginInvokeInUIThread(() =>
+			{
+				if (CartridgeCrashed == null)
+				{
+					if (throwIfNoHandler)
+					{
+						throw new InvalidOperationException("No CartridgeCrashed handler has been found.");
+					}
+					else
+					{
+						return;
+					}
+				}
+
+				CartridgeCrashed(this, new CrashEventArgs(Cartridge, exception));
 			});
 		}
 
