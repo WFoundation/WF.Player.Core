@@ -59,9 +59,34 @@ namespace WF.Player.Core
 		internal WherigoObject(IDataContainer container)
 		{
 			_dataContainer = container;
-		} 
+		}
 
 		#endregion
+
+		/// <summary>
+		/// Determines if two WherigoObject instances are representing the same
+		/// Wherigo entities.
+		/// </summary>
+		/// <param name="wo1">A wherigo object.</param>
+		/// <param name="wo2">A wherigo object.</param>
+		/// <returns>UIObjects are compared using their <code>ObjIndex</code> properties.
+		/// Media objects are compared using their <code>MediaId</code> properties.
+		/// Other WherigoObjects are compared according to their instances.</returns>
+		public static bool AreSameEntities(WherigoObject wo1, WherigoObject wo2)
+		{
+			if (wo1 is UIObject && wo2 is UIObject)
+			{
+				return ((UIObject)wo1).ObjIndex == ((UIObject)wo2).ObjIndex;
+			}
+			else if (wo1 is Media && wo2 is Media)
+			{
+				return ((Media)wo1).MediaId == ((Media)wo2).MediaId;
+			}
+			else 
+			{
+				return WherigoObject.ReferenceEquals(wo1, wo2);
+			}
+		}
 
 		/// <summary>
 		/// Called when this object's data container has changed.
