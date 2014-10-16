@@ -75,12 +75,22 @@ namespace WF.Player.Core
 		}
 
 		/// <summary>
-		/// Gets the text as Markdown converted to HTML.
+		/// Gets the text as HTML.
 		/// </summary>
 		/// <value>The text.</value>
-		public string HTML {
+		public string Html {
 			get {
-				return DataContainer.GetString("Text").ReplaceHTMLScriptMarkup().ReplaceMarkdown(); // + "</center></body></html>";
+				return DataContainer.GetString("Html");
+			}
+		}
+
+		/// <summary>
+		/// Gets the text as Markdown.
+		/// </summary>
+		/// <value>The text.</value>
+		public string Markdown {
+			get {
+				return DataContainer.GetString("Markdown");
 			}
 		}
 

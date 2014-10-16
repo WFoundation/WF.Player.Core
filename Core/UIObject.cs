@@ -38,8 +38,6 @@ namespace WF.Player.Core
 		
 		#region Fields
 
-		private string _html;
-
 		private RunOnClick _runOnClick;
 
 		#endregion
@@ -82,12 +80,21 @@ namespace WF.Player.Core
 		/// Gets the description as Html.
 		/// </summary>
 		/// <value>The description.</value>
-		public string HTML {
-			get {
-				if (_html == null) {
-					_html = DataContainer.GetString("Description").ReplaceHTMLScriptMarkup().ReplaceMarkdown(); // + "</center></body></html>";
-				}
-				return _html;
+		public string Html {
+			get 
+			{
+				return DataContainer.GetString("Html"); // + "</center></body></html>";
+			}
+		}
+
+		/// <summary>
+		/// Gets the description as Markdown.
+		/// </summary>
+		/// <value>The description.</value>
+		public string Markdown {
+			get 
+			{
+				return DataContainer.GetString("Markdown");
 			}
 		}
 
@@ -209,9 +216,6 @@ namespace WF.Player.Core
 
 		internal void NotifyPropertyChanged(string propName)
 		{
-			if (propName.Equals ("Description"))
-				_html = null;
-
 			if (PropertyChanged != null)
 			{
 				PropertyChanged(this, new PropertyChangedEventArgs(propName));

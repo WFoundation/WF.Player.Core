@@ -30,12 +30,22 @@ namespace WF.Player.Core
 		#region Properties
 
 		/// <summary>
-		/// Gets the text as Markdown converted to HTML.
+		/// Gets the text as HTML.
 		/// </summary>
 		/// <value>The text.</value>
-		public string HTML {
+		public string Html {
 			get {
-				return Text.ReplaceMarkdown(); // + "</center></body></html>";
+				return Text;
+			}
+		}
+
+		/// <summary>
+		/// Gets the text as Markdown.
+		/// </summary>
+		/// <value>The text.</value>
+		public string Markdown {
+			get {
+				return Text;
 			}
 		}
 
