@@ -919,7 +919,7 @@ namespace WF.Player.Core.Engines
 		/// Saves the game for the current cartridge.
 		/// </summary>
 		/// <param name="stream">Stream, where the cartridge is saved.</param>
-		public void Save(Stream stream)
+		public void Save(Stream stream, string savename = null)
 		{
 			// Sanity checks.
 			CheckStateIs(EngineGameState.Playing, "The engine is not playing.", true);
@@ -931,13 +931,26 @@ namespace WF.Player.Core.Engines
 			_luaExecQueue.BeginCallSelf(_cartridge, "OnSync");
 			_luaExecQueue.WaitEmpty();
 
-			// Serialize all objects
-			new GWS(
-				_cartridge,
-				_player,
-				_platformHelper,
-				_dataFactory
-			).Save(stream);
+			if (savename == null)
+			{
+				// Serialize all objects
+				new GWS(
+					_cartridge,
+					_player,
+					_platformHelper,
+					_dataFactory
+				).Save(stream);
+			}
+			else
+			{
+				// Serialize all objects
+				new GWS(
+					_cartridge,
+					_player,
+					_platformHelper,
+					_dataFactory
+				).Save(stream, savename);
+			}
 
 			// State change.
 			GameState = EngineGameState.Playing;

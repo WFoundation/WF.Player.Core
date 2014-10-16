@@ -3,8 +3,6 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{47C98C7A-1A47-457B-9A22-6D621F344B56}</ProjectGuid>
     <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
@@ -40,7 +38,7 @@
     <Reference Include="System.Core" />
     <Reference Include="Mono.Android" />
     <Reference Include="Newtonsoft.Json.MonoDroid">
-      <HintPath>..\..\libs\Newtonsoft.Json.MonoDroid.dll</HintPath>
+      <HintPath>..\..\Libraries\Newtonsoft.Json.MonoDroid.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -94,6 +92,9 @@
     <Compile Include="Formats\GWC.cs" />
     <Compile Include="Formats\GWS.cs" />
     <Compile Include="Formats\CartridgeFileFormat.cs" />
+    <Compile Include="Data\Native\NativeDataContainer.cs" />
+    <Compile Include="Data\Native\NativeDataFactory.cs" />
+    <Compile Include="Formats\GWL.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
@@ -113,6 +114,7 @@
     <Folder Include="lib\armeabi\" />
     <Folder Include="lib\armeabi-v7a\" />
     <Folder Include="lib\x86\" />
+    <Folder Include="Data\Native\" />
   </ItemGroup>
   <ItemGroup>
     <AndroidNativeLibrary Include="lib\armeabi\liblua5.1.so" />
