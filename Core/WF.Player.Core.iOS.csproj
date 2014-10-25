@@ -133,6 +133,7 @@
     <Compile Include="Formats\GWS.cs" />
     <Compile Include="Data\Native\NativeDataContainer.cs" />
     <Compile Include="Data\Native\NativeDataFactory.cs" />
+    <Compile Include="Formats\GWL.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -140,7 +141,7 @@
     <Reference Include="System.Core" />
     <Reference Include="monotouch" />
     <Reference Include="Newtonsoft.Json.MonoTouch">
-      <HintPath>..\..\lib\Newtonsoft.Json.MonoTouch.dll</HintPath>
+      <HintPath>..\..\Libraries\Newtonsoft.Json.MonoTouch.dll</HintPath>
     </Reference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
