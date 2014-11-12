@@ -113,7 +113,7 @@ namespace WF.Player.Core
 		/// Gets the image.
 		/// </summary>
 		/// <value>The image as Media object.</value>
-		public Media Image {
+		public Media Media {
 			get 
 			{
                 return DataContainer.GetWherigoObject<Media>("Media");
