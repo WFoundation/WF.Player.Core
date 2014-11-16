@@ -1273,7 +1273,7 @@ namespace WF.Player.Core.Engines
 		{
 			if (_cartridge == null)
 			{
-				System.Diagnostics.Debug.WriteLine("Engine: WARNING: HandleAttributeChanged called with null cartridge.");
+                //System.Diagnostics.Debug.WriteLine("Engine: WARNING: HandleAttributeChanged called with null cartridge.");
 				return;
 			}
 
@@ -1757,7 +1757,7 @@ namespace WF.Player.Core.Engines
 
 				if (isNotReadyForPump)
 				{
-					System.Diagnostics.Debug.WriteLine("Engine: WARNING: Cannot use UI dispatch pump in state {0}, forced direct.",  currentGameState.ToString());
+                    //System.Diagnostics.Debug.WriteLine("Engine: WARNING: Cannot use UI dispatch pump in state {0}, forced direct.",  currentGameState.ToString());
 					usePump = false;
 				}
 			}
