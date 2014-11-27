@@ -220,9 +220,17 @@ namespace WF.Player.Core.Engines
 			_luaExecQueue.IsBusyChanged += new EventHandler(HandleLuaExecQueueIsBusyChanged);
 			_uiDispatchPump.IsBusyChanged += new EventHandler(HandleUIDispatchPumpIsBusyChanged);
 
+            // Children classes can initialize now.
+            InitInstanceOverride();
+
 			// Sets the game state.
 			GameState = EngineGameState.Uninitialized;
 		}
+
+        protected virtual void InitInstanceOverride()
+        {
+            
+        }
 
 		~Engine()
 		{
