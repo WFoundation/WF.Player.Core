@@ -1001,7 +1001,7 @@ namespace WF.Player.Core
             {
                 if (_startingDescription != value)
                 {
-                    _startingDescription = value;
+                    _startingDescription = value.ReplaceHTMLMarkup();
                     NotifyPropertyChanged("StartingDescription");
                 }
             }
