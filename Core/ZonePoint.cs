@@ -58,7 +58,12 @@ namespace WF.Player.Core
 		/// <summary>
 		/// A default and invalid ZonePoint.
 		/// </summary>
-		public static readonly ZonePoint Invalid = new ZonePoint(360, 360, 360); 
+		public static readonly ZonePoint Invalid = new ZonePoint(360, 360, 360);
+
+        /// <summary>
+        /// A zone point whose latitude, longitude and altitude are zero.
+        /// </summary>
+        public static readonly ZonePoint Zero = new ZonePoint(0, 0, 0);
 
 		#endregion
 
@@ -347,7 +352,17 @@ namespace WF.Player.Core
         }
 
         #endregion
-	}
+
+        /// <summary>
+        /// Gets the location vector between this point and another one.
+        /// </summary>
+        /// <param name="zp">Target (end point of the vector).</param>
+        /// <returns>A location vector whose start is this point and whose end is <paramref name="zp"/>.</returns>
+        public LocationVector GetVectorTo(ZonePoint zp)
+        {
+            return new Utils.GeoMathHelper().VectorToPoint(this, zp);
+        }
+    }
 
     /// <summary>
     /// Describes parameters that have an influence on the formatting of a 
