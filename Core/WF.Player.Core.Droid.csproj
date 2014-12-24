@@ -13,6 +13,7 @@
     <AndroidResgenClass>Resource</AndroidResgenClass>
     <AssemblyName>WF.Player.Core</AssemblyName>
     <SynchReleaseVersion>false</SynchReleaseVersion>
+    <TargetFrameworkVersion>v4.0.3</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
