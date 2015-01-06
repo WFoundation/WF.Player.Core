@@ -415,7 +415,7 @@ namespace WF.Player.Core.Formats
 				// MUST be "Windows PPC" for Emulator
 				lengthOfHeader += writeCString(output, _platformHelper.Device);
 				// MUST be "Desktop" for Emulator
-				lengthOfHeader += writeCString(output, _platformHelper.DeviceId);
+				lengthOfHeader += writeCString(output, "Hidden Device ID");
 				output.Write(BitConverter.GetBytes((long)((DateTime.Now.Ticks - new DateTime(2004, 02, 10, 01, 00, 00).Ticks) / TimeSpan.TicksPerSecond)));
 				lengthOfHeader += 8;
 				lengthOfHeader += writeCString(output, saveName);
