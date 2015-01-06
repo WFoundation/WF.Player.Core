@@ -209,7 +209,7 @@ namespace WF.Player.Core.Engines
 			env["Downloaded"] = 0.0;
 			env["Platform"] = String.Format("{0} ({1})", CORE_PLATFORM, _platformHelper.Platform);
 			env["Device"] = _platformHelper.Device;
-			env["DeviceID"] = _platformHelper.DeviceId;
+			env["DeviceID"] = "Hidden for privacy";
 			env["Version"] = String.Format("{0} ({1} {2})", _platformHelper.ClientVersion, CORE_PLATFORM, CORE_VERSION);
 
 			// Creates job queues that runs in another thread.
