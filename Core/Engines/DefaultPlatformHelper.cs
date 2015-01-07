@@ -84,6 +84,11 @@ namespace WF.Player.Core.Engines
 			get { return "unknown"; }
 		}
 
+		public string DeviceId
+		{
+			get { return "unknown"; }
+		}
+
 		public string ClientVersion
 		{
 			get { return "unknown"; }

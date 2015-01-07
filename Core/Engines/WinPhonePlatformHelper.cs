@@ -121,6 +121,20 @@ namespace WF.Player.Core.Engines
 			}
 		}
 
+		public string DeviceId
+		{
+			get
+			{
+				object idHash;
+				if (!Microsoft.Phone.Info.DeviceExtendedProperties.TryGetValue("DeviceUniqueId", out idHash))
+				{
+					return "Unknown";
+				}
+
+				return Convert.ToBase64String((byte[])idHash);
+			}
+		}
+
 		public virtual string ClientVersion
 		{
 			get

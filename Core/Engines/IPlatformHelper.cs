@@ -90,6 +90,11 @@ namespace WF.Player.Core.Engines
 		string Device { get; }
 
 		/// <summary>
+		/// Gets a string that uniquely identifies the current device.
+		/// </summary>
+		string DeviceId { get; }
+
+		/// <summary>
 		/// Gets the version of the client application.
 		/// </summary>
 		string ClientVersion { get; }
