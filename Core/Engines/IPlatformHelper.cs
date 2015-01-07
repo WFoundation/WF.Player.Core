@@ -92,6 +92,8 @@ namespace WF.Player.Core.Engines
 		/// <summary>
 		/// Gets a string that uniquely identifies the current device.
 		/// </summary>
+        /// <remarks>An approximate or bogus value can be returned if this information is
+        /// too sensitive to be given for the current device.</remarks>
 		string DeviceId { get; }
 
 		/// <summary>

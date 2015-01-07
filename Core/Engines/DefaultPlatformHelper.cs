@@ -24,19 +24,24 @@ namespace WF.Player.Core.Engines
 {
 	internal class DefaultPlatformHelper : IPlatformHelper
 	{
-		public string CartridgeFolder
+        /// <summary>
+        /// A string which can be used for unknown data.
+        /// </summary>
+        public static string UnknownValue = "unknown";
+        
+        public string CartridgeFolder
 		{
-			get { return "unknown"; }
+            get { return UnknownValue; }
 		}
 
 		public string SavegameFolder
 		{
-			get { return "unknown"; }
+            get { return UnknownValue; }
 		}
 
 		public string LogFolder
 		{
-			get { return "unknown"; }
+            get { return UnknownValue; }
 		}
 
 		public string Ok
@@ -76,22 +81,22 @@ namespace WF.Player.Core.Engines
 
 		public string Platform
 		{
-			get { return "unknown"; }
+            get { return UnknownValue; }
 		}
 
 		public string Device
 		{
-			get { return "unknown"; }
+            get { return UnknownValue; }
 		}
 
 		public string DeviceId
 		{
-			get { return "unknown"; }
+            get { return UnknownValue; }
 		}
 
 		public string ClientVersion
 		{
-			get { return "unknown"; }
+            get { return UnknownValue; }
 		}
 
 		public bool CanDispatchOnUIThread

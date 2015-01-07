@@ -125,13 +125,16 @@ namespace WF.Player.Core.Engines
 		{
 			get
 			{
-				object idHash;
-				if (!Microsoft.Phone.Info.DeviceExtendedProperties.TryGetValue("DeviceUniqueId", out idHash))
-				{
-					return "Unknown";
-				}
+                //// Retrieves the phone's device Id (requires permission ID_CAP_IDENTITY_DEVICE).
+                //object idHash;
+                //if (!Microsoft.Phone.Info.DeviceExtendedProperties.TryGetValue("DeviceUniqueId", out idHash))
+                //{
+                //    return DefaultPlatformHelper.UnknownValue;
+                //}
+                //return Convert.ToBase64String((byte[])idHash);
 
-				return Convert.ToBase64String((byte[])idHash);
+                // DeviceId is not returned for privacy reasons.
+                return DefaultPlatformHelper.UnknownValue;
 			}
 		}
 
@@ -139,7 +142,7 @@ namespace WF.Player.Core.Engines
 		{
 			get
 			{
-				return _entryAssemblyVersion != null ? _entryAssemblyVersion.ToString() : "Unknown";
+				return _entryAssemblyVersion != null ? _entryAssemblyVersion.ToString() : DefaultPlatformHelper.UnknownValue;
 			}
 
 			// The value is set by the static constructor in order to catch the UI thread's 
