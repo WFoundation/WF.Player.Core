@@ -329,13 +329,16 @@ namespace WF.Player.Core.Utils
 			double lat2 = c.TargetPoint.Lat * PI_180;
 			double lon2 = c.TargetPoint.Lon * PI_180;
 
+			double cosLat1 = Math.Cos(lat1);
+			double cosLat2 = Math.Cos(lat2);
+
 			double dLat = lat2 - lat1;
 			double dLon = lon2 - lon1;
 
 			double hvsLat = Math.Sin(dLat / 2);
 			double hvsLon = Math.Sin(dLon / 2);
 
-			double a = (hvsLat * hvsLat) + (hvsLon * hvsLon * Math.Cos(lat1) * Math.Cos(lat2));
+			double a = (hvsLat * hvsLat) + (hvsLon * hvsLon * cosLat1 * cosLat2);
 
 			double cc = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
 
@@ -344,8 +347,8 @@ namespace WF.Player.Core.Utils
 			// http://www.movable-type.co.uk/scripts/latlong.html#bearing
 
 			double bearing = Math.Atan2(
-				Math.Sin(dLon) * Math.Cos(lat2),
-				Math.Cos(lat1) * Math.Sin(lat2) - Math.Sin(lat1) * Math.Cos(lat2) * Math.Cos(dLon)
+				Math.Sin(dLon) * cosLat2,
+				cosLat1 * Math.Sin(lat2) - Math.Sin(lat1) * cosLat2 * Math.Cos(dLon)
 				) / PI_180;
 
 			return new Vector(distance, bearing);
