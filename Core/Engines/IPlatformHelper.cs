@@ -1,4 +1,4 @@
-﻿///
+///
 /// WF.Player.Core - A Wherigo Player Core for different platforms.
 /// Copyright (C) 2012-2014  Dirk Weltz <web@weltz-online.de>
 /// Copyright (C) 2012-2014  Brice Clocher <contact@cybisoft.net>

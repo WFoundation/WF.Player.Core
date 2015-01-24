@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-#if MONOTOUCH
-	using MonoTouch.ObjCRuntime;
+#if __IOS__
+	using ObjCRuntime;
 #endif
 
 // Allgemeine Informationen über eine Assembly werden über die folgenden 
@@ -18,7 +18,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
-#if MONOTOUCH
+#if __IOS__
 	// Attributes only valid for iOS builds
 	[assembly: CLSCompliantAttribute (false)]
 	[assembly: LinkWith("liblua5.1.a", LinkTarget.Simulator | LinkTarget.ArmV6 | LinkTarget.ArmV7 | LinkTarget.ArmV7s, Frameworks = "Foundation", ForceLoad = true, IsCxx = true, LinkerFlags = "-lstdc++")]

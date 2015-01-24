@@ -29,8 +29,8 @@ using WF.Player.Core.Utils;
 
 namespace WF.Player.Core
 {
-    #if MONOTOUCH
-	    [MonoTouch.Foundation.Preserve(AllMembers=true)]
+	#if __IOS__
+	    [Foundation.Preserve(AllMembers=true)]
     #endif
 	// TODO: Multithreading safety.
 

@@ -20,8 +20,8 @@
 using System;
 using System.IO;
 using System.Reflection;
-using MonoTouch.UIKit;
-using MonoTouch.Foundation;
+using UIKit;
+using Foundation;
 
 namespace WF.Player.Core.Engines
 {

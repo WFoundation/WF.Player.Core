@@ -34,8 +34,8 @@ namespace WF.Player.Core.Engines
 	/// <summary>
 	/// Implements the Lua libary WIGInternal.
 	/// </summary>
-#if MONOTOUCH
-	    [MonoTouch.Foundation.Preserve(AllMembers=true)]
+#if __IOS__
+	    [Foundation.Preserve(AllMembers=true)]
 #endif
 	public class WIGInternalImpl
 	{

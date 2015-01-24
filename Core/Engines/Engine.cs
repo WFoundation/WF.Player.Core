@@ -38,8 +38,8 @@ namespace WF.Player.Core.Engines
 	/// The core component of the Wherigo player, that is orchestrating the game engine and
 	/// gives feedback to the client user interface.
 	/// </summary>
-#if MONOTOUCH
-	    [MonoTouch.Foundation.Preserve(AllMembers=true)]
+#if __IOS__
+	    [Foundation.Preserve(AllMembers=true)]
 #endif
 	public class Engine : IDisposable, INotifyPropertyChanged
 	{

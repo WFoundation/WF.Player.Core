@@ -131,7 +131,7 @@ namespace WF.Player.Core
         /// </summary>
         /// <returns>A string representing the current coordinate in
         /// the WGS84 system, using decimal degrees and default
-        /// formatting. E.g. "-45.6781°, 2.38°"</returns>
+        /// formatting. E.g. "-45.6781Â°, 2.38Â°"</returns>
         public override string ToString()
         {
             return ToString(GeoCoordinateUnit.DecimalDegrees, new GeoCoordinateFormat());
@@ -199,9 +199,9 @@ namespace WF.Player.Core
 
         private string GetConvertedCoordinate(double value, int maxIntPartDigits, GeoCoordinateUnit unit, GeoCoordinateFormat format)
         {
-            // DD : DD.DDD°
-            // DM : DD° MM.MMM'
-            // DMS : DD° MM' SS.SSS"
+            // DD : DD.DDDÂ°
+            // DM : DDÂ° MM.MMM'
+            // DMS : DDÂ° MM' SS.SSS"
 
             StringBuilder coordBuilder = new StringBuilder(); // Builder for the final coordinates.
             
@@ -245,7 +245,7 @@ namespace WF.Player.Core
             string fmtFloatingNumberMax2 = fmtFloatingNumber.Substring(startDigit); // e.g. #0.0###
             string fmtTruncatedIntegerMax2 = fmtTruncatedInteger.Substring(startDigit); // e.g. #0
 
-            /// 2. First subcomponent format: (D)DD° or (D)DD.DDD°
+            /// 2. First subcomponent format: (D)DDÂ° or (D)DD.DDDÂ°
             formatBuilder.Clear();
             if (isDmOrDms)
             {
@@ -273,7 +273,7 @@ namespace WF.Player.Core
             {
                 // DM and DMS: Adds a subcomponent separator.
                 coordBuilder.Append(format.SubComponentSeparator);
-                // e.g. ##0°,
+                // e.g. ##0Â°,
             }
 
             // DD can return now.
@@ -422,7 +422,7 @@ namespace WF.Player.Core
         /// <remarks>A component is the latitude or longitude part
         /// of the coordinate. A subcomponent is a part of a
         /// component that is suffixed with its own unit
-        /// (e.g. 16' in N 45°16'10.628")</remarks>
+        /// (e.g. 16' in N 45Â°16'10.628")</remarks>
         public string SubComponentSeparator { get; set; }
 
         /// <summary>
@@ -488,7 +488,7 @@ namespace WF.Player.Core
         {
             this.CardinalPointSeparator = " ";
             this.ComponentSeparator = ", ";
-            this.DegreesSymbol = "°";
+            this.DegreesSymbol = "Â°";
             this.EastSymbol = "E";
             this.NumberFormat = nfi;
             this.MinutesSymbol = "'";

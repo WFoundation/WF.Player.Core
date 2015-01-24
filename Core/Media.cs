@@ -1,4 +1,4 @@
-﻿///
+///
 /// WF.Player.Core - A Wherigo Player Core for different platforms.
 /// Copyright (C) 2012-2014  Dirk Weltz <web@weltz-online.de>
 /// Copyright (C) 2012-2014  Brice Clocher <contact@cybisoft.net>
@@ -26,8 +26,8 @@ namespace WF.Player.Core
 	/// <summary>
 	/// A container for a media resource.
 	/// </summary>
-    #if MONOTOUCH
-	    [MonoTouch.Foundation.Preserve(AllMembers=true)]
+    #if __IOS__
+	    [Foundation.Preserve(AllMembers=true)]
     #endif
     public class Media : WherigoObject
     {
