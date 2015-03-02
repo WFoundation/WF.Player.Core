@@ -44,8 +44,8 @@ namespace WF.Player.Core.Utils
 
 			public Point(ZonePoint point)
 			{
-				Lat = point.Latitude;
-				Lon = point.Longitude;
+				Lat = point == null ? ZonePoint.Invalid.Latitude : point.Latitude;
+				Lon = point == null ? ZonePoint.Invalid.Longitude : point.Longitude;
 			}
 
 			public ZonePoint ToZonePoint(IDataFactory _dataFactory)
