@@ -1561,7 +1561,13 @@ namespace WF.Player.Core.Engines
 
 		private void HandleLuaExecQueueIsBusyChanged(object sender, EventArgs e)
 		{
-			bool leqIsBusy = _luaExecQueue.IsBusy;
+            if (_luaExecQueue == null || _uiDispatchPump == null)
+            {
+                // We're in a race condition during Engine disposal. Return silently.
+                return;
+            }
+            
+            bool leqIsBusy = _luaExecQueue.IsBusy;
 
 			// Sets the UI dispatching action pump to be pumping when the lua exec queue
 			// is not busy.
@@ -1573,7 +1579,13 @@ namespace WF.Player.Core.Engines
 
 		private void HandleUIDispatchPumpIsBusyChanged(object sender, EventArgs e)
 		{
-			// The engine is busy if the lua execution queue or the ui dispatch pump are busy.
+            if (_luaExecQueue == null || _uiDispatchPump == null)
+            {
+                // We're in a race condition during Engine disposal. Return silently.
+                return;
+            }
+            
+            // The engine is busy if the lua execution queue or the ui dispatch pump are busy.
 			IsBusy = _luaExecQueue.IsBusy || _uiDispatchPump.IsBusy;
 		}
 

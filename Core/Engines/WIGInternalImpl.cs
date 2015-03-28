@@ -210,6 +210,7 @@ namespace WF.Player.Core.Engines
 			// "Type"
 			// "Complete"
 			// "CorrectState"
+            // "Commands"
 
 			_engine.HandleAttributeChanged(_dataFactory.GetWherigoObject(obj), type);
 
