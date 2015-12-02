@@ -69,6 +69,17 @@ namespace WF.Player.Core.Data.Native
 			return GetFieldOrDefault<bool?>(key);
 		}
 
+		public byte[] GetByteArray(object key)
+		{
+			string convKey;
+			if (key is double || key is int) {
+				convKey = key.ToString();
+			} else {
+				convKey = (string)key;
+			}
+			return GetFieldOrDefault<byte[]>(convKey);
+		}
+
 		public IDataContainer GetContainer(string key)
 		{
 			return GetFieldOrDefault<IDataContainer>(key);

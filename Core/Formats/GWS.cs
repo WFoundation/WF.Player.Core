@@ -1,4 +1,4 @@
-﻿﻿///
+﻿///
 /// WF.Player.Core - A Wherigo Player Core for different platforms.
 /// Copyright (C) 2012-2014  Dirk Weltz <web@weltz-online.de>
 /// Copyright (C) 2012-2014  Brice Clocher <contact@cybisoft.net>
@@ -348,7 +348,7 @@ namespace WF.Player.Core.Formats
                         break;
 
                     case 3:
-                        SetField(obj, key, readString(input), rawset);
+                        SetField(obj, key, readByteArray(input), rawset);
                         break;
 
                     case 4:
@@ -511,7 +511,7 @@ namespace WF.Player.Core.Formats
 				if (entry.Value is string)
 				{
 					output.Write((byte)3);
-					writeString(output, (string)entry.Value);
+					writeByteArray(output, obj.GetByteArray(entry.Key));
 				}
 				if (entry.Value is LuaDataProvider)
 				{
@@ -602,11 +602,10 @@ namespace WF.Player.Core.Formats
 		/// <returns>String readed from binary reader.</returns>
 		private string readString(BinaryReader input)
 		{
-			var b = input.ReadBytes(input.ReadInt32()).ToArray();
+			var l = input.ReadInt32();
+			var b = input.ReadBytes(l).ToArray();
 
-			var s = Encoding.UTF8.GetString(b, 0, b.Length);
-
-			return s;
+			return Encoding.UTF8.GetString(b);
 		}
 
 		/// <summary>
@@ -620,23 +619,34 @@ namespace WF.Player.Core.Formats
 			var b = Encoding.UTF8.GetBytes(str);
 
 			output.Write(b.Length);
-
 			output.Write(b);
 		}
 
+
 		/// <summary>
-		/// Convert byte array to a string.
+		/// Reads a byte array from binary reader. 
+		/// First four bytes are the length, the next length bytes are the array. 
 		/// </summary>
-		/// <param name="array">Byte array to convert to string.</param>
-		/// <returns>String with converted byte array.</returns>
-		private string toString(byte[] array)
+		/// <param name="input">BinaryReader to read from.</param>
+		/// <returns>Byte array readed from binary reader.</returns>
+		private byte[] readByteArray(BinaryReader input)
 		{
-			StringBuilder s = new StringBuilder(array.Length);
+			var l = input.ReadInt32();
+			var b = input.ReadBytes(l).ToArray();
 
-			foreach (byte b in array)
-				s.Append(b);
+			return b;
+		}
 
-			return s.ToString();
+		/// <summary>
+		/// Writes a byte array to a binary writer. 
+		/// First four bytes are the length, the next length bytes are the array. 
+		/// </summary>
+		/// <param name="output">BinaryWriter to write the byte array to.</param>
+		/// <param name="str">Byte array to write</param>
+		private void writeByteArray(BinaryWriter output, byte[] b)
+		{
+			output.Write(b.Length);
+			output.Write(b);
 		}
 
 		/// <summary>

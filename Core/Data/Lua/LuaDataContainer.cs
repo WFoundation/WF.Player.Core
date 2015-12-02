@@ -376,8 +376,13 @@ namespace WF.Player.Core.Data.Lua
 
         public string GetString(string key)
         {
-            return _luaState.SafeGetField<string>(_luaTable, key);
+			return _luaState.SafeGetField<string>(_luaTable, key);
         }
+
+		public byte[] GetByteArray(object key)
+		{
+			return _luaState.SafeGetField<byte[]>(_luaTable, key);
+		}
 
         public W GetWherigoObject<W>(string key) where W : WherigoObject
         {

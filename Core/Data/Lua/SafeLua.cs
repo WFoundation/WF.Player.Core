@@ -305,7 +305,11 @@ namespace WF.Player.Core.Data.Lua
 			{
 				try
 				{
-					o = Dewrap(table[Wrap(key)]);
+					if (typeof(T) == typeof(byte[])) {
+						o = ((LuaString)table[Wrap(key)]).AsByteArray();
+					} else {
+						o = Dewrap(table[Wrap(key)]);
+					}
 				}
 				catch (Exception e)
 				{

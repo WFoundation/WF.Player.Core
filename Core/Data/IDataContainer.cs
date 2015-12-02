@@ -47,6 +47,14 @@ namespace WF.Player.Core.Data
 		bool? GetBool(string key);
 
 		/// <summary>
+		/// Gets a byte array for a particular key.
+		/// </summary>
+		/// <param name="key">The key to query for.</param>
+		/// <returns>Null if the value was not found or is not a byte array, a byte array 
+		/// otherwise.</returns>
+		byte[] GetByteArray(object key);
+
+		/// <summary>
 		/// Gets a data container for a particular key.
 		/// </summary>
 		/// <param name="key">The key to query for.</param>
