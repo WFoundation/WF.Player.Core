@@ -1,3 +1,6 @@
+
+using Newtonsoft.Json;
+using PCLStorage;
 ///
 /// WF.Player.Core - A Wherigo Player Core for different platforms.
 /// Copyright (C) 2012-2013  Dirk Weltz <web@weltz-online.de>
@@ -16,7 +19,6 @@
 /// You should have received a copy of the GNU Lesser General Public License
 /// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ///
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -24,8 +26,9 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
-using Newtonsoft.Json;
+using System.Threading;
 using WF.Player.Core.Formats;
 
 namespace WF.Player.Core.Live
@@ -71,7 +74,7 @@ namespace WF.Player.Core.Live
         /// Fill cartridge list by a list of filenames. All filenames in the list contains a valid path and filename.
         /// </summary>
         /// <param name="dir">Path to directory to get cartridges from.</param>
-        public void GetByFileList(List<string> files)
+        public async void GetByFileList(List<string> files)
         {
             if (files == null)
             {
@@ -85,10 +88,17 @@ namespace WF.Player.Core.Live
 
             foreach (string fileName in files)
             {
-                if (File.Exists(fileName))
+                var checkFileExists = await FileSystem.Current.LocalStorage.CheckExistsAsync(fileName);
+
+                if (checkFileExists == ExistenceCheckResult.FileExists)
                 {
                     Cartridge cart = new Cartridge(fileName);
-					CartridgeLoaders.LoadMetadata(new FileStream(fileName, FileMode.Open), cart);
+
+                    var file = await FileSystem.Current.LocalStorage.GetFileAsync(fileName);
+                    var fileStream = await file.OpenAsync(FileAccess.Read);
+
+					CartridgeLoaders.LoadMetadata(fileStream, cart);
+
                     Add(cart);
                 }
             }
@@ -195,8 +205,8 @@ namespace WF.Player.Core.Live
 				{"req", obj}
 			};
 			string json = JsonConvert.SerializeObject(jsonRequest);
-			using (WebClient client = new WebClient()) {
-				client.Headers.Add("Content-Type", "application/json; charset=utf-8");
+			using (PortableWebClient client = new PortableWebClient()) {
+				client.ContentType = "application/json; charset=utf-8";
 				return client.UploadString(uri, json);
 			}
 		}
@@ -287,4 +297,96 @@ namespace WF.Player.Core.Live
         #endregion
 
     }
+
+    #region WebClient replacement
+
+    /// <summary>
+    /// Found at https://github.com/jhskailand/PortableWebClient/blob/master/PortableWebClient.cs
+    /// </summary>
+    public class PortableWebClient: IDisposable
+    {
+        public PortableWebClient()
+        {
+            StatusCode = HttpStatusCode.Unused;
+            StatusDescription = string.Empty;
+        }
+
+        public string Username { get; set; }
+
+        public string Password { get; set; }
+
+        public string Accept { get; set; }
+
+        public string ContentType { get; set; }
+
+        public HttpStatusCode StatusCode { get; set; }
+
+        public string StatusDescription { get; set; }
+
+        public string DownloadString(string url)
+        {
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            if (this.Username != null && this.Password != null)
+            {
+                request.Credentials = new NetworkCredential(this.Username, this.Password);
+            }
+            request.Accept = this.Accept;
+            request.Method = "GET";
+            HttpWebResponse response = (HttpWebResponse)GetResponse(request);
+            using (StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8))
+            {
+                this.StatusCode = response.StatusCode;
+                this.StatusDescription = response.StatusDescription;
+                string data = reader.ReadToEnd();
+                return data;
+            }
+        }
+
+        public string UploadString(string url, string body)
+        {
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            if (this.Username != null && this.Password != null)
+            {
+                request.Credentials = new NetworkCredential(this.Username, this.Password);
+            }
+            request.Accept = this.Accept;
+            request.Method = "POST";
+            request.ContentType = this.ContentType;
+            using (Stream writer = (Stream)GetRequestStream(request))
+            {
+                byte[] data = Encoding.UTF8.GetBytes(body);
+                writer.Write(data, 0, data.Length);
+            }
+            HttpWebResponse response = (HttpWebResponse)GetResponse(request);
+            using (StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8))
+            {
+                this.StatusCode = response.StatusCode;
+                this.StatusDescription = response.StatusDescription;
+                string data = reader.ReadToEnd();
+                return data;
+            }
+        }
+
+        private WebResponse GetResponse(WebRequest request)
+        {
+            AutoResetEvent autoResetEvent = new AutoResetEvent(false);
+            IAsyncResult asyncResult = request.BeginGetResponse(r => autoResetEvent.Set(), null);
+            autoResetEvent.WaitOne();
+            return request.EndGetResponse(asyncResult);
+        }
+
+        private Stream GetRequestStream(WebRequest request)
+        {
+            AutoResetEvent autoResetEvent = new AutoResetEvent(false);
+            IAsyncResult asyncResult = request.BeginGetRequestStream(r => autoResetEvent.Set(), null);
+            autoResetEvent.WaitOne();
+            return request.EndGetRequestStream(asyncResult);
+        }
+
+        public void Dispose()
+        {
+        }
+    }
+
+    #endregion
 }

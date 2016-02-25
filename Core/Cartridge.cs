@@ -1196,9 +1196,9 @@ namespace WF.Player.Core
                 HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(url);
 
 #if !WINDOWS_PHONE
-                httpWebRequest.AllowWriteStreamBuffering = true;
-                httpWebRequest.Referer = @"http://www.google.com/";
-                httpWebRequest.Timeout = 20000;
+                //httpWebRequest.AllowWriteStreamBuffering = true;
+                //httpWebRequest.Referer = @"http://www.google.com/";
+                //httpWebRequest.Timeout = 20000;
 #endif
 
 				// Waits for response asynchronously.

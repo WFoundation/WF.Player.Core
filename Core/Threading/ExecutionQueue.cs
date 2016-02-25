@@ -244,7 +244,8 @@ namespace WF.Player.Core.Threading
         public void WaitEmpty()
         {
             // Sanity check.
-            if (IsSameThread)
+            // TODO: Changed to !
+            if (!IsSameThread)
             {
                 throw new InvalidOperationException("Cannot use WaitEmpty() from the same thread as this ExecutionQueue.");
             }

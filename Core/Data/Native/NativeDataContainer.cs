@@ -90,7 +90,7 @@ namespace WF.Player.Core.Data.Native
 			return GetFieldOrDefault<double?>(key);
 		}
 
-		public E? GetEnum<E>(string key, E? defaultValue = null) where E : struct, IConvertible
+		public E? GetEnum<E>(string key, E? defaultValue = null) where E : struct
 		{
 			return GetFieldOrDefault<E?>(key);
 		}

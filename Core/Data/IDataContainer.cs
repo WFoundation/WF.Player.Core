@@ -77,7 +77,7 @@ namespace WF.Player.Core.Data
 		/// <returns><paramref name="defaultValue"/> if the value for the key was not found or could not be 
 		/// converted to an instance of <typeparamref name="E"/>, a valid instance of
 		/// <typeparamref name="E"/> otherwise.</returns>
-		E? GetEnum<E>(string key, E? defaultValue = null) where E : struct, IConvertible;
+		E? GetEnum<E>(string key, E? defaultValue = null) where E : struct;
 
 		/// <summary>
 		/// Gets an integer for a particular key.

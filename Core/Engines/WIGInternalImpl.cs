@@ -34,9 +34,6 @@ namespace WF.Player.Core.Engines
 	/// <summary>
 	/// Implements the Lua libary WIGInternal.
 	/// </summary>
-#if __IOS__
-	    [Foundation.Preserve(AllMembers=true)]
-#endif
 	public class WIGInternalImpl
 	{
 		#region Fields
@@ -117,21 +114,25 @@ namespace WF.Player.Core.Engines
 
 		private void AddMethodToTable(LuaDataContainer container, string fieldName, string funcName = null)
 		{
-			// Gets the type of the delegate to create.
-			Type dType = this.GetType().GetNestedType(fieldName + "Delegate", BindingFlags.NonPublic);
+            // Gets the type of the delegate to create.
+            TypeInfo typeInfo = this.GetType().GetTypeInfo();
+            string typeName = fieldName + "Delegate";
+            Type dType = typeInfo.DeclaredNestedTypes.SingleOrDefault(t => t.Name == typeName).AsType();
 
-			// Gets the delegate for the method to create.
-			Delegate d = Delegate.CreateDelegate(dType, this, funcName ?? fieldName);
+            // Gets the delegate for the method to create.
+            string methodName = funcName ?? fieldName;
+            MethodInfo method = typeInfo.DeclaredMethods.SingleOrDefault(mi => mi.Name == methodName);
+            Delegate d = method.CreateDelegate(dType, this);
 
-			// Creates the function and sets it to the table.
-			container.BindWithFunction(fieldName, d);
-		}
+            // Creates the function and sets it to the table.
+            container.BindWithFunction(fieldName, d);
+        }
 
-		#endregion
+        #endregion
 
-		#region WIGInternals Functions for UI
+        #region WIGInternals Functions for UI
 
-		public void LogMessage(double level, string message)
+        public void LogMessage(double level, string message)
 		{
 			int nlevel = Convert.ToInt32(level);
 			string nmessage = message ?? "";

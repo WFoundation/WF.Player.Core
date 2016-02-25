@@ -76,7 +76,7 @@ namespace WF.Player.Core.Engines
 
 		public string PathSeparator
 		{
-			get { return Path.DirectorySeparatorChar.ToString(); }
+			get { return "/"; }
 		}
 
 		public string Platform

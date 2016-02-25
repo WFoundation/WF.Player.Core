@@ -118,7 +118,7 @@ namespace WF.Player.Core.Utils
 
 			// Defines the options for replacement: ignore case and culture invariant.
 			System.Text.RegularExpressions.RegexOptions ro = System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant;
-			StringComparison sc = StringComparison.InvariantCultureIgnoreCase;
+			StringComparison sc = StringComparison.OrdinalIgnoreCase;
 
 			return s
 				.Replace("<BR/?>\n?", "\n", ro)
@@ -145,7 +145,7 @@ namespace WF.Player.Core.Utils
 			}
 
 			// Defines the options for replacement: ignore case and culture invariant.
-			StringComparison sc = StringComparison.InvariantCultureIgnoreCase;
+			StringComparison sc = StringComparison.OrdinalIgnoreCase;
 
 			return s
 					.Replace("<", "&lt;", sc)

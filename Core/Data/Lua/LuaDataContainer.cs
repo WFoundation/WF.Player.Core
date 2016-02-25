@@ -310,7 +310,7 @@ namespace WF.Player.Core.Data.Lua
             return _luaState.SafeGetField<double?>(_luaTable, key);
         }
 
-        public E? GetEnum<E>(string key, E? defaultValue = null) where E : struct, IConvertible
+        public E? GetEnum<E>(string key, E? defaultValue = null) where E : struct
         {
             // Gets the string value for the key.
             string field = _luaState.SafeGetField<string>(_luaTable, key);

@@ -40,7 +40,7 @@ namespace WF.Player.Core
 #elif __IOS__
 			platform = new iOSPlatformHelper();
 #else
-			platform = new DefaultPlatformHelper()
+            platform = new DefaultPlatformHelper();
 #endif
 
 			// Creates a new Engine for the platform.

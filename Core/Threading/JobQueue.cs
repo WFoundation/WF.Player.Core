@@ -190,7 +190,7 @@ namespace WF.Player.Core.Threading
             /// Gets or sets the stack trace that led to this job being
             /// accepted by the parent JobQueue.
             /// </summary>
-            public StackTrace StackWhenAccepted { get; set; } 
+            //public StackTrace StackWhenAccepted { get; set; } 
 #endif
 
             /// <summary>
@@ -209,7 +209,7 @@ namespace WF.Player.Core.Threading
         #region Fields
 
 		private FilterQueue _jobQueue = new FilterQueue();
-		private Thread _jobThread;
+		private System.Threading.Tasks.Task _jobThread;
 		private bool _isDisposed = false;
 		private bool _isSleeping = true;
 		private bool _isActive = true;
@@ -230,7 +230,9 @@ namespace WF.Player.Core.Threading
 		{
 			get
 			{
-				return _jobThread != null && _jobThread.ManagedThreadId == Thread.CurrentThread.ManagedThreadId;
+                // TODO: With Task it isn't relevant if the Task runs on the same thread
+                // return _jobThread != null && _jobThread.ManagedThreadId == Thread.CurrentThread.ManagedThreadId;
+                return true;
 			}
 		}
 
@@ -457,7 +459,7 @@ namespace WF.Player.Core.Threading
 				_jobThreadCanResumeEvent.Set();
 
 				// Waits for the thread to die and then dispose other related resources.
-				_jobThread.Join();
+				_jobThread.Wait();
 				_jobThreadCanResumeEvent.Dispose();
 
 				// Bye bye.
@@ -504,7 +506,7 @@ namespace WF.Player.Core.Threading
                     Action = job,
 					Tag = tag
 #if DEBUG
-                    , StackWhenAccepted = new StackTrace()  
+                    //, StackWhenAccepted = new StackTrace()  
 #endif
                 });
 			}
@@ -533,19 +535,19 @@ namespace WF.Player.Core.Threading
 			// Creates the thread if it does not exist.
 			if (this._jobThread == null)
 			{
-				// Creates the thread.
-				this._jobThread = new Thread(ThreadMain)
-				{
-					Name = this.GetType().Name + "_" + this._syncRoot.GetHashCode(),
-					IsBackground = true
-				};
+                // Creates the thread.
+                this._jobThread = new System.Threading.Tasks.Task(ThreadMain)
+                {
+                    //Name = this.GetType().Name + "_" + this._syncRoot.GetHashCode(),
+                    //IsBackground = true
+                };
 
-				// Creates the signaling event.
-				this._jobThreadCanResumeEvent = new AutoResetEvent(true);
+                // Creates the signaling event.
+                this._jobThreadCanResumeEvent = new AutoResetEvent(true);
 			}
 
 			// Starts the thread if it is not alive.
-			if (!this._jobThread.IsAlive)
+			if (this._jobThread.Status == System.Threading.Tasks.TaskStatus.Created)
 			{
 				this._jobThread.Start();
 			}
@@ -566,7 +568,8 @@ namespace WF.Player.Core.Threading
 
 		private void OnContinuesOnCompletionChanged(bool newValue)
 		{
-			if (newValue && this._jobThread != null && this._jobThread.IsAlive)
+            // TODO: Should be check, if this correct
+			if (newValue && this._jobThread != null && this._jobThread.Status == System.Threading.Tasks.TaskStatus.Running)
 			{
 				// Wakes the thread up, there may be some new things to do.
 				this._jobThreadCanResumeEvent.Set();
@@ -575,7 +578,8 @@ namespace WF.Player.Core.Threading
 
 		private void OnIsActiveChanged(bool value)
 		{
-			if (value && this._jobThread != null && this._jobThread.IsAlive)
+            // TODO: Should be check, if this correct
+            if (value && this._jobThread != null && this._jobThread.Status == System.Threading.Tasks.TaskStatus.Running)
 			{
 				// Wakes the thread up, there may be some new things to do.
 				this._jobThreadCanResumeEvent.Set();
@@ -627,7 +631,7 @@ namespace WF.Player.Core.Threading
 					if (jobsLeftToDo > 0 && ContinuesOnCompletion)
 					{
 						// Sleeps a litte bit before to free UI thread cpu.
-						Thread.Sleep(DelayBetweenJobs);
+						System.Threading.Tasks.Task.Delay(DelayBetweenJobs);
 
 						// Let's do the next job!
 						continue;

@@ -1,43 +1,30 @@
-using System;
+﻿using System.Resources;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-#if __IOS__
-	using ObjCRuntime;
-#endif
 
-// Allgemeine Informationen über eine Assembly werden über die folgenden 
-// Attribute gesteuert. Ändern Sie diese Attributwerte, um die Informationen zu ändern,
-// die mit einer Assembly verknüpft sind.
-[assembly: AssemblyTitle("WF.Player.Core")]
-[assembly: AssemblyDescription("Core of Wherigo players")]
+// General Information about an assembly is controlled through the following 
+// set of attributes. Change these attribute values to modify the information
+// associated with an assembly.
+[assembly: AssemblyTitle("WF.Player.Core.PCL")]
+[assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Wherigo Foundation")]
-[assembly: AssemblyProduct("Wherigo")]
-[assembly: AssemblyCopyright("Wherigo Foundation, 2012-2014")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("WF.Player.Core.PCL")]
+[assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
+[assembly: NeutralResourcesLanguage("en")]
 
-#if __IOS__
-	// Attributes only valid for iOS builds
-	[assembly: CLSCompliantAttribute (false)]
-	[assembly: LinkWith("liblua5.1.a", LinkTarget.Simulator | LinkTarget.ArmV6 | LinkTarget.ArmV7 | LinkTarget.ArmV7s, Frameworks = "Foundation", ForceLoad = true, IsCxx = true, LinkerFlags = "-lstdc++")]
-#endif
-
-// Durch Festlegen von ComVisible auf "false" werden die Typen in dieser Assembly unsichtbar 
-// für COM-Komponenten. Wenn Sie auf einen Typ in dieser Assembly von 
-// COM zugreifen müssen, legen Sie das ComVisible-Attribut für diesen Typ auf "true" fest.
-[assembly: ComVisible(false)]
-
-// Die folgende GUID bestimmt die ID der Typbibliothek, wenn dieses Projekt für COM verfügbar gemacht wird
-[assembly: Guid("7db488db-56b5-4529-99eb-d66b1778ddab")]
-
-// Versionsinformationen für eine Assembly bestehen aus den folgenden vier Werten:
+// Version information for an assembly consists of the following four values:
 //
-//      Hauptversion
-//      Nebenversion 
-//      Buildnummer
+//      Major Version
+//      Minor Version 
+//      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("0.3.0.0")]
-[assembly: AssemblyFileVersion("0.3.0.0")]
+// You can specify all the values or you can default the Build and Revision Numbers 
+// by using the '*' as shown below:
+// [assembly: AssemblyVersion("1.0.*")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]

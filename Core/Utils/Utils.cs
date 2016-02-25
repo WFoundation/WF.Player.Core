@@ -37,9 +37,9 @@ namespace WF.Player.Core.Utils
         /// <param name="retValue">The returned value of the enum.</param>
         /// <returns>True if the enum field was found, false otherwise. If false,
         /// the value of <paramref name="retValue"/> is equal to <paramref name="defaultValue"/>.</returns>
-        public static bool TryParseEnum<T>(string fieldName, T? defaultValue, out T? retValue) where T : struct, IConvertible
+        public static bool TryParseEnum<T>(string fieldName, T? defaultValue, out T? retValue) where T : struct
         {
-            if (!typeof(T).IsEnum || string.IsNullOrEmpty(fieldName))
+            if (!typeof(T).GetTypeInfo().IsEnum || string.IsNullOrEmpty(fieldName))
             {
                 retValue = defaultValue;
                 return false;
@@ -56,7 +56,7 @@ namespace WF.Player.Core.Utils
 				string name = item.ToString();
 #endif
 
-                if (String.Equals(name, fieldName.Trim(), StringComparison.InvariantCultureIgnoreCase))
+                if (String.Equals(name, fieldName.Trim(), StringComparison.OrdinalIgnoreCase))
                 {
                     retValue = item;
                     return true;
@@ -75,9 +75,9 @@ namespace WF.Player.Core.Utils
 		/// <param name="defaultValue">Default value for the enum if the field is not found. If null,
 		/// an exception is thrown in place of returning the default value.</param>
 		/// <returns></returns>
-		public static T ParseEnum<T>(string fieldName, T? defaultValue) where T : struct, IConvertible
+		public static T ParseEnum<T>(string fieldName, T? defaultValue) where T : struct
 		{
-			if (!typeof(T).IsEnum)
+			if (!typeof(T).GetTypeInfo().IsEnum)
 				throw new ArgumentException("T must be an enumerated type.");
 
 			if (string.IsNullOrEmpty(fieldName))
@@ -101,7 +101,7 @@ namespace WF.Player.Core.Utils
 				string name = item.ToString();
 #endif
 
-				if (String.Equals(name, fieldName.Trim(), StringComparison.InvariantCultureIgnoreCase))
+				if (String.Equals(name, fieldName.Trim(), StringComparison.OrdinalIgnoreCase))
 				{
 					return item;
 				}

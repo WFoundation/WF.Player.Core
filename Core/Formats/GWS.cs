@@ -284,8 +284,6 @@ namespace WF.Player.Core.Formats
 						readTable(input, obj);
 					}
 				}
-
-				input.Close(); 
 			}
 
 			// Now deserialize all ZObjects
@@ -458,7 +456,6 @@ namespace WF.Player.Core.Formats
 				}
 
 				output.Flush();
-				output.Close(); 
 			}
 		}
 
@@ -605,7 +602,7 @@ namespace WF.Player.Core.Formats
 			var l = input.ReadInt32();
 			var b = input.ReadBytes(l).ToArray();
 
-			return Encoding.UTF8.GetString(b);
+			return Encoding.UTF8.GetString(b, 0, l);
 		}
 
 		/// <summary>

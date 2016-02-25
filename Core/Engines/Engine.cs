@@ -30,6 +30,7 @@ using WF.Player.Core.Threading;
 using WF.Player.Core.Formats;
 using WF.Player.Core.Data;
 using WF.Player.Core.Data.Lua;
+using System.Diagnostics.Contracts;
 
 namespace WF.Player.Core.Engines
 {
@@ -101,7 +102,7 @@ namespace WF.Player.Core.Engines
 
 		private WIGInternalImpl _wigInternal;
 
-		private Dictionary<int, System.Threading.Timer> _timers;
+		private Dictionary<int, EngineTimer> _timers;
 
 		private LuaDataFactory _dataFactory;
 
@@ -169,7 +170,7 @@ namespace WF.Player.Core.Engines
 
 			// Base objects.
 			_platformHelper = platform;
-			_timers = new Dictionary<int, System.Threading.Timer>();
+			_timers = new Dictionary<int, EngineTimer>();
 			_dataFactory = new LuaDataFactory(new LuaDataFactoryHelper(this));
 			_geoMathHelper = new GeoMathHelper(_dataFactory);
 
@@ -355,12 +356,9 @@ namespace WF.Player.Core.Engines
 
 		private void DisposeTimers()
 		{
-			AutoResetEvent waitHandle = new AutoResetEvent(false);
-
 			foreach (var timer in _timers.Values.ToList())
 			{
-				timer.Dispose(waitHandle);
-				waitHandle.WaitOne();
+				timer.Dispose();
 			}
 
 			lock (_syncRoot)
@@ -1549,7 +1547,10 @@ namespace WF.Player.Core.Engines
 			RefreshVisibleObjectsAsync();
 
 			// Notifies all visible objects that their distances have changed.
-			VisibleObjects.ToList().ForEach(t => RefreshThingVectorFromPlayerAsync(t));
+            foreach(var t in VisibleObjects.ToList())
+            {
+                RefreshThingVectorFromPlayerAsync(t);
+            }
 
 			// Raise the event.
 			RaiseZoneStateChanged(zones);
@@ -1617,10 +1618,10 @@ namespace WF.Player.Core.Engines
 		/// </summary>
 		/// <param name="objIndex">Key of the newly created timer.</param>
 		/// <returns></returns>
-		private System.Threading.Timer CreateAndStartInternalTimer(int objIndex)
+		private EngineTimer CreateAndStartInternalTimer(int objIndex)
 		{
-			// Initializes a corresponding internal timer, but do not start it yet.
-			System.Threading.Timer timer = new System.Threading.Timer(InternalTimerTick, objIndex, Timeout.Infinite, INTERNAL_TIMER_DURATION);
+            // Initializes a corresponding internal timer and start it yet.
+            EngineTimer timer = new EngineTimer(InternalTimerTick, objIndex, INTERNAL_TIMER_DURATION, INTERNAL_TIMER_DURATION);
 
 			// Keeps track of the timer.
 			// TODO: What happens if the timer is already in the dictionary?
@@ -1629,9 +1630,6 @@ namespace WF.Player.Core.Engines
 				if (!_timers.ContainsKey(objIndex))
 					_timers.Add(objIndex, timer);
 			}
-
-			// Starts the timer, now that it is registered.
-			timer.Change(INTERNAL_TIMER_DURATION, INTERNAL_TIMER_DURATION);
 
 			return timer;
 		}
@@ -1651,7 +1649,7 @@ namespace WF.Player.Core.Engines
 			}
 			if (shouldRemove)
 			{
-				System.Threading.Timer timer = _timers[objIndex];
+                EngineTimer timer = _timers[objIndex];
 
 				timer.Dispose();
 				lock (_syncRoot)
@@ -1703,24 +1701,34 @@ namespace WF.Player.Core.Engines
 			// Call only, if timer still exists.
 			// It could be, that function is called from thread, even if the timer didn't exists anymore.
 			bool timerExists = false;
+            EngineTimer timer;
 			lock (_syncRoot)
 			{
 				timerExists = _timers.ContainsKey(objIndex);
 			}
-			if (shoudTimerTick && timerExists)
+			if (timerExists)
 			{
-				// Disables and removes the current timer.
-				System.Threading.Timer timer = _timers[objIndex];
+                // Disables and removes the current timer.
+                timer = _timers[objIndex];
 				timer.Dispose();
-				lock (_syncRoot)
-				{
-					_timers.Remove(objIndex);
-				}
 
-				// Call OnTick of this timer
-				_luaExecQueue.BeginCallSelf(t, "Tick");
-			}
-		}
+                lock (_syncRoot)
+                {
+                    _timers.Remove(objIndex);
+                }
+
+                if (shoudTimerTick)
+                {
+                    // Call OnTick of this timer
+                    _luaExecQueue.BeginCallSelf(t, "Tick");
+                }
+                else
+                {
+                    // Restart timer, because we don't have a periode timer
+                    CreateAndStartInternalTimer(objIndex);
+                }
+            }
+        }
 
 		/// <summary>
 		/// Restarts all timers of the current cartridge that are marked
@@ -2236,6 +2244,32 @@ namespace WF.Player.Core.Engines
 		}
 	}
 
-	#endregion
+    /// <summary>
+    /// Timer replacement for System.Threading.Timer in PCL
+    /// </summary>
+    /// <param name="state"></param>
+    /// 
+    internal delegate void TimerCallback(object state);
+
+    internal sealed class EngineTimer : CancellationTokenSource, IDisposable
+    {
+        internal EngineTimer(TimerCallback callback, object state, int dueTime, int period)
+        {
+            System.Threading.Tasks.Task.Delay(dueTime, Token).ContinueWith((t, s) =>
+            {
+                var tuple = (Tuple<TimerCallback, object>)s;
+                tuple.Item1(tuple.Item2);
+            }, Tuple.Create(callback, state), CancellationToken.None,
+                System.Threading.Tasks.TaskContinuationOptions.ExecuteSynchronously | System.Threading.Tasks.TaskContinuationOptions.OnlyOnRanToCompletion,
+                System.Threading.Tasks.TaskScheduler.Default);
+        }
+
+        public new void Dispose()
+        {
+            base.Cancel();
+        }
+    }
+
+    #endregion
 
 }

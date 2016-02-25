@@ -70,19 +70,6 @@ namespace WF.Player.Core.Formats
         }
 
         /// <summary>
-        /// Get FileFormat from a file filename.
-        /// </summary>
-        /// <param name="filename">Filename with path of the file to check.</param>
-        /// <returns>The FileFormat of the file in the given MemoryStream.</returns>
-		public static CartridgeFileFormat GetFileFormat(string filename)
-        {
-            if (File.Exists(filename))
-                return GetFileFormat(new FileStream(filename,FileMode.Open));
-            else
-				return CartridgeFileFormat.Unknown;
-        }
-
-        /// <summary>
         /// Load a cartridge file of unkown type into an Cartridge object.
         /// </summary>
         /// <param name="inputStream">Stream containing the cartridge file.</param>

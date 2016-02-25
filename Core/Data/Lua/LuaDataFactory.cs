@@ -385,7 +385,7 @@ namespace WF.Player.Core.Data.Lua
         {
             // Loads the engine bytecode.
             byte[] binChunk;
-            using (BinaryReader bw = new BinaryReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("WF.Player.Core.Resources.Wherigo.luac")))
+            using (BinaryReader bw = new BinaryReader(this.GetType().GetTypeInfo().Assembly.GetManifestResourceStream("WF.Player.Core.PCL.Resources.Wherigo.luac")))
             {
                 binChunk = bw.ReadBytes((int)bw.BaseStream.Length);
             }
@@ -486,7 +486,7 @@ namespace WF.Player.Core.Data.Lua
                 // Engine is capable of understanding: the unit value.
                 value = ((DistanceUnit)value).ToSymbol();
             }
-            else if (value != null && value.GetType().IsEnum)
+            else if (value != null && value.GetType().GetTypeInfo().IsEnum)
             {
                 // Enums are converted to strings.
                 value = value.ToString();
@@ -890,7 +890,7 @@ namespace WF.Player.Core.Data.Lua
             {
                 throw new InvalidOperationException("Returned value was not computed.");
             }
-            if (typeToCompare != null && !typeToCompare.IsAssignableFrom(ret.GetType()))
+            if (typeToCompare != null && !typeToCompare.GetTypeInfo().IsAssignableFrom(ret.GetType().GetTypeInfo()))
             {
                 throw new InvalidOperationException(String.Format("The wherigo object is known to have type {0}, not {1} as requested.", ret.GetType().FullName, typeToCompare.FullName));
             }
