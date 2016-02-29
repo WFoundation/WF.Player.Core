@@ -44,11 +44,11 @@ namespace WF.Player.Core.Engines
 
 		private GeoMathHelper _mathHelper;
 
-		#endregion
+        #endregion
 
-		#region Delegates
+        #region Delegates
 
-		private delegate void LogMessageDelegate(double level, string message);
+        private delegate void LogMessageDelegate(double level, string message);
 		private delegate void MessageBoxDelegate(string text, double idxMediaObj, string btn1Label, string btn2Label, LuaFunction wrapper);
 		private delegate void GetInputDelegate(LuaTable input);
 		private delegate void NotifyOSDelegate(string command);
@@ -80,39 +80,39 @@ namespace WF.Player.Core.Engines
 			this._mathHelper = new GeoMathHelper(dataFactory);
 			LuaDataContainer wiginternal = dataFactory.CreateContainerAt("WIGInternal");
 
-			// WIGInternal Lua hooks: UI-related events
-			AddMethodToTable(wiginternal, "LogMessage");
-			AddMethodToTable(wiginternal, "MessageBox");
-			AddMethodToTable(wiginternal, "GetInput");
-			AddMethodToTable(wiginternal, "NotifyOS");
-			AddMethodToTable(wiginternal, "ShowScreen");
-			AddMethodToTable(wiginternal, "ShowStatusText");
+            // WIGInternal Lua hooks: UI-related events
+            AddMethodToTable(wiginternal, "LogMessage");
+            AddMethodToTable(wiginternal, "MessageBox");
+            AddMethodToTable(wiginternal, "GetInput");
+            AddMethodToTable(wiginternal, "NotifyOS");
+            AddMethodToTable(wiginternal, "ShowScreen");
+            AddMethodToTable(wiginternal, "ShowStatusText");
 
-			// WIGInternal Lua hooks: gameplay-related events
-			AddMethodToTable(wiginternal, "AttributeChangedEvent");
-			AddMethodToTable(wiginternal, "CartridgeEvent");
-			AddMethodToTable(wiginternal, "CommandChangedEvent");
-			AddMethodToTable(wiginternal, "InventoryEvent");
-			AddMethodToTable(wiginternal, "MediaEvent");
-			AddMethodToTable(wiginternal, "TimerEvent");
-			AddMethodToTable(wiginternal, "ZoneStateChangedEvent");
+            // WIGInternal Lua hooks: gameplay-related events
+            AddMethodToTable(wiginternal, "AttributeChangedEvent");
+            AddMethodToTable(wiginternal, "CartridgeEvent");
+            AddMethodToTable(wiginternal, "CommandChangedEvent");
+            AddMethodToTable(wiginternal, "InventoryEvent");
+            AddMethodToTable(wiginternal, "MediaEvent");
+            AddMethodToTable(wiginternal, "TimerEvent");
+            AddMethodToTable(wiginternal, "ZoneStateChangedEvent");
 
-			// WIGInternal Lua hooks: internal functions
-			AddMethodToTable(wiginternal, "IsPointInZone", "IsPointInZoneLua");
-			AddMethodToTable(wiginternal, "VectorToZone", "VectorToZoneLua");
-			AddMethodToTable(wiginternal, "VectorToSegment", "VectorToSegmentLua");
-			AddMethodToTable(wiginternal, "VectorToPoint", "VectorToPointLua");
-			AddMethodToTable(wiginternal, "TranslatePoint", "TranslatePointLua");
+            // WIGInternal Lua hooks: internal functions
+            AddMethodToTable(wiginternal, "IsPointInZone", "IsPointInZoneLua");
+            AddMethodToTable(wiginternal, "VectorToZone", "VectorToZoneLua");
+            AddMethodToTable(wiginternal, "VectorToSegment", "VectorToSegmentLua");
+            AddMethodToTable(wiginternal, "VectorToPoint", "VectorToPointLua");
+            AddMethodToTable(wiginternal, "TranslatePoint", "TranslatePointLua");
 
-			// Marks package WIGInternal as loaded
-			dataFactory.SetContainerAt("package.loaded.WIGInternal", wiginternal);
-			dataFactory.SetContainerAt("package.preload.WIGInternal", wiginternal);
+            // Marks package WIGInternal as loaded
+            dataFactory.SetContainerAt("package.loaded.WIGInternal", wiginternal);
+            dataFactory.SetContainerAt("package.preload.WIGInternal", wiginternal);
 
-			// Loads the Wherigo LUA engine.
-			dataFactory.LoadAndRunEngine();
-		}
+            // Loads the Wherigo LUA engine.
+            dataFactory.LoadAndRunEngine();
+        }
 
-		private void AddMethodToTable(LuaDataContainer container, string fieldName, string funcName = null)
+        private void AddMethodToTable(LuaDataContainer container, string fieldName, string funcName = null)
 		{
             // Gets the type of the delegate to create.
             TypeInfo typeInfo = this.GetType().GetTypeInfo();
@@ -200,21 +200,20 @@ namespace WF.Player.Core.Engines
 
 		public void AttributeChangedEvent(LuaTable obj, string type)
 		{
-			// Possible types
-			// "Name"
-			// "Description"
-			// "Visible"
-			// "Media"
-			// "Icon"
-			// "Active"
-			// "Gender"
-			// "Type"
-			// "Complete"
-			// "CorrectState"
+            // Possible types
+            // "Name"
+            // "Description"
+            // "Visible"
+            // "Media"
+            // "Icon"
+            // "Active"
+            // "Gender"
+            // "Type"
+            // "Complete"
+            // "CorrectState"
             // "Commands"
 
 			_engine.HandleAttributeChanged(_dataFactory.GetWherigoObject(obj), type);
-
 		}
 
 		public void CartridgeEvent(string type)
