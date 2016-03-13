@@ -605,7 +605,7 @@ namespace WF.Player.Core.Formats
 			var l = input.ReadInt32();
 			var b = input.ReadBytes(l).ToArray();
 
-			return Encoding.UTF8.GetString(b);
+            return Encoding.UTF8.GetString(b, 0, b.Length);
 		}
 
 		/// <summary>
