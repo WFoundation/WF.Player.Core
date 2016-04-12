@@ -195,10 +195,14 @@ namespace WF.Player.Core.Live
 				{"req", obj}
 			};
 			string json = JsonConvert.SerializeObject(jsonRequest);
+#if WINDOWS_PHONE_SILVERLIGHT_8_1
+            throw new NotImplementedException();
+#else
 			using (WebClient client = new WebClient()) {
 				client.Headers.Add("Content-Type", "application/json; charset=utf-8");
 				return client.UploadString(uri, json);
 			}
+#endif
 		}
 
         /// <summary>
