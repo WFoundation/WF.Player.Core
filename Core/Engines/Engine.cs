@@ -473,6 +473,24 @@ namespace WF.Player.Core.Engines
 			}
 		}
 
+#if DEBUG
+		public WherigoCollection<WherigoObject> AllCartridgeObjects
+		{
+			get
+			{
+				lock (_syncRoot)
+				{
+					if (_cartridge == null)
+					{
+						return null;
+					}
+
+					return _cartridge.DataContainer.GetWherigoObjectList<WherigoObject>("AllZObjects");
+				}
+			}
+		}
+#endif
+
 		public WherigoCollection<Task> ActiveVisibleTasks
 		{
 			get
