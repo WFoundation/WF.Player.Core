@@ -197,7 +197,7 @@ namespace WF.Player.Core
 					return 1d / 1609.344;
 
 				case DistanceUnit.Feet:
-					return 3.2808399d;
+					return 1d / 0.3048;
 
 				case DistanceUnit.NauticalMiles:
 					return Utils.GeoMathHelper.METER_NMI_COEF;

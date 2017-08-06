@@ -154,23 +154,58 @@ namespace WF.Player.Core
 		/// factors.</returns>
 		public string BestMeasureAs(DistanceUnit smallestUnit, DistanceFormat format = null)
 		{
-			if (!smallestUnit.Equals(DistanceUnit.Meters) && !smallestUnit.Equals(DistanceUnit.Kilometers))
+			switch (smallestUnit)
 			{
-				throw new NotImplementedException("Parameter smallest Unit must be Meters or Kilometers.");
-			}
+				case DistanceUnit.Meters:
+					return BestMeasureAs(
+						DistanceUnit.Meters, 1,
+						DistanceUnit.Meters, 0,
+						DistanceUnit.Kilometers, 2);
 
-			double v = Value;
+				case DistanceUnit.Kilometers:
+					return BestMeasureAs(
+						DistanceUnit.Kilometers, 2,
+						DistanceUnit.Kilometers, 2,
+						DistanceUnit.Kilometers, 1);
+
+				case DistanceUnit.Miles:
+					return BestMeasureAs(
+						DistanceUnit.Miles, 1,
+						DistanceUnit.Miles, 1,
+						DistanceUnit.Miles, 1);
+
+				case DistanceUnit.Feet:
+					return BestMeasureAs(
+						DistanceUnit.Feet, 0,
+						DistanceUnit.Feet, 0,
+						DistanceUnit.Miles, 2);
+
+				case DistanceUnit.NauticalMiles:
+					return BestMeasureAs(
+						DistanceUnit.NauticalMiles, 1,
+						DistanceUnit.NauticalMiles, 1,
+						DistanceUnit.NauticalMiles, 1);
+
+				default:
+					throw new NotImplementedException(smallestUnit.ToString() + " is not a supported unit.");
+			}
+		}
+
+		private string BestMeasureAs(DistanceUnit smallUnit, int smallPrecision, DistanceUnit mediumUnit, int mediumPrecision, DistanceUnit bigUnit, int bigPrecision)
+		{
+			double v = ValueAs(smallUnit);
+
 			if (v > 1000d)
 			{
-				return MeasureAs(DistanceUnit.Kilometers, format != null ? format.BigDistancePrecisionDigits : 2);
+				return MeasureAs(bigUnit, bigPrecision);
 			}
 			else if (v > 100d)
 			{
-				return MeasureAs(DistanceUnit.Meters, format != null ? format.MediumDistancePrecisionDigits : 0);
+				return MeasureAs(mediumUnit, mediumPrecision);
 			}
 			else
 			{
-				return MeasureAs(DistanceUnit.Meters, format != null ? format.SmallDistancePrecisionDigits : 1);
+				return MeasureAs(smallUnit, smallPrecision);
 			}
 		}
 
