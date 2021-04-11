@@ -5,7 +5,9 @@ VisualStudioVersion = 16.0.31129.286
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WF.Player.Core", "Core\WF.Player.Core.csproj", "{CCBD7709-ECE1-43CF-A4FC-1A02BC128F6D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eluant", "Eluant\Eluant\Eluant.csproj", "{3F297829-2F3B-4C3B-8141-37623F3F0DBC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eluant-KopiLua", "Eluant\Eluant\Eluant-KopiLua.csproj", "{5ABA871F-F552-4A4A-A280-7D2C71B0624E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KopiLua", "Eluant\KopiLua\KopiLua\KopiLua.csproj", "{CDE6A835-A037-42D7-8319-9AB8BBDD102C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +19,14 @@ Global
 		{CCBD7709-ECE1-43CF-A4FC-1A02BC128F6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CCBD7709-ECE1-43CF-A4FC-1A02BC128F6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CCBD7709-ECE1-43CF-A4FC-1A02BC128F6D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3F297829-2F3B-4C3B-8141-37623F3F0DBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3F297829-2F3B-4C3B-8141-37623F3F0DBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3F297829-2F3B-4C3B-8141-37623F3F0DBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3F297829-2F3B-4C3B-8141-37623F3F0DBC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5ABA871F-F552-4A4A-A280-7D2C71B0624E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5ABA871F-F552-4A4A-A280-7D2C71B0624E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5ABA871F-F552-4A4A-A280-7D2C71B0624E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5ABA871F-F552-4A4A-A280-7D2C71B0624E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDE6A835-A037-42D7-8319-9AB8BBDD102C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDE6A835-A037-42D7-8319-9AB8BBDD102C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDE6A835-A037-42D7-8319-9AB8BBDD102C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDE6A835-A037-42D7-8319-9AB8BBDD102C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

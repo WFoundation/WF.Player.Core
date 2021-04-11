@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Eluant\Eluant\Eluant.csproj" />
+    <ProjectReference Include="..\Eluant\Eluant\Eluant-KopiLua.csproj" />
   </ItemGroup>
 
 </Project>
