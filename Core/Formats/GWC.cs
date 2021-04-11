@@ -271,8 +271,8 @@ namespace WF.Player.Core.Formats
 			int enumLength = Enum.GetValues(cart.ActivityType.GetType()).Length;
 			#endif
 			for (int i = 0; i < enumLength; i++)
-				if (((Live.WherigoCartridge.ActivityTypes)i).ToString().Equals(activity))
-					cart.ActivityType = (Live.WherigoCartridge.ActivityTypes)i;
+				if (((ActivityType)i).ToString().Equals(activity))
+					cart.ActivityType = (ActivityType)i;
 
 			// Read name of player
 			cart.Player = readCString(reader);

@@ -144,15 +144,6 @@ namespace WF.Player.Core.Engines
 		#region Constructor and Destructors
 
 		/// <summary>
-		/// Creates an instance of Engine that is uninitialized and cannot give
-		/// user interface feedback.
-		/// </summary>
-		public Engine()
-		{
-			InitInstance(new DefaultPlatformHelper());
-		}
-
-		/// <summary>
 		/// Creates an instance of Engine that is uninitialized, using a helper 
 		/// that implements platform-specific operations.
 		/// </summary>

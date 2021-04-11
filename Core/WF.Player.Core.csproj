@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Version>0.4.0</Version>
+    <Authors>Wherigo Foundation</Authors>
+    <Product>WF.Player</Product>
+    <Description>Wherigo Player engine for .NET</Description>
+    <Copyright>Wherigo Foundation, 2012-2021</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Properties\**" />
+    <EmbeddedResource Remove="Properties\**" />
+    <None Remove="Properties\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\Wherigo.luac" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Wherigo.luac" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Eluant\Eluant\Eluant.csproj" />
+  </ItemGroup>
+
+</Project>

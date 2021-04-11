@@ -42,14 +42,14 @@ namespace WF.Player.Core
 
         #region Fields
 
-        private Live.WherigoCartridge.ActivityTypes _activityType;
+        private ActivityType _activityType;
         private string _authorCompany;
         private string _authorName;
         private DateTime _createDate;
         private bool _complete;
         private DateTime _completedTime = DateTime.MinValue;
         private string _completionCode;
-        private Live.WherigoCartridge.CompletionTimes _completionTime;
+        private CompletionTime _completionTime;
         private int _countryID;
         private DateTime? _dateAdded;
         private DateTime? _dateLastPlayed;
@@ -109,7 +109,7 @@ namespace WF.Player.Core
         /// <summary>
         /// Gets the type of activity this cartridge provides the player with.
         /// </summary>
-        public Live.WherigoCartridge.ActivityTypes ActivityType
+        public ActivityType ActivityType
         {
             get
             {
@@ -244,7 +244,7 @@ namespace WF.Player.Core
         /// <summary>
         /// Gets an estimation of the time needed to complete the cartridge.
         /// </summary>
-        public Live.WherigoCartridge.CompletionTimes CompletionTime
+        public CompletionTime CompletionTime
         {
             get
             {
