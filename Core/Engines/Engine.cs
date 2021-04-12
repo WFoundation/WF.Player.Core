@@ -115,9 +115,6 @@ namespace WF.Player.Core.Engines
 
 		private const int INTERNAL_TIMER_DURATION = 1000;
 
-		public const string CORE_PLATFORM = "WF.Player.Core";
-		public const string CORE_VERSION = "0.3.0";
-
 		#endregion
 
 		#region Events
@@ -187,6 +184,7 @@ namespace WF.Player.Core.Engines
 			LuaDataContainer env = _dataFactory.CreateContainerAt("Env");
 
 			// Set defaults
+			AssemblyName engineAssemblyName = Assembly.GetExecutingAssembly().GetName();
 			env["Ok"] = _platformHelper.Ok;
 			env["EmptyYouSeeListText"] = _platformHelper.EmptyYouSeeListText;
 			env["EmptyInventoryListText"] = _platformHelper.EmptyInventoryListText;
@@ -198,10 +196,10 @@ namespace WF.Player.Core.Engines
 			env["LogFolder"] = _platformHelper.LogFolder;
 			env["PathSep"] = _platformHelper.PathSeparator;
 			env["Downloaded"] = 0.0;
-			env["Platform"] = String.Format("{0} ({1})", CORE_PLATFORM, _platformHelper.Platform);
+			env["Platform"] = String.Format("{0} ({1})", engineAssemblyName.Name, _platformHelper.Platform);
 			env["Device"] = _platformHelper.Device;
 			env["DeviceID"] = _platformHelper.DeviceId;
-			env["Version"] = String.Format("{0} ({1} {2})", _platformHelper.ClientVersion, CORE_PLATFORM, CORE_VERSION);
+			env["Version"] = String.Format("{0} ({1} {2})", _platformHelper.ClientVersion, engineAssemblyName.Name, engineAssemblyName.Version);
 
 			// Creates job queues that runs in another thread.
 			_luaExecQueue = new ExecutionQueue() { DefaultFallbackAction = HandleLuaExecQueueJobException };
