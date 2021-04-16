@@ -26,7 +26,7 @@ using System.Text;
 
 namespace WF.Player.Core.Formats
 {
-    public class CartridgeLoaders
+    public static class CartridgeLoaders
     {
 		#region Fields
 
@@ -83,7 +83,7 @@ namespace WF.Player.Core.Formats
         }
 
         /// <summary>
-        /// Load a cartridge file of unkown type into an Cartridge object.
+        /// Load a cartridge file of unknown type into an Cartridge object.
         /// </summary>
         /// <param name="inputStream">Stream containing the cartridge file.</param>
         /// <param name="cart">Cartridge object, which should be used.</param>
@@ -101,7 +101,27 @@ namespace WF.Player.Core.Formats
         }
 
         /// <summary>
-        /// Load the header of a cartridge file of unkown type into an Cartridge object.
+        /// Load a cartridge file of unknown type.
+        /// </summary>
+        /// <param name="filename">Path to the file to load.</param>
+        public static Cartridge Load(string filename)
+        {
+            // Creates a cartridge object for that path.
+            string path = Path.GetFullPath(filename);
+            Cartridge cart = new Cartridge(path);
+
+            // Loads the file into the cartridge.
+            using (FileStream fs = File.OpenRead(path))
+            {
+                Load(fs, cart);
+            }
+
+            // Returns the cartridge object now it's loaded.
+            return cart;
+        }
+
+        /// <summary>
+        /// Load the header of a cartridge file of unknown type into a Cartridge object.
         /// </summary>
         /// <param name="inputStream">Stream containing the cartridge file.</param>
         /// <param name="cart">Cartridge object, which should be used.</param>

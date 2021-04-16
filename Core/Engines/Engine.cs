@@ -747,26 +747,6 @@ namespace WF.Player.Core.Engines
 
 		#region Init
 		/// <summary>
-		/// Initializes this Engine with the data of a Cartridge, loaded from a stream.
-		/// </summary>
-		/// <param name="input">Stream to load cartridge load from.</param>
-		/// <param name="cartridge">Cartridge object to load and init.</param>
-		public void Init(Stream input, Cartridge cartridge)
-		{
-			// Sanity checks.
-			CheckStateIs(EngineGameState.Uninitialized, "The engine cannot be initialized in this state", true);
-
-			// State change.
-			GameState = EngineGameState.Initializing;
-
-			// Loads the cartridge code.
-			CartridgeLoaders.Load(input, cartridge);
-
-			// Performs the init.
-			InitCore(cartridge);
-		}
-
-		/// <summary>
 		/// Initializes this Engine with the data of a Cartridge that has been 
 		/// previously loaded.
 		/// </summary>
@@ -776,7 +756,7 @@ namespace WF.Player.Core.Engines
 			// Sanity checks.
 			CheckStateIs(EngineGameState.Uninitialized, "The engine cannot be initialized in this state", true);
 			if (!cartridge.IsLoaded)
-				throw new InvalidOperationException("The cartridge is not loaded. Use Init(Stream, Cartridge) instead.");
+				throw new InvalidOperationException("The cartridge is not loaded. Use the CartridgeLoaders class to create your Cartridge.");
 
 			// State change.
 			GameState = EngineGameState.Initializing;
